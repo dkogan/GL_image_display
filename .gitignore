@@ -1,0 +1,9 @@
+*~
+*.glsl.h
+*.docstring.h
+*.so*
+*.d
+*.o
+sfmviz-test
+cscope.*
+__pycache__
