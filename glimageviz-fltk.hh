@@ -43,14 +43,20 @@ public:
             glimageviz_deinit(&m_ctx);
     }
 
-    void update_image(const char* filename)
+    void update_image( // Either this should be given
+                       const char* filename,
+                       int         decimation_level = 0,
+                       // Or these should be given
+                       const char* image_data       = NULL,
+                       int         image_width      = 0,
+                       int         image_height     = 0)
     {
         _init_if_needed();
 
         // have new image to ingest
-        if( !glimageviz_update_textures(&m_ctx, filename,
-                                        m_decimation_level,
-                                        NULL,0,0) )
+        if( !glimageviz_update_textures(&m_ctx,
+                                        filename,decimation_level,
+                                        image_data,image_width,image_height) )
         {
             MSG("glimageviz_update_textures() failed");
             exit(1);
