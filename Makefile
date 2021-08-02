@@ -1,4 +1,4 @@
-include ~/projects/mrbuild/Makefile.common.header
+include /usr/include/mrbuild/Makefile.common.header
 
 PROJECT_NAME := glimageviz
 ABI_VERSION  := 0
@@ -28,4 +28,4 @@ CXXFLAGS_FLTK := $(shell fltk-config --use-images --cxxflags)
 glimageviz-test-fltk.o: CXXFLAGS += $(CXXFLAGS_FLTK)
 glimageviz-test-fltk:   LDLIBS   += -lfltk_gl -lfltk -lX11
 
-include ~/projects/mrbuild/Makefile.common.footer
+include /usr/include/mrbuild/Makefile.common.footer
