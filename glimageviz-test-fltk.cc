@@ -15,9 +15,9 @@ extern "C"
 }
 
 
-#define WINDOW_W 800
-#define WINDOW_H 600
-
+#define WINDOW_W   800
+#define WINDOW_H   600
+#define DECIMATION 3
 
 class GLWidget;
 
@@ -77,7 +77,7 @@ public:
         if(m_filename != NULL)
         {
             // have new image to ingest
-            if( !glimageviz_update_textures(&m_ctx, m_filename,
+            if( !glimageviz_update_textures(&m_ctx, m_filename,DECIMATION,
                                             NULL,0,0) )
             {
                 MSG("glimageviz_update_textures() failed");

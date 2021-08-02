@@ -66,9 +66,12 @@ bool glimageviz_update_textures( glimageviz_context_t* ctx,
 
                                  // Either this should be given
                                  const char* filename,
+                                 int decimation_level,
 
                                  // Or these should be given
-                                 const char* image_data, int image_width, int image_height);
+                                 const char* image_data,
+                                 int image_width,
+                                 int image_height);
 
 void glimageviz_deinit( glimageviz_context_t* ctx );
 

@@ -244,9 +244,12 @@ bool glimageviz_update_textures( glimageviz_context_t* ctx,
 
                                  // Either this should be given
                                  const char* filename,
+                                 int decimation_level,
 
                                  // Or these should be given
-                                 const char* image_data, int image_width, int image_height)
+                                 const char* image_data,
+                                 int image_width,
+                                 int image_height)
 {
     if(filename == NULL &&
        !(image_data != NULL && image_width > 0 && image_height > 0))
@@ -263,7 +266,7 @@ bool glimageviz_update_textures( glimageviz_context_t* ctx,
 
     bool      result = false;
     FIBITMAP* fib    = NULL;
-    void*     buf    = NULL;
+    char*     buf    = NULL;
 
     if(!ctx->did_init)
     {
@@ -303,7 +306,13 @@ bool glimageviz_update_textures( glimageviz_context_t* ctx,
             goto done;
         }
 
-        image_data = (char*)FreeImage_GetBits(fib);
+        if(decimation_level == 0)
+            image_data = (char*)FreeImage_GetBits(fib);
+        else
+        {
+            image_width  >>= decimation_level;
+            image_height >>= decimation_level;
+        }
     }
 
     if(!ctx->did_init_texture)
@@ -378,8 +387,30 @@ bool glimageviz_update_textures( glimageviz_context_t* ctx,
         goto done;
     }
 
-    memcpy(buf, image_data,
-           ctx->image_width*ctx->image_height);
+    if(!(fib != NULL && image_data == NULL))
+    {
+        // No decimation. Just copy the buffer
+        memcpy(buf, image_data,
+               ctx->image_width*ctx->image_height);
+    }
+    else
+    {
+        // We need to copy the buffer while decimating. I do that manually.
+        // There should be a library. OpenCV makes me use C++, and freeimage
+        // doesn't work in-place. No interpolation. I just decimate the input.
+        const int step_input = 1 << decimation_level;
+        const int stride_input = FreeImage_GetPitch(fib);
+
+        image_data = (char*)FreeImage_GetBits(fib);
+        for(int i=0; i<image_height; i++)
+        {
+            const char* row_input = &image_data[i*step_input*stride_input];
+            for(int j=0; j<image_width; j++)
+            {
+                buf[i*image_width + j] = row_input[j*step_input];
+            }
+        }
+    }
 
     glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
     buf = NULL;
@@ -398,11 +429,8 @@ bool glimageviz_update_textures( glimageviz_context_t* ctx,
     result = true;
 
  done:
-    if(!result)
-    {
-        if(fib != NULL)
-            FreeImage_Unload(fib);
-    }
+    if(fib != NULL)
+        FreeImage_Unload(fib);
     if(buf != NULL)
         glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
     return result;
