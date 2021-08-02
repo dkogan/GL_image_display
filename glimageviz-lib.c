@@ -359,6 +359,16 @@ bool glimageviz_update_textures( glimageviz_context_t* ctx,
                                    (double)(ctx->image_height - 1) / 2.,
                                    ctx->image_width))
             goto done;
+
+        // Render image dimensions changed. I need to update the aspect-ratio
+        // uniform, which depends on these and the viewport dimensions. The
+        // container UI library must call glimageviz_resize_viewport() if the
+        // viewport size changes. The image dimensions will never change after
+        // this
+        GLint viewport_xywh[4];
+        glGetIntegerv(GL_VIEWPORT, viewport_xywh);
+        if(!glimageviz_resize_viewport(ctx, viewport_xywh[2], viewport_xywh[3]))
+            goto done;
     }
     else
     {

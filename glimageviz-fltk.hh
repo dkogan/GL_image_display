@@ -56,10 +56,6 @@ public:
             exit(1);
         }
 
-        // This might be called before the first successful draw(), so I must
-        // invalidate. Not 100% clear on why this is necessary, but without it,
-        // I just get black windows
-        invalidate();
         redraw();
     }
 
