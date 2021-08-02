@@ -63,10 +63,10 @@ bool glimageviz_init( // output
                       bool use_glut);
 
 bool glimageviz_update_textures( glimageviz_context_t* ctx,
+                                 int decimation_level,
 
                                  // Either this should be given
                                  const char* filename,
-                                 int decimation_level,
 
                                  // Or these should be given
                                  const char* image_data,

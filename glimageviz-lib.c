@@ -241,10 +241,10 @@ bool glimageviz_init( // output
 }
 
 bool glimageviz_update_textures( glimageviz_context_t* ctx,
+                                 int decimation_level,
 
                                  // Either this should be given
                                  const char* filename,
-                                 int decimation_level,
 
                                  // Or these should be given
                                  const char* image_data,
@@ -306,13 +306,13 @@ bool glimageviz_update_textures( glimageviz_context_t* ctx,
             goto done;
         }
 
-        if(decimation_level == 0)
-            image_data = (char*)FreeImage_GetBits(fib);
-        else
-        {
-            image_width  >>= decimation_level;
-            image_height >>= decimation_level;
-        }
+        image_data = (char*)FreeImage_GetBits(fib);
+    }
+
+    if(decimation_level > 0)
+    {
+        image_width  >>= decimation_level;
+        image_height >>= decimation_level;
     }
 
     if(!ctx->did_init_texture)
@@ -397,7 +397,7 @@ bool glimageviz_update_textures( glimageviz_context_t* ctx,
         goto done;
     }
 
-    if(!(fib != NULL && image_data == NULL))
+    if(decimation_level == 0)
     {
         // No decimation. Just copy the buffer
         memcpy(buf, image_data,
@@ -405,13 +405,13 @@ bool glimageviz_update_textures( glimageviz_context_t* ctx,
     }
     else
     {
-        // We need to copy the buffer while decimating. I do that manually.
-        // There should be a library. OpenCV makes me use C++, and freeimage
-        // doesn't work in-place. No interpolation. I just decimate the input.
-        const int step_input = 1 << decimation_level;
-        const int stride_input = FreeImage_GetPitch(fib);
+        // We need to copy the buffer while decimating. I do that manually, even
+        // though there REALLY should be a library call. OpenCV makes me use
+        // C++, and freeimage doesn't work in-place. I don't interpolate: I just
+        // decimate the input.
+        const int step_input   = 1 << decimation_level;
+        const int stride_input = (fib == NULL) ? image_width : (int)FreeImage_GetPitch(fib);
 
-        image_data = (char*)FreeImage_GetBits(fib);
         for(int i=0; i<image_height; i++)
         {
             const char* row_input = &image_data[i*step_input*stride_input];

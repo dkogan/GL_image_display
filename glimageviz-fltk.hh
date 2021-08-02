@@ -45,7 +45,6 @@ public:
 
     void update_image( // Either this should be given
                        const char* filename,
-                       int         decimation_level = 0,
                        // Or these should be given
                        const char* image_data       = NULL,
                        int         image_width      = 0,
@@ -54,8 +53,8 @@ public:
         _init_if_needed();
 
         // have new image to ingest
-        if( !glimageviz_update_textures(&m_ctx,
-                                        filename,decimation_level,
+        if( !glimageviz_update_textures(&m_ctx, m_decimation_level,
+                                        filename,
                                         image_data,image_width,image_height) )
         {
             MSG("glimageviz_update_textures() failed");
