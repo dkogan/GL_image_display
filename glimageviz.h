@@ -41,7 +41,7 @@ typedef struct
     uint32_t texture_PBO_ID;
 
     // valid if did_init_texture
-    int width_image, height_image;
+    int image_width, image_height;
 
     double x_centerpixel;
     double y_centerpixel;

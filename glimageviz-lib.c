@@ -308,8 +308,8 @@ bool glimageviz_update_textures( glimageviz_context_t* ctx,
 
     if(!ctx->did_init_texture)
     {
-        ctx->width_image  = image_width;
-        ctx->height_image = image_height;
+        ctx->image_width  = image_width;
+        ctx->image_height = image_height;
 
         glGenTextures(1, &ctx->texture_ID);
         assert_opengl();
@@ -323,7 +323,7 @@ bool glimageviz_update_textures( glimageviz_context_t* ctx,
         glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_REPEAT);
 
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RED,
-                     ctx->width_image, ctx->height_image,
+                     ctx->image_width, ctx->image_height,
                      0, GL_RED,
                      GL_UNSIGNED_BYTE, (const GLvoid *)NULL);
         assert_opengl();
@@ -337,7 +337,7 @@ bool glimageviz_update_textures( glimageviz_context_t* ctx,
         assert_opengl();
 
         glBufferData(GL_PIXEL_UNPACK_BUFFER,
-                     ctx->width_image*ctx->height_image,
+                     ctx->image_width*ctx->image_height,
                      NULL,
                      GL_STREAM_DRAW);
         assert_opengl();
@@ -346,18 +346,18 @@ bool glimageviz_update_textures( glimageviz_context_t* ctx,
         ctx->did_init_texture = true;
 
         if(!glimageviz_set_extents(ctx,
-                                   (double)(ctx->width_image  - 1) / 2.,
-                                   (double)(ctx->height_image - 1) / 2.,
-                                   ctx->width_image))
+                                   (double)(ctx->image_width  - 1) / 2.,
+                                   (double)(ctx->image_height - 1) / 2.,
+                                   ctx->image_width))
             goto done;
     }
     else
     {
-        if(! (ctx->width_image  == image_width &&
-              ctx->height_image == image_height) )
+        if(! (ctx->image_width  == image_width &&
+              ctx->image_height == image_height) )
         {
             MSG("Inconsistent image sizes. Initialized with (%d,%d), but new image '%s' has (%d,%d). Ignoring the new image",
-                ctx->width_image, ctx->height_image,
+                ctx->image_width, ctx->image_height,
                 filename == NULL ? "(explicitly given data)" : filename,
                 image_width, image_height);
             goto done;
@@ -379,7 +379,7 @@ bool glimageviz_update_textures( glimageviz_context_t* ctx,
     }
 
     memcpy(buf, imagedata,
-           ctx->width_image*ctx->height_image);
+           ctx->image_width*ctx->image_height);
 
     glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
     buf = NULL;
@@ -387,7 +387,7 @@ bool glimageviz_update_textures( glimageviz_context_t* ctx,
 
     glTexSubImage2D(GL_TEXTURE_2D, 0,
                     0,0,
-                    ctx->width_image, ctx->height_image,
+                    ctx->image_width, ctx->image_height,
                     GL_RED, GL_UNSIGNED_BYTE,
                     0);
     assert_opengl();
@@ -437,7 +437,7 @@ bool glimageviz_resize_viewport(glimageviz_context_t* ctx,
 
     glViewport(0, 0, width_viewport, height_viewport);
     set_uniform_1f(ctx, aspect,
-                   (float)(width_viewport*ctx->height_image) / (float)(height_viewport*ctx->width_image));
+                   (float)(width_viewport*ctx->image_height) / (float)(height_viewport*ctx->image_width));
     ctx->did_set_aspect = true;
     return true;
 }
@@ -455,7 +455,7 @@ bool glimageviz_set_extents(glimageviz_context_t* ctx,
     ctx->visible_width_pixels = visible_width_pixels;
 
     set_uniform_1f(ctx, visible_width01,
-                   (float)(visible_width_pixels / (double)ctx->width_image));
+                   (float)(visible_width_pixels / (double)ctx->image_width));
 
     // Adjustments:
     //
@@ -465,8 +465,8 @@ bool glimageviz_set_extents(glimageviz_context_t* ctx,
     //   the right edge of the rightmost pixel respectively, so an offset of 0.5
     //   pixels is required
     set_uniform_2f(ctx, center01,
-                   (float)((                                x_centerpixel + 0.5) / (double)ctx->width_image),
-                   (float)(((double)(ctx->height_image-1) - y_centerpixel + 0.5) / (double)ctx->height_image));
+                   (float)((                                x_centerpixel + 0.5) / (double)ctx->image_width),
+                   (float)(((double)(ctx->image_height-1) - y_centerpixel + 0.5) / (double)ctx->image_height));
 
     ctx->did_set_extents = true;
     return true;
