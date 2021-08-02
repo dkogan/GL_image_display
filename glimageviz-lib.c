@@ -274,15 +274,15 @@ bool glimageviz_update_textures( glimageviz_context_t* ctx,
         goto done;
     }
 
-    FREE_IMAGE_FORMAT format = FreeImage_GetFileType(filename,0);
-    if(format == FIF_UNKNOWN)
-    {
-        MSG("Couldn't load '%s'", filename);
-        goto done;
-    }
-
     if( filename != NULL )
     {
+        FREE_IMAGE_FORMAT format = FreeImage_GetFileType(filename,0);
+        if(format == FIF_UNKNOWN)
+        {
+            MSG("Couldn't load '%s'", filename);
+            goto done;
+        }
+
         fib = FreeImage_Load(format, filename, 0);
         if(fib == NULL)
         {
