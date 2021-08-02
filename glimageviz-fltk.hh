@@ -5,6 +5,12 @@ extern "C"
 #include "glimageviz.h"
 }
 
+#include "util.h"
+
+#include <FL/Fl.H>
+#include <FL/Fl_Gl_Window.H>
+#include <string.h>
+
 class GLWidget : public Fl_Gl_Window
 {
     glimageviz_context_t m_ctx;
