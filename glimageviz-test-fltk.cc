@@ -37,7 +37,7 @@ void timer_callback(void* cookie __attribute__((unused)))
     for(int i=0; i<2; i++)
         for(int j=0; j<2; j++)
         {
-            sprintf(buf, "/tmp/images/frame0016%d-pair%d-cam%d.jpg", c, i, j);
+            sprintf(buf, "/tmp/frame0016%d-pair%d-cam%d.jpg", c, i, j);
             g_gl_widgets[2*i+j]->update_image(buf);
         }
 
