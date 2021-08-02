@@ -10,40 +10,10 @@ class GLWidget : public Fl_Gl_Window
     glimageviz_context_t m_ctx;
     int                  m_last_drag_update_xy[2];
 
-    char* m_filename;
     int m_decimation_level;
 
-public:
-    GLWidget(int x, int y, int w, int h,
-             int decimation_level = 0) :
-        Fl_Gl_Window(x, y, w, h),
-        m_filename(NULL),
-        m_decimation_level(decimation_level)
-    {
-        mode(FL_DOUBLE | FL_OPENGL3);
-        memset(&m_ctx, 0, sizeof(m_ctx));
-    }
 
-    ~GLWidget()
-    {
-        free(m_filename);
-        if(m_ctx.did_init)
-            glimageviz_deinit(&m_ctx);
-    }
-
-    void update_image(const char* filename)
-    {
-        free(m_filename);
-        m_filename = strdup(filename);
-
-        // This might be called before the first successful draw(), so I must
-        // invalidate. Not 100% clear on why this is necessary, but without it,
-        // I just get black windows
-        invalidate();
-        redraw();
-    }
-
-    void draw(void)
+    void _init_if_needed(void)
     {
         if(!m_ctx.did_init)
         {
@@ -55,21 +25,47 @@ public:
                 exit(1);
             }
         }
+    }
 
-        if(m_filename != NULL)
+public:
+    GLWidget(int x, int y, int w, int h,
+             int decimation_level = 0) :
+        Fl_Gl_Window(x, y, w, h),
+        m_decimation_level(decimation_level)
+    {
+        mode(FL_DOUBLE | FL_OPENGL3);
+        memset(&m_ctx, 0, sizeof(m_ctx));
+    }
+
+    ~GLWidget()
+    {
+        if(m_ctx.did_init)
+            glimageviz_deinit(&m_ctx);
+    }
+
+    void update_image(const char* filename)
+    {
+        _init_if_needed();
+
+        // have new image to ingest
+        if( !glimageviz_update_textures(&m_ctx, filename,
+                                        m_decimation_level,
+                                        NULL,0,0) )
         {
-            // have new image to ingest
-            if( !glimageviz_update_textures(&m_ctx, m_filename,
-                                            m_decimation_level,
-                                            NULL,0,0) )
-            {
-                MSG("glimageviz_update_textures() failed");
-                exit(1);
-            }
-
-            free(m_filename);
-            m_filename = NULL;
+            MSG("glimageviz_update_textures() failed");
+            exit(1);
         }
+
+        // This might be called before the first successful draw(), so I must
+        // invalidate. Not 100% clear on why this is necessary, but without it,
+        // I just get black windows
+        invalidate();
+        redraw();
+    }
+
+    void draw(void)
+    {
+        _init_if_needed();
 
         if(!valid())
             glimageviz_resize_viewport(&m_ctx, pixel_w(), pixel_h());
