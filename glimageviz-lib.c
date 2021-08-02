@@ -246,18 +246,18 @@ bool glimageviz_update_textures( glimageviz_context_t* ctx,
                                  const char* filename,
 
                                  // Or these should be given
-                                 const char* imagedata, int image_width, int image_height)
+                                 const char* image_data, int image_width, int image_height)
 {
     if(filename == NULL &&
-       !(imagedata != NULL && image_width > 0 && image_height > 0))
+       !(image_data != NULL && image_width > 0 && image_height > 0))
     {
-        MSG("filename is NULL, so all of (imagedata, image_width, image_height) must have valid values");
+        MSG("filename is NULL, so all of (image_data, image_width, image_height) must have valid values");
         return false;
     }
     if(filename != NULL &&
-       !(imagedata == NULL && image_width <= 0 && image_height <= 0))
+       !(image_data == NULL && image_width <= 0 && image_height <= 0))
     {
-        MSG("filename is not NULL, so all of (imagedata, image_width, image_height) must have null values");
+        MSG("filename is not NULL, so all of (image_data, image_width, image_height) must have null values");
         return false;
     }
 
@@ -303,7 +303,7 @@ bool glimageviz_update_textures( glimageviz_context_t* ctx,
             goto done;
         }
 
-        imagedata = (char*)FreeImage_GetBits(fib);
+        image_data = (char*)FreeImage_GetBits(fib);
     }
 
     if(!ctx->did_init_texture)
@@ -378,7 +378,7 @@ bool glimageviz_update_textures( glimageviz_context_t* ctx,
         goto done;
     }
 
-    memcpy(buf, imagedata,
+    memcpy(buf, image_data,
            ctx->image_width*ctx->image_height);
 
     glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);

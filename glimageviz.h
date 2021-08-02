@@ -68,7 +68,7 @@ bool glimageviz_update_textures( glimageviz_context_t* ctx,
                                  const char* filename,
 
                                  // Or these should be given
-                                 const char* imagedata, int image_width, int image_height);
+                                 const char* image_data, int image_width, int image_height);
 
 void glimageviz_deinit( glimageviz_context_t* ctx );
 
