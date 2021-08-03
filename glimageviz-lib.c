@@ -309,16 +309,10 @@ bool glimageviz_update_textures( glimageviz_context_t* ctx,
         image_data = (char*)FreeImage_GetBits(fib);
     }
 
-    if(decimation_level > 0)
-    {
-        image_width  >>= decimation_level;
-        image_height >>= decimation_level;
-    }
-
     if(!ctx->did_init_texture)
     {
-        ctx->image_width  = image_width;
-        ctx->image_height = image_height;
+        ctx->image_width  = image_width  >> decimation_level;
+        ctx->image_height = image_height >> decimation_level;
 
         glGenTextures(1, &ctx->texture_ID);
         assert_opengl();
@@ -372,13 +366,14 @@ bool glimageviz_update_textures( glimageviz_context_t* ctx,
     }
     else
     {
-        if(! (ctx->image_width  == image_width &&
-              ctx->image_height == image_height) )
+        if(! (ctx->image_width  == image_width  >> decimation_level &&
+              ctx->image_height == image_height >> decimation_level) )
         {
             MSG("Inconsistent image sizes. Initialized with (%d,%d), but new image '%s' has (%d,%d). Ignoring the new image",
                 ctx->image_width, ctx->image_height,
                 filename == NULL ? "(explicitly given data)" : filename,
-                image_width, image_height);
+                image_width  >> decimation_level,
+                image_height >> decimation_level);
             goto done;
         }
 
@@ -412,12 +407,12 @@ bool glimageviz_update_textures( glimageviz_context_t* ctx,
         const int step_input   = 1 << decimation_level;
         const int stride_input = (fib == NULL) ? image_width : (int)FreeImage_GetPitch(fib);
 
-        for(int i=0; i<image_height; i++)
+        for(int i=0; i<ctx->image_height; i++)
         {
             const char* row_input = &image_data[i*step_input*stride_input];
-            for(int j=0; j<image_width; j++)
+            for(int j=0; j<ctx->image_width; j++)
             {
-                buf[i*image_width + j] = row_input[j*step_input];
+                buf[i*ctx->image_width + j] = row_input[j*step_input];
             }
         }
     }
