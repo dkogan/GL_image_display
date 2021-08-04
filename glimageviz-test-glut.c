@@ -22,7 +22,7 @@ int main(int argc, char* argv[])
 
     if( !glimageviz_update_textures(&ctx,0,
                                     "/tmp/frame00167-pair0-cam0.jpg",
-                                    NULL,0,0) )
+                                    NULL,0,0,false) )
     {
         fprintf(stderr, "glimageviz_update_textures() failed\n");
         return false;
@@ -46,7 +46,7 @@ int main(int argc, char* argv[])
 
         if( !glimageviz_update_textures(&ctx,0,
                                         f,
-                                        NULL,0,0) )
+                                        NULL,0,0,false) )
         {
             fprintf(stderr, "glimageviz_update_textures() failed\n");
             return;

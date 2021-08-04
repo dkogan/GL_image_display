@@ -54,14 +54,15 @@ public:
                        // Or these should be given
                        const char* image_data       = NULL,
                        int         image_width      = 0,
-                       int         image_height     = 0)
+                       int         image_height     = 0,
+                       bool        image_data_is_upside_down = false)
     {
         _init_if_needed();
 
         // have new image to ingest
         if( !glimageviz_update_textures(&m_ctx, m_decimation_level,
                                         filename,
-                                        image_data,image_width,image_height) )
+                                        image_data,image_width,image_height,image_data_is_upside_down) )
         {
             MSG("glimageviz_update_textures() failed");
             exit(1);

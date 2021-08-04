@@ -229,6 +229,7 @@ bool glimageviz_init( // output
         make_uniform(aspect);
         make_uniform(center01);
         make_uniform(visible_width01);
+        make_uniform(input_image_is_upside_down);
 
 #undef make_uniform
     }
@@ -249,7 +250,8 @@ bool glimageviz_update_textures( glimageviz_context_t* ctx,
                                  // Or these should be given
                                  const char* image_data,
                                  int image_width,
-                                 int image_height)
+                                 int image_height,
+                                 bool image_data_is_upside_down)
 {
     if(filename == NULL &&
        !(image_data != NULL && image_width > 0 && image_height > 0))
@@ -307,7 +309,13 @@ bool glimageviz_update_textures( glimageviz_context_t* ctx,
         }
 
         image_data = (char*)FreeImage_GetBits(fib);
+
+        // FreeImage_Load() loads images upside down
+        set_uniform_1i(ctx, input_image_is_upside_down, 1);
     }
+    else
+        // If I'm given a buffer, its upside-down-ness is given in an argument
+        set_uniform_1i(ctx, input_image_is_upside_down, image_data_is_upside_down);
 
     if(!ctx->did_init_texture)
     {

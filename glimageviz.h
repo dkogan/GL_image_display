@@ -14,6 +14,7 @@ enum {
         uniform_index_aspect,
         uniform_index_center01,
         uniform_index_visible_width01,
+        uniform_index_input_image_is_upside_down,
         num_uniforms
 } uniform_indices_t;
 
@@ -71,7 +72,8 @@ bool glimageviz_update_textures( glimageviz_context_t* ctx,
                                  // Or these should be given
                                  const char* image_data,
                                  int image_width,
-                                 int image_height);
+                                 int image_height,
+                                 bool image_data_is_upside_down);
 
 void glimageviz_deinit( glimageviz_context_t* ctx );
 
