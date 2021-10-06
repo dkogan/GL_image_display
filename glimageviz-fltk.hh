@@ -118,17 +118,6 @@ public:
         case FL_FOCUS:
             return 1;
 
-        case FL_KEYDOWN:
-
-            // make_current();
-            // if(Fl::event_key('q'))
-            // {
-            //     delete g_window;
-            //     return 1;
-            // }
-
-            break;
-
         case FL_MOUSEWHEEL:
             if(m_ctx.did_init && m_ctx.did_init_texture && m_ctx.did_set_extents)
             {
