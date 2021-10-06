@@ -19,7 +19,7 @@ class GLWidget : public Fl_Gl_Window
     int m_decimation_level;
 
 
-    void _init_if_needed(void)
+    bool _init_if_needed(void)
     {
         if(!m_ctx.did_init)
         {
@@ -28,9 +28,10 @@ class GLWidget : public Fl_Gl_Window
             if(!glimageviz_init( &m_ctx, false))
             {
                 MSG("glimageviz_init() failed. Giving up");
-                exit(1);
+                return false;
             }
         }
+        return true;
     }
 
 public:
@@ -49,7 +50,7 @@ public:
             glimageviz_deinit(&m_ctx);
     }
 
-    void update_image( // Either this should be given
+    bool update_image( // Either this should be given
                        const char* filename,
                        // Or these should be given
                        const char* image_data       = NULL,
@@ -57,7 +58,18 @@ public:
                        int         image_height     = 0,
                        bool        image_data_is_upside_down = false)
     {
-        _init_if_needed();
+        if(filename == NULL && image_data == NULL)
+        {
+            MSG("GLWidget:update_image(): exactly one of (filename,image_data) must be non-NULL. Instead both were NULL");
+            return false;
+        }
+        if(filename != NULL && image_data != NULL)
+        {
+            MSG("GLWidget:update_image(): exactly one of (filename,image_data) must be non-NULL. Instead both were non-NULL");
+            return false;
+        }
+        if(!_init_if_needed())
+            return false;
 
         // have new image to ingest
         if( !glimageviz_update_textures(&m_ctx, m_decimation_level,
@@ -65,15 +77,20 @@ public:
                                         image_data,image_width,image_height,image_data_is_upside_down) )
         {
             MSG("glimageviz_update_textures() failed");
-            exit(1);
+            return false;
         }
 
         redraw();
+        return true;
     }
 
     void draw(void)
     {
-        _init_if_needed();
+        if(!_init_if_needed())
+        {
+            MSG("Couldn't init opengl. Not drawing anything");
+            return;
+        }
 
         if(!valid())
             glimageviz_resize_viewport(&m_ctx, pixel_w(), pixel_h());
@@ -159,8 +176,8 @@ public:
                                                m_ctx.y_centerpixel,
                                                m_ctx.visible_width_pixels))
                     {
-                        MSG("glimageviz_set_extents() failed");
-                        exit(1);
+                        MSG("glimageviz_set_extents() failed. Trying to continue...");
+                        return 1;
                     }
 
                     redraw();
@@ -185,8 +202,8 @@ public:
                                                m_ctx.y_centerpixel,
                                                m_ctx.visible_width_pixels))
                     {
-                        MSG("glimageviz_set_extents() failed");
-                        exit(1);
+                        MSG("glimageviz_set_extents() failed. Trying to continue...");
+                        return 1;
                     }
 
                     redraw();
@@ -239,8 +256,8 @@ public:
                                            m_ctx.y_centerpixel,
                                            m_ctx.visible_width_pixels))
                 {
-                    MSG("glimageviz_set_extents() failed");
-                    exit(1);
+                    MSG("glimageviz_set_extents() failed. Trying to continue...");
+                    return 1;
                 }
 
                 redraw();

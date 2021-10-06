@@ -38,7 +38,12 @@ void timer_callback(void* cookie __attribute__((unused)))
         for(int j=0; j<2; j++)
         {
             sprintf(buf, "/tmp/frame0016%d-pair%d-cam%d.jpg", c, i, j);
-            g_gl_widgets[2*i+j]->update_image(buf);
+            if(!g_gl_widgets[2*i+j]->update_image(buf))
+            {
+                MSG("Couldn't update the image. Giving up.");
+                g_window->hide();
+                return;
+            }
         }
 
     Fl::repeat_timeout(1.0, timer_callback);
