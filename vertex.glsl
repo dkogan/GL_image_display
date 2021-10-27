@@ -24,9 +24,12 @@ void main(void)
         // wants, so I'm good
         tex_xy_geometry = vertex;
     else
+    {
         // input image it rightside-up, but opengl wants it to be upside-down,
         // so I flip it
-        tex_xy_geometry = 1.0 - vertex;
+        tex_xy_geometry.x = vertex.x;
+        tex_xy_geometry.y = 1.0 - vertex.y;
+    }
 
     gl_Position = vec4( (vertex - center01) / visible_width01 * 2.,
                         0, 1 );
