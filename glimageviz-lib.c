@@ -477,8 +477,22 @@ bool glimageviz_resize_viewport(glimageviz_context_t* ctx,
     }
 
     glViewport(0, 0, width_viewport, height_viewport);
-    set_uniform_1f(ctx, aspect,
-                   (float)(width_viewport*ctx->image_height) / (float)(height_viewport*ctx->image_width));
+
+    // I scale the dimensions to keep the displayed aspect ratio square and to
+    // not cut off any part of the image
+    if( width_viewport*ctx->image_height < ctx->image_width*height_viewport )
+    {
+        set_uniform_2f(ctx, aspect,
+                       1.0f,
+                       (float)(width_viewport*ctx->image_height) / (float)(height_viewport*ctx->image_width));
+    }
+    else
+    {
+        set_uniform_2f(ctx, aspect,
+                       (float)(height_viewport*ctx->image_width) / (float)(width_viewport*ctx->image_height),
+                       1.0f);
+    }
+
     ctx->did_set_aspect = true;
     return true;
 }

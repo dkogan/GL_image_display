@@ -3,7 +3,7 @@
 layout (location = 0) in vec2 vertex;
 out vec2 tex_xy_geometry;
 
-uniform float aspect;
+uniform vec2 aspect;
 uniform vec2 center01;
 uniform float visible_width01;
 uniform int input_image_is_upside_down;
@@ -34,6 +34,7 @@ void main(void)
     gl_Position = vec4( (vertex - center01) / visible_width01 * 2.,
                         0, 1 );
 
-    gl_Position.y *= aspect;
+    gl_Position.x *= aspect.x;
+    gl_Position.y *= aspect.y;
 
 }
