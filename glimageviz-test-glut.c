@@ -17,11 +17,18 @@ glimageviz_context_t ctx;
 
 int main(int argc, char* argv[])
 {
+    if(argc != 2)
+    {
+        fprintf(stderr,
+                "Need one argument: filename to display\n");
+        return 1;
+    }
+
     if( !glimageviz_init( &ctx, true) )
         return 1;
 
     if( !glimageviz_update_textures(&ctx,0,
-                                    "/tmp/frame00167-pair0-cam0.jpg",
+                                    argv[1],
                                     NULL,0,0,false) )
     {
         fprintf(stderr, "glimageviz_update_textures() failed\n");
