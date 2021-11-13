@@ -17,18 +17,21 @@ glimageviz_context_t ctx;
 
 int main(int argc, char* argv[])
 {
-    if(argc != 2)
+    if(argc != 2 && argc != 3)
     {
         fprintf(stderr,
-                "Need one argument: filename to display\n");
+                "Need one or two images on the commandline. If two, I flip between them at 1Hz\n");
         return 1;
     }
 
     if( !glimageviz_init( &ctx, true) )
         return 1;
 
+    char** images = &argv[1];
+    int i_image = 0;
+
     if( !glimageviz_update_textures(&ctx,0,
-                                    argv[1],
+                                    images[i_image],
                                     NULL,0,0,false) )
     {
         fprintf(stderr, "glimageviz_update_textures() failed\n");
@@ -43,16 +46,10 @@ int main(int argc, char* argv[])
 
     void timerfunc(int cookie __attribute__((unused)))
     {
-        static int c = 0;
-        c++;
-        if(c==10) c = 0;
-
-        char f[128];
-        sprintf(f, "/tmp/images/frame0016%d-pair0-cam0.jpg", c);
-
+        i_image = 1 - i_image;
 
         if( !glimageviz_update_textures(&ctx,0,
-                                        f,
+                                        images[i_image],
                                         NULL,0,0,false) )
         {
             fprintf(stderr, "glimageviz_update_textures() failed\n");
@@ -94,7 +91,9 @@ int main(int argc, char* argv[])
     glutDisplayFunc (window_display);
     glutKeyboardFunc(window_keyPressed);
     glutReshapeFunc (_glimageviz_resized);
-    glutTimerFunc(1000, timerfunc, 0);
+
+    if(argc == 3)
+        glutTimerFunc(1000, timerfunc, 0);
 
     glutMainLoop();
 
