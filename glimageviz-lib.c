@@ -304,7 +304,8 @@ bool glimageviz_update_textures( glimageviz_context_t* ctx,
 
         if(image_width != (int)FreeImage_GetPitch(fib))
         {
-            MSG("Only densely-packed images are supported");
+            MSG("Only densely-packed images are supported. width=%d, FreeImage_GetPitch()=%d",
+                image_width, (int)FreeImage_GetPitch(fib));
             goto done;
         }
 
