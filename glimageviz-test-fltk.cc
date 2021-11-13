@@ -28,17 +28,16 @@ static Fl_Double_Window* g_window;
 static GLWidget*         g_gl_widgets[4];
 
 
+static const char*const* g_images;
 
 static
 void timer_callback(void* cookie __attribute__((unused)))
 {
     static int c = 0;
-    char buf[256];
     for(int i=0; i<2; i++)
         for(int j=0; j<2; j++)
         {
-            sprintf(buf, "/tmp/frame0016%d-pair%d-cam%d.jpg", c, i, j);
-            if(!g_gl_widgets[2*i+j]->update_image(buf))
+            if(!g_gl_widgets[2*i+j]->update_image(g_images[(2*i+j + c)%4]))
             {
                 MSG("Couldn't update the image. Giving up.");
                 g_window->hide();
@@ -47,11 +46,20 @@ void timer_callback(void* cookie __attribute__((unused)))
         }
 
     Fl::repeat_timeout(1.0, timer_callback);
-    if(++c == 10) c = 0;
+
+    c++;
 }
 
 int main(int argc, char** argv)
 {
+    if(argc != 5)
+    {
+        MSG("ERROR: Need 4 images on the commandline");
+        return 1;
+    }
+
+    g_images = (const char*const*)&argv[1];
+
     Fl::lock();
 
     g_window = new Fl_Double_Window( WINDOW_W, WINDOW_H, "OpenGL image visualizer" );
