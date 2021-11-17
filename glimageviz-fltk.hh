@@ -18,27 +18,91 @@ class GLWidget : public Fl_Gl_Window
 
     int m_decimation_level;
 
-
-    bool _init_if_needed(void)
+    struct UpdateImageCache
     {
-        if(!m_ctx.did_init)
+        UpdateImageCache()
+            : filename(NULL),
+              image_data(NULL)
         {
-            // Docs say to init this here. I don't know why.
-            // https://www.fltk.org/doc-1.3/opengl.html
-            if(!glimageviz_init( &m_ctx, false))
-            {
-                MSG("glimageviz_init() failed. Giving up");
-                return false;
-            }
         }
-        return true;
-    }
+
+        ~UpdateImageCache()
+        {
+            dealloc();
+        }
+
+        void dealloc(void)
+        {
+            free((void*)filename);
+            filename = NULL;
+
+            free((void*)image_data);
+            image_data = NULL;
+        }
+
+        bool save( const char* _filename,
+                   const char* _image_data,
+                   int         _image_width,
+                   int         _image_height,
+                   bool        _image_data_is_upside_down)
+        {
+            dealloc();
+
+            if(_filename != NULL)
+            {
+                filename = strdup(_filename);
+                if(filename == NULL)
+                {
+                    MSG("strdup(_filename) failed! Giving up");
+                    dealloc();
+                    return false;
+                }
+            }
+            if(_image_data != NULL)
+            {
+                const int size = _image_width*_image_height;
+                image_data = (char*)malloc(size);
+                if(image_data == NULL)
+                {
+                    MSG("malloc(image_size) failed! Giving up");
+                    dealloc();
+                    return false;
+                }
+                memcpy(image_data, _image_data, size);
+            }
+
+            image_width               = _image_width;
+            image_height              = _image_height;
+            image_data_is_upside_down = _image_data_is_upside_down;
+            return true;
+        }
+
+        bool apply(GLWidget* w)
+        {
+            if(filename == NULL && image_data == NULL)
+                return true;
+            bool result = w->update_image(filename,
+                                          image_data,
+                                          image_width, image_height,
+                                          image_data_is_upside_down);
+            dealloc();
+            return result;
+        }
+
+        char* filename;
+        char* image_data;
+        int   image_width;
+        int   image_height;
+        bool  image_data_is_upside_down;
+    } m_update_image_cache;
+
 
 public:
     GLWidget(int x, int y, int w, int h,
              int decimation_level = 0) :
         Fl_Gl_Window(x, y, w, h),
-        m_decimation_level(decimation_level)
+        m_decimation_level(decimation_level),
+        m_update_image_cache()
     {
         mode(FL_DOUBLE | FL_OPENGL3);
         memset(&m_ctx, 0, sizeof(m_ctx));
@@ -68,9 +132,28 @@ public:
             MSG("GLWidget:update_image(): exactly one of (filename,image_data) must be non-NULL. Instead both were non-NULL");
             return false;
         }
-        if(!_init_if_needed())
-            return false;
 
+        if(!m_ctx.did_init)
+        {
+            // If the GL context wasn't inited yet, I must init it first. BUT in
+            // order to init it, some things about the X window must be set up.
+            // I cannot rely on them being set up here, so I init stuff only in
+            // the draw() call below. If I try to init here, I see this:
+            //
+            //   python3: ../src/dispatch_common.c:868: epoxy_get_proc_address: Assertion `0 && "Couldn't find current GLX or EGL context.\n"' failed.
+            //
+            // So I save the data in this call, and apply it later, when I'm
+            // ready
+            if(!m_update_image_cache.save(filename,
+                                          image_data,
+                                          image_width, image_height,
+                                          image_data_is_upside_down))
+            {
+                MSG("m_update_image_cache.save() failed");
+                return false;
+            }
+            return true;
+        }
         // have new image to ingest
         if( !glimageviz_update_textures(&m_ctx, m_decimation_level,
                                         filename,
@@ -86,10 +169,16 @@ public:
 
     void draw(void)
     {
-        if(!_init_if_needed())
+        if(!m_ctx.did_init)
         {
-            MSG("Couldn't init opengl. Not drawing anything");
-            return;
+            if(!glimageviz_init( &m_ctx, false))
+            {
+                MSG("glimageviz_init() failed. Giving up");
+                return;
+            }
+
+            if(!m_update_image_cache.apply(this))
+                return;
         }
 
         if(!valid())
