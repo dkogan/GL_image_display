@@ -14,7 +14,7 @@ enum {
         GL_image_display_uniform_index_aspect,
         GL_image_display_uniform_index_center01,
         GL_image_display_uniform_index_visible_width01,
-        GL_image_display_uniform_index_input_image_is_upside_down,
+        GL_image_display_uniform_index_upside_down,
         GL_image_display_num_uniforms
 };
 
@@ -67,13 +67,13 @@ bool GL_image_display_update_textures( GL_image_display_context_t* ctx,
                                  int decimation_level,
 
                                  // Either this should be given
-                                 const char* filename,
+                                 const char* image_filename,
 
                                  // Or these should be given
                                  const char* image_data,
                                  int image_width,
                                  int image_height,
-                                 bool image_data_is_upside_down);
+                                 bool upside_down);
 
 void GL_image_display_deinit( GL_image_display_context_t* ctx );
 

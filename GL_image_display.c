@@ -229,7 +229,7 @@ bool GL_image_display_init( // output
         make_uniform(aspect);
         make_uniform(center01);
         make_uniform(visible_width01);
-        make_uniform(input_image_is_upside_down);
+        make_uniform(upside_down);
 
 #undef make_uniform
     }
@@ -312,12 +312,12 @@ bool GL_image_display_update_textures( GL_image_display_context_t* ctx,
 
         image_data = (char*)FreeImage_GetBits(fib);
 
-        set_uniform_1i(ctx, input_image_is_upside_down,
+        set_uniform_1i(ctx, upside_down,
                        // FreeImage_Load() loads images upside down
                        !upside_down);
     }
     else
-        set_uniform_1i(ctx, input_image_is_upside_down, upside_down);
+        set_uniform_1i(ctx, upside_down, upside_down);
 
     if(!ctx->did_init_texture)
     {
