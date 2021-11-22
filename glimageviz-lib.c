@@ -245,7 +245,7 @@ bool glimageviz_update_textures( glimageviz_context_t* ctx,
                                  int decimation_level,
 
                                  // Either this should be given
-                                 const char* filename,
+                                 const char* image_filename,
 
                                  // Or these should be given
                                  const char* image_data,
@@ -254,16 +254,16 @@ bool glimageviz_update_textures( glimageviz_context_t* ctx,
 
                                  bool upside_down)
 {
-    if(filename == NULL &&
+    if(image_filename == NULL &&
        !(image_data != NULL && image_width > 0 && image_height > 0))
     {
-        MSG("filename is NULL, so all of (image_data, image_width, image_height) must have valid values");
+        MSG("image_filename is NULL, so all of (image_data, image_width, image_height) must have valid values");
         return false;
     }
-    if(filename != NULL &&
+    if(image_filename != NULL &&
        !(image_data == NULL && image_width <= 0 && image_height <= 0))
     {
-        MSG("filename is not NULL, so all of (image_data, image_width, image_height) must have null values");
+        MSG("image_filename is not NULL, so all of (image_data, image_width, image_height) must have null values");
         return false;
     }
 
@@ -277,19 +277,19 @@ bool glimageviz_update_textures( glimageviz_context_t* ctx,
         goto done;
     }
 
-    if( filename != NULL )
+    if( image_filename != NULL )
     {
-        FREE_IMAGE_FORMAT format = FreeImage_GetFileType(filename,0);
+        FREE_IMAGE_FORMAT format = FreeImage_GetFileType(image_filename,0);
         if(format == FIF_UNKNOWN)
         {
-            MSG("Couldn't load '%s'", filename);
+            MSG("Couldn't load '%s'", image_filename);
             goto done;
         }
 
-        fib = FreeImage_Load(format, filename, 0);
+        fib = FreeImage_Load(format, image_filename, 0);
         if(fib == NULL)
         {
-            MSG("Couldn't load '%s'", filename);
+            MSG("Couldn't load '%s'", image_filename);
             return false;
         }
 
@@ -381,7 +381,7 @@ bool glimageviz_update_textures( glimageviz_context_t* ctx,
         {
             MSG("Inconsistent image sizes. Initialized with (%d,%d), but new image '%s' has (%d,%d). Ignoring the new image",
                 ctx->image_width, ctx->image_height,
-                filename == NULL ? "(explicitly given data)" : filename,
+                image_filename == NULL ? "(explicitly given data)" : image_filename,
                 image_width  >> decimation_level,
                 image_height >> decimation_level);
             goto done;

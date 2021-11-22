@@ -21,7 +21,7 @@ class GLWidget : public Fl_Gl_Window
     struct UpdateImageCache
     {
         UpdateImageCache()
-            : filename(NULL),
+            : image_filename(NULL),
               image_data(NULL)
         {
         }
@@ -33,8 +33,8 @@ class GLWidget : public Fl_Gl_Window
 
         void dealloc(void)
         {
-            free((void*)filename);
-            filename = NULL;
+            free((void*)image_filename);
+            image_filename = NULL;
 
             free((void*)image_data);
             image_data = NULL;
@@ -50,8 +50,8 @@ class GLWidget : public Fl_Gl_Window
 
             if(_filename != NULL)
             {
-                filename = strdup(_filename);
-                if(filename == NULL)
+                image_filename = strdup(_filename);
+                if(image_filename == NULL)
                 {
                     MSG("strdup(_filename) failed! Giving up");
                     dealloc();
@@ -79,9 +79,9 @@ class GLWidget : public Fl_Gl_Window
 
         bool apply(GLWidget* w)
         {
-            if(filename == NULL && image_data == NULL)
+            if(image_filename == NULL && image_data == NULL)
                 return true;
-            bool result = w->update_image(filename,
+            bool result = w->update_image(image_filename,
                                           image_data,
                                           image_width, image_height,
                                           upside_down);
@@ -89,7 +89,7 @@ class GLWidget : public Fl_Gl_Window
             return result;
         }
 
-        char* filename;
+        char* image_filename;
         char* image_data;
         int   image_width;
         int   image_height;
@@ -115,21 +115,21 @@ public:
     }
 
     bool update_image( // Either this should be given
-                       const char* filename,
+                       const char* image_filename,
                        // Or these should be given
                        const char* image_data       = NULL,
                        int         image_width      = 0,
                        int         image_height     = 0,
                        bool        upside_down = false)
     {
-        if(filename == NULL && image_data == NULL)
+        if(image_filename == NULL && image_data == NULL)
         {
-            MSG("GLWidget:update_image(): exactly one of (filename,image_data) must be non-NULL. Instead both were NULL");
+            MSG("GLWidget:update_image(): exactly one of (image_filename,image_data) must be non-NULL. Instead both were NULL");
             return false;
         }
-        if(filename != NULL && image_data != NULL)
+        if(image_filename != NULL && image_data != NULL)
         {
-            MSG("GLWidget:update_image(): exactly one of (filename,image_data) must be non-NULL. Instead both were non-NULL");
+            MSG("GLWidget:update_image(): exactly one of (image_filename,image_data) must be non-NULL. Instead both were non-NULL");
             return false;
         }
 
@@ -144,7 +144,7 @@ public:
             //
             // So I save the data in this call, and apply it later, when I'm
             // ready
-            if(!m_update_image_cache.save(filename,
+            if(!m_update_image_cache.save(image_filename,
                                           image_data,
                                           image_width, image_height,
                                           upside_down))
@@ -156,7 +156,7 @@ public:
         }
         // have new image to ingest
         if( !glimageviz_update_textures(&m_ctx, m_decimation_level,
-                                        filename,
+                                        image_filename,
                                         image_data,image_width,image_height,upside_down) )
         {
             MSG("glimageviz_update_textures() failed");
