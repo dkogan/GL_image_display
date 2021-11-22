@@ -66,6 +66,7 @@ GL_image_display-test-fltk: LDLIBS += $(LIB_TARGET_SO_FULL_FLTK)
 GL_image_display-test-fltk: LDLIBS += -lfltk -lX11
 
 ############### FLTK widget Python wrapper ############
+all: Fl_Gl_Image_Widget.py _Fl_Gl_Image_Widget$(PY_EXT_SUFFIX)
 %.py %_pywrap.cc: %.i
 	swig \
 	  -w302 -w312 -w325 -w362 -w389 -w401 -w473 -w509 \
