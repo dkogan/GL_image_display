@@ -14,7 +14,7 @@ CFLAGS    += --std=gnu99
 CCXXFLAGS += -Wno-missing-field-initializers -Wno-unused-parameter
 
 ################# library ###############
-LIB_SOURCES += GL_image_display.c
+LIB_SOURCES := GL_image_display.c
 GL_image_display.o: $(foreach t,vertex geometry fragment,$t.glsl.h)
 
 %.glsl.h: %.glsl
