@@ -44,7 +44,7 @@ class GLWidget : public Fl_Gl_Window
                    const char* _image_data,
                    int         _image_width,
                    int         _image_height,
-                   bool        _image_data_is_upside_down)
+                   bool        _upside_down)
         {
             dealloc();
 
@@ -73,7 +73,7 @@ class GLWidget : public Fl_Gl_Window
 
             image_width               = _image_width;
             image_height              = _image_height;
-            image_data_is_upside_down = _image_data_is_upside_down;
+            upside_down = _upside_down;
             return true;
         }
 
@@ -84,7 +84,7 @@ class GLWidget : public Fl_Gl_Window
             bool result = w->update_image(filename,
                                           image_data,
                                           image_width, image_height,
-                                          image_data_is_upside_down);
+                                          upside_down);
             dealloc();
             return result;
         }
@@ -93,7 +93,7 @@ class GLWidget : public Fl_Gl_Window
         char* image_data;
         int   image_width;
         int   image_height;
-        bool  image_data_is_upside_down;
+        bool  upside_down;
     } m_update_image_cache;
 
 
@@ -120,7 +120,7 @@ public:
                        const char* image_data       = NULL,
                        int         image_width      = 0,
                        int         image_height     = 0,
-                       bool        image_data_is_upside_down = false)
+                       bool        upside_down = false)
     {
         if(filename == NULL && image_data == NULL)
         {
@@ -147,7 +147,7 @@ public:
             if(!m_update_image_cache.save(filename,
                                           image_data,
                                           image_width, image_height,
-                                          image_data_is_upside_down))
+                                          upside_down))
             {
                 MSG("m_update_image_cache.save() failed");
                 return false;
@@ -157,7 +157,7 @@ public:
         // have new image to ingest
         if( !glimageviz_update_textures(&m_ctx, m_decimation_level,
                                         filename,
-                                        image_data,image_width,image_height,image_data_is_upside_down) )
+                                        image_data,image_width,image_height,upside_down) )
         {
             MSG("glimageviz_update_textures() failed");
             return false;

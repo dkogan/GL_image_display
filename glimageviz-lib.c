@@ -251,7 +251,8 @@ bool glimageviz_update_textures( glimageviz_context_t* ctx,
                                  const char* image_data,
                                  int image_width,
                                  int image_height,
-                                 bool image_data_is_upside_down)
+
+                                 bool upside_down)
 {
     if(filename == NULL &&
        !(image_data != NULL && image_width > 0 && image_height > 0))
@@ -313,11 +314,10 @@ bool glimageviz_update_textures( glimageviz_context_t* ctx,
 
         set_uniform_1i(ctx, input_image_is_upside_down,
                        // FreeImage_Load() loads images upside down
-                       !image_data_is_upside_down);
+                       !upside_down);
     }
     else
-        // If I'm given a buffer, its upside-down-ness is given in an argument
-        set_uniform_1i(ctx, input_image_is_upside_down, image_data_is_upside_down);
+        set_uniform_1i(ctx, input_image_is_upside_down, upside_down);
 
     if(!ctx->did_init_texture)
     {
