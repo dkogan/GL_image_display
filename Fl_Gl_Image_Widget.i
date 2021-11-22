@@ -1,19 +1,6 @@
-%module(docstring="module docstring", directors="1", package="_Fl_Gl_Image_Widget") Fl_Gl_Image_Widget
+%module(docstring="module docstring", package="_Fl_Gl_Image_Widget") Fl_Gl_Image_Widget
 
-%feature("director");
 %feature("compactdefaultargs");
-
-%feature("director:except") {
-    if ($error != NULL) {
-        throw Swig::DirectorMethodException();
-    }
-}
-
-%exception {
-    try { $action }
-    catch (Swig::DirectorException &e) { SWIG_fail; }
-}
-
 
 // ignore all variables -> no getters and setters
 %rename("$ignore",%$isvariable) "";
@@ -50,8 +37,6 @@ if self.parent() != None:
 CHANGE_OWNERSHIP(Fl_Gl_Image_Widget)
 
 
-/////// WHAT DOES NODIRECTOR DO?
-%feature("nodirector") Fl_Gl_Image_Widget::update_image;
 %extend Fl_Gl_Image_Widget
 {
     PyObject* update_image(const char* image_filename = NULL,
