@@ -311,8 +311,9 @@ bool glimageviz_update_textures( glimageviz_context_t* ctx,
 
         image_data = (char*)FreeImage_GetBits(fib);
 
-        // FreeImage_Load() loads images upside down
-        set_uniform_1i(ctx, input_image_is_upside_down, 1);
+        set_uniform_1i(ctx, input_image_is_upside_down,
+                       // FreeImage_Load() loads images upside down
+                       !image_data_is_upside_down);
     }
     else
         // If I'm given a buffer, its upside-down-ness is given in an argument
