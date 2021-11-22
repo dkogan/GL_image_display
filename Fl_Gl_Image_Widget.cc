@@ -1,4 +1,4 @@
-#include "GL_image_display-fltk.hh"
+#include "Fl_Gl_Image_Widget.hh"
 
 #include "util.h"
 

@@ -30,7 +30,7 @@ BIN_SOURCES += \
 # This is mostly a copy of the library logic in mrbuild. mrbuild currently
 # doesn't support more than one DSO per project, so I duplicate that logic here
 # for the second library
-LIB_SOURCES_FLTK := GL_image_display-fltk.cc
+LIB_SOURCES_FLTK := Fl_Gl_Image_Widget.cc
 LIB_OBJECTS_FLTK := $(addsuffix .o,$(basename $(LIB_SOURCES_FLTK)))
 LIB_NAME_FLTK           = libGL_image_display_fltk
 LIB_TARGET_SO_BARE_FLTK = $(LIB_NAME_FLTK).so
