@@ -9,10 +9,10 @@
 #include <epoxy/gl.h>
 #include <GL/freeglut.h>
 
-#include "glimageviz.h"
+#include "GL_image_display.h"
 #include "util.h"
 
-glimageviz_context_t ctx;
+GL_image_display_context_t ctx;
 
 
 int main(int argc, char* argv[])
@@ -24,23 +24,23 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    if( !glimageviz_init( &ctx, true) )
+    if( !GL_image_display_init( &ctx, true) )
         return 1;
 
     char** images = &argv[1];
     int i_image = 0;
 
-    if( !glimageviz_update_textures(&ctx,0,
+    if( !GL_image_display_update_textures(&ctx,0,
                                     images[i_image],
                                     NULL,0,0,false) )
     {
-        fprintf(stderr, "glimageviz_update_textures() failed\n");
+        fprintf(stderr, "GL_image_display_update_textures() failed\n");
         return 1;
     }
 
-    if( !glimageviz_set_extents(&ctx, 867, 1521, 1500) )
+    if( !GL_image_display_set_extents(&ctx, 867, 1521, 1500) )
     {
-        fprintf(stderr, "glimageviz_set_extents() failed\n");
+        fprintf(stderr, "GL_image_display_set_extents() failed\n");
         return 1;
     }
 
@@ -48,11 +48,11 @@ int main(int argc, char* argv[])
     {
         i_image = 1 - i_image;
 
-        if( !glimageviz_update_textures(&ctx,0,
+        if( !GL_image_display_update_textures(&ctx,0,
                                         images[i_image],
                                         NULL,0,0,false) )
         {
-            fprintf(stderr, "glimageviz_update_textures() failed\n");
+            fprintf(stderr, "GL_image_display_update_textures() failed\n");
             return;
         }
 
@@ -62,7 +62,7 @@ int main(int argc, char* argv[])
 
     void window_display(void)
     {
-        glimageviz_redraw(&ctx);
+        GL_image_display_redraw(&ctx);
         glutSwapBuffers();
     }
 
@@ -83,14 +83,14 @@ int main(int argc, char* argv[])
         glutPostRedisplay();
     }
 
-    void _glimageviz_resized(int width, int height)
+    void _GL_image_display_resized(int width, int height)
     {
-        glimageviz_resize_viewport(&ctx, width, height);
+        GL_image_display_resize_viewport(&ctx, width, height);
     }
 
     glutDisplayFunc (window_display);
     glutKeyboardFunc(window_keyPressed);
-    glutReshapeFunc (_glimageviz_resized);
+    glutReshapeFunc (_GL_image_display_resized);
 
     if(argc == 3)
         glutTimerFunc(1000, timerfunc, 0);

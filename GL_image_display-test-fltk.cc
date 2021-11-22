@@ -11,10 +11,10 @@
 extern "C"
 {
 #include "util.h"
-#include "glimageviz.h"
+#include "GL_image_display.h"
 }
 
-#include "glimageviz-fltk.hh"
+#include "GL_image_display-fltk.hh"
 
 
 

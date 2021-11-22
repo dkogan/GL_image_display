@@ -15,7 +15,7 @@
 
 #include <FreeImage.h>
 
-#include "glimageviz.h"
+#include "GL_image_display.h"
 #include "util.h"
 
 #define assert_opengl()                                 \
@@ -29,7 +29,7 @@
     } while(0)
 
 
-static bool select_program_indexed(glimageviz_context_t* ctx,
+static bool select_program_indexed(GL_image_display_context_t* ctx,
                                    int i)
 {
     glUseProgram(ctx->programs[i].program);
@@ -60,14 +60,14 @@ static bool select_program_indexed(glimageviz_context_t* ctx,
 //
 // - GLUT: static window               (use_glut = true)
 // - no GLUT: higher-level application (use_glut = false)
-bool glimageviz_init( // output
-                      glimageviz_context_t* ctx,
+bool GL_image_display_init( // output
+                      GL_image_display_context_t* ctx,
                       // input
                       bool use_glut)
 {
     bool result = false;
 
-    *ctx = (glimageviz_context_t){.use_glut = use_glut};
+    *ctx = (GL_image_display_context_t){.use_glut = use_glut};
 
     if(use_glut)
     {
@@ -87,7 +87,7 @@ bool glimageviz_init( // output
                              (double_buffered ? GLUT_DOUBLE : 0) );
         glutInitWindowSize(1024,1024);
 
-        ctx->glut_window = glutCreateWindow("glimageviz");
+        ctx->glut_window = glutCreateWindow("GL_image_display");
 
         const char* version = (const char*)glGetString(GL_VERSION);
 
@@ -116,7 +116,7 @@ bool glimageviz_init( // output
     }
 
     static_assert(sizeof(GLint) == sizeof(ctx->programs[0].uniforms[0]),
-                  "glimageviz_context_t.program.uniform_... must be a GLint");
+                  "GL_image_display_context_t.program.uniform_... must be a GLint");
 
     glClearColor(0, 0, 0, 0);
 
@@ -241,7 +241,7 @@ bool glimageviz_init( // output
     return result;
 }
 
-bool glimageviz_update_textures( glimageviz_context_t* ctx,
+bool GL_image_display_update_textures( GL_image_display_context_t* ctx,
                                  int decimation_level,
 
                                  // Either this should be given
@@ -273,7 +273,7 @@ bool glimageviz_update_textures( glimageviz_context_t* ctx,
 
     if(!ctx->did_init)
     {
-        MSG("Cannot init textures if glimageviz overall has not been initted. Call glimageviz_init() first");
+        MSG("Cannot init textures if GL_image_display overall has not been initted. Call GL_image_display_init() first");
         goto done;
     }
 
@@ -358,7 +358,7 @@ bool glimageviz_update_textures( glimageviz_context_t* ctx,
 
         ctx->did_init_texture = true;
 
-        if(!glimageviz_set_extents(ctx,
+        if(!GL_image_display_set_extents(ctx,
                                    (double)(ctx->image_width  - 1) / 2.,
                                    (double)(ctx->image_height - 1) / 2.,
                                    ctx->image_width))
@@ -366,12 +366,12 @@ bool glimageviz_update_textures( glimageviz_context_t* ctx,
 
         // Render image dimensions changed. I need to update the aspect-ratio
         // uniform, which depends on these and the viewport dimensions. The
-        // container UI library must call glimageviz_resize_viewport() if the
+        // container UI library must call GL_image_display_resize_viewport() if the
         // viewport size changes. The image dimensions will never change after
         // this
         GLint viewport_xywh[4];
         glGetIntegerv(GL_VIEWPORT, viewport_xywh);
-        if(!glimageviz_resize_viewport(ctx, viewport_xywh[2], viewport_xywh[3]))
+        if(!GL_image_display_resize_viewport(ctx, viewport_xywh[2], viewport_xywh[3]))
             goto done;
     }
     else
@@ -452,7 +452,7 @@ bool glimageviz_update_textures( glimageviz_context_t* ctx,
 }
 
 
-void glimageviz_deinit( glimageviz_context_t* ctx )
+void GL_image_display_deinit( GL_image_display_context_t* ctx )
 {
     if(ctx->use_glut && ctx->glut_window != 0)
     {
@@ -461,7 +461,7 @@ void glimageviz_deinit( glimageviz_context_t* ctx )
     }
 }
 
-bool glimageviz_resize_viewport(glimageviz_context_t* ctx,
+bool GL_image_display_resize_viewport(GL_image_display_context_t* ctx,
                                 int width_viewport,
                                 int height_viewport)
 {
@@ -499,7 +499,7 @@ bool glimageviz_resize_viewport(glimageviz_context_t* ctx,
     return true;
 }
 
-bool glimageviz_set_extents(glimageviz_context_t* ctx,
+bool GL_image_display_set_extents(GL_image_display_context_t* ctx,
                             double x_centerpixel,
                             double y_centerpixel,
                             double visible_width_pixels)
@@ -529,7 +529,7 @@ bool glimageviz_set_extents(glimageviz_context_t* ctx,
     return true;
 }
 
-bool glimageviz_redraw(glimageviz_context_t* ctx)
+bool GL_image_display_redraw(GL_image_display_context_t* ctx)
 {
 #define CONFIRM_SET(what) if(!ctx->what) { return false; }
 

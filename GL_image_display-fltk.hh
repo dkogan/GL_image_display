@@ -2,7 +2,7 @@
 
 extern "C"
 {
-#include "glimageviz.h"
+#include "GL_image_display.h"
 }
 
 #include "util.h"
@@ -13,7 +13,7 @@ extern "C"
 
 class GLWidget : public Fl_Gl_Window
 {
-    glimageviz_context_t m_ctx;
+    GL_image_display_context_t m_ctx;
     int                  m_last_drag_update_xy[2];
 
     int m_decimation_level;
@@ -111,7 +111,7 @@ public:
     ~GLWidget()
     {
         if(m_ctx.did_init)
-            glimageviz_deinit(&m_ctx);
+            GL_image_display_deinit(&m_ctx);
     }
 
     bool update_image( // Either this should be given
@@ -155,11 +155,11 @@ public:
             return true;
         }
         // have new image to ingest
-        if( !glimageviz_update_textures(&m_ctx, m_decimation_level,
+        if( !GL_image_display_update_textures(&m_ctx, m_decimation_level,
                                         image_filename,
                                         image_data,image_width,image_height,upside_down) )
         {
-            MSG("glimageviz_update_textures() failed");
+            MSG("GL_image_display_update_textures() failed");
             return false;
         }
 
@@ -171,9 +171,9 @@ public:
     {
         if(!m_ctx.did_init)
         {
-            if(!glimageviz_init( &m_ctx, false))
+            if(!GL_image_display_init( &m_ctx, false))
             {
-                MSG("glimageviz_init() failed. Giving up");
+                MSG("GL_image_display_init() failed. Giving up");
                 return;
             }
 
@@ -182,8 +182,8 @@ public:
         }
 
         if(!valid())
-            glimageviz_resize_viewport(&m_ctx, pixel_w(), pixel_h());
-        glimageviz_redraw(&m_ctx);
+            GL_image_display_resize_viewport(&m_ctx, pixel_w(), pixel_h());
+        GL_image_display_redraw(&m_ctx);
     }
 
     virtual int handle(int event)
@@ -249,12 +249,12 @@ public:
 
                     m_ctx.visible_width_pixels *= z;
 
-                    if(!glimageviz_set_extents(&m_ctx,
+                    if(!GL_image_display_set_extents(&m_ctx,
                                                m_ctx.x_centerpixel,
                                                m_ctx.y_centerpixel,
                                                m_ctx.visible_width_pixels))
                     {
-                        MSG("glimageviz_set_extents() failed. Trying to continue...");
+                        MSG("GL_image_display_set_extents() failed. Trying to continue...");
                         return 1;
                     }
 
@@ -275,12 +275,12 @@ public:
                     m_ctx.x_centerpixel += 50. * (double)dx * m_ctx.visible_width_pixels / (double)pixel_w();
                     m_ctx.y_centerpixel += 50. * (double)dy * m_ctx.visible_width_pixels / (double)pixel_w();
 
-                    if(!glimageviz_set_extents(&m_ctx,
+                    if(!GL_image_display_set_extents(&m_ctx,
                                                m_ctx.x_centerpixel,
                                                m_ctx.y_centerpixel,
                                                m_ctx.visible_width_pixels))
                     {
-                        MSG("glimageviz_set_extents() failed. Trying to continue...");
+                        MSG("GL_image_display_set_extents() failed. Trying to continue...");
                         return 1;
                     }
 
@@ -329,12 +329,12 @@ public:
                 m_ctx.x_centerpixel -= dx * m_ctx.visible_width_pixels / (double)pixel_w();
                 m_ctx.y_centerpixel -= dy * m_ctx.visible_width_pixels / (double)pixel_w();
 
-                if(!glimageviz_set_extents(&m_ctx,
+                if(!GL_image_display_set_extents(&m_ctx,
                                            m_ctx.x_centerpixel,
                                            m_ctx.y_centerpixel,
                                            m_ctx.visible_width_pixels))
                 {
-                    MSG("glimageviz_set_extents() failed. Trying to continue...");
+                    MSG("GL_image_display_set_extents() failed. Trying to continue...");
                     return 1;
                 }
 

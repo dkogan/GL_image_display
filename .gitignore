@@ -8,5 +8,5 @@ sfmviz-test
 cscope.*
 __pycache__
 *.rej
-glimageviz-test-glut
-glimageviz-test-fltk
+GL_image_display-test-glut
+GL_image_display-test-fltk

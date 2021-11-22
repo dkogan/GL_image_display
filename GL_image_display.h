@@ -52,18 +52,18 @@ typedef struct
     bool did_init_texture  : 1;
     bool did_set_aspect    : 1;
     bool did_set_extents   : 1;
-} glimageviz_context_t;
+} GL_image_display_context_t;
 
 // The main init routine. We support 2 modes:
 //
 // - GLUT: static window               (use_glut = true)
 // - no GLUT: higher-level application (use_glut = false)
-bool glimageviz_init( // output
-                      glimageviz_context_t* ctx,
+bool GL_image_display_init( // output
+                      GL_image_display_context_t* ctx,
                       // input
                       bool use_glut);
 
-bool glimageviz_update_textures( glimageviz_context_t* ctx,
+bool GL_image_display_update_textures( GL_image_display_context_t* ctx,
                                  int decimation_level,
 
                                  // Either this should be given
@@ -75,15 +75,15 @@ bool glimageviz_update_textures( glimageviz_context_t* ctx,
                                  int image_height,
                                  bool image_data_is_upside_down);
 
-void glimageviz_deinit( glimageviz_context_t* ctx );
+void GL_image_display_deinit( GL_image_display_context_t* ctx );
 
-bool glimageviz_resize_viewport(glimageviz_context_t* ctx,
+bool GL_image_display_resize_viewport(GL_image_display_context_t* ctx,
                                 int width_viewport,
                                 int height_viewport);
 
-bool glimageviz_set_extents(glimageviz_context_t* ctx,
+bool GL_image_display_set_extents(GL_image_display_context_t* ctx,
                             double x_centerpixel,
                             double y_centerpixel,
                             double visible_width_pixels);
 
-bool glimageviz_redraw(glimageviz_context_t* ctx);
+bool GL_image_display_redraw(GL_image_display_context_t* ctx);
