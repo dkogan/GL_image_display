@@ -6,28 +6,28 @@
 // Multiple simultaneous shader programs available, in case I want to render
 // more than just the images
 enum {
-        program_index_images,
-        num_programs
-} program_indices_t;
+        GL_image_display_program_index_images,
+        GL_image_display_num_programs
+};
 
 enum {
-        uniform_index_aspect,
-        uniform_index_center01,
-        uniform_index_visible_width01,
-        uniform_index_input_image_is_upside_down,
-        num_uniforms
-} uniform_indices_t;
+        GL_image_display_uniform_index_aspect,
+        GL_image_display_uniform_index_center01,
+        GL_image_display_uniform_index_visible_width01,
+        GL_image_display_uniform_index_input_image_is_upside_down,
+        GL_image_display_num_uniforms
+};
 
 typedef struct
 {
     // These should be GLint, but I don't want to #include <GL.h>.
     // I will static_assert() this in the .c to make sure they are compatible
-    int32_t uniforms[num_uniforms];
+    int32_t uniforms[GL_image_display_num_uniforms];
 
     uint32_t VBO_array, VBO_buffer, IBO_buffer;
 
     uint32_t program;
-} opengl_program_t;
+}  GL_image_display_opengl_program_t;
 
 typedef struct
 {
@@ -36,7 +36,7 @@ typedef struct
     // meaningful only if use_glut. 0 means "invalid" or "closed"
     int glut_window;
 
-    opengl_program_t programs[num_programs];
+    GL_image_display_opengl_program_t programs[GL_image_display_num_programs];
 
     uint32_t texture_ID;
     uint32_t texture_PBO_ID;

@@ -44,11 +44,11 @@ static bool select_program_indexed(GL_image_display_context_t* ctx,
 #define set_uniform_1i(...)  _set_uniform(1i,  ##__VA_ARGS__)
 #define _set_uniform(kind, ctx, uniform, ...)                           \
     do {                                                                \
-    for(int _i=0; _i<num_programs; _i++)                                \
+    for(int _i=0; _i<GL_image_display_num_programs; _i++)               \
     {                                                                   \
         if(!select_program_indexed(ctx,_i))                             \
             assert(0);                                                  \
-        glUniform ## kind(ctx->programs[_i].uniforms[uniform_index_##uniform], \
+        glUniform ## kind(ctx->programs[_i].uniforms[GL_image_display_uniform_index_##uniform], \
                           ## __VA_ARGS__);                              \
         assert_opengl();                                                \
     }                                                                   \
@@ -122,11 +122,11 @@ bool GL_image_display_init( // output
 
     // vertices
     {
-        glGenVertexArrays(1, &ctx->programs[program_index_images].VBO_array);
-        glBindVertexArray(ctx->programs[program_index_images].VBO_array);
+        glGenVertexArrays(1, &ctx->programs[GL_image_display_program_index_images].VBO_array);
+        glBindVertexArray(ctx->programs[GL_image_display_program_index_images].VBO_array);
 
-        glGenBuffers(1, &ctx->programs[program_index_images].VBO_buffer);
-        glBindBuffer(GL_ARRAY_BUFFER, ctx->programs[program_index_images].VBO_buffer);
+        glGenBuffers(1, &ctx->programs[GL_image_display_program_index_images].VBO_buffer);
+        glBindBuffer(GL_ARRAY_BUFFER, ctx->programs[GL_image_display_program_index_images].VBO_buffer);
 
         glEnableVertexAttribArray(0);
 
@@ -150,12 +150,12 @@ bool GL_image_display_init( // output
 
     // indices
     {
-        glBindVertexArray(ctx->programs[program_index_images].VBO_array);
+        glBindVertexArray(ctx->programs[GL_image_display_program_index_images].VBO_array);
         glBindBuffer(GL_ARRAY_BUFFER,
-                     ctx->programs[program_index_images].VBO_buffer);
+                     ctx->programs[GL_image_display_program_index_images].VBO_buffer);
 
-        glGenBuffers(1, &ctx->programs[program_index_images].IBO_buffer);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ctx->programs[program_index_images].IBO_buffer);
+        glGenBuffers(1, &ctx->programs[GL_image_display_program_index_images].IBO_buffer);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ctx->programs[GL_image_display_program_index_images].IBO_buffer);
 
         uint8_t indices[] = {0,1,2,
                              2,1,3};
@@ -179,7 +179,7 @@ bool GL_image_display_init( // output
         char msg[1024];
         int len;
 
-        for(int i=0; i<num_programs; i++)
+        for(int i=0; i<GL_image_display_num_programs; i++)
         {
             ctx->programs[i].program = glCreateProgram();
             assert_opengl();
@@ -200,7 +200,7 @@ bool GL_image_display_init( // output
         if( strlen(msg) )                                               \
             printf(#programtype " " #shadertype " shader info: %s\n", msg); \
                                                                         \
-        glAttachShader(ctx->programs[program_index_##programtype].program, shadertype ##Shader); \
+        glAttachShader(ctx->programs[GL_image_display_program_index_##programtype].program, shadertype ##Shader); \
         assert_opengl();
 
 #define build_program(programtype)                                      \
@@ -208,8 +208,8 @@ bool GL_image_display_init( // output
             build_shader(programtype, vertex,   VERTEX);                \
             build_shader(programtype, fragment, FRAGMENT);              \
             build_shader(programtype, geometry, GEOMETRY);              \
-            glLinkProgram(ctx->programs[program_index_##programtype].program); assert_opengl(); \
-            glGetProgramInfoLog( ctx->programs[program_index_##programtype].program, sizeof(msg), &len, msg ); \
+            glLinkProgram(ctx->programs[GL_image_display_program_index_##programtype].program); assert_opengl(); \
+            glGetProgramInfoLog( ctx->programs[GL_image_display_program_index_##programtype].program, sizeof(msg), &len, msg ); \
             if( strlen(msg) )                                           \
                 printf(#programtype" program info after glLinkProgram(): %s\n", msg); \
         }
@@ -218,9 +218,9 @@ bool GL_image_display_init( // output
 
         // I use the same uniforms for all the programs
 #define make_uniform(name)                                      \
-        for(int _i=0; _i<num_programs; _i++)                    \
+        for(int _i=0; _i<GL_image_display_num_programs; _i++)   \
         {                                                       \
-            ctx->programs[_i].uniforms[uniform_index_##name] =  \
+            ctx->programs[_i].uniforms[GL_image_display_uniform_index_##name] =  \
                 glGetUniformLocation(ctx->programs[_i].program, \
                                      #name);                    \
             assert_opengl();                                    \
@@ -564,7 +564,7 @@ bool GL_image_display_redraw(GL_image_display_context_t* ctx)
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ctx->programs[program_index].IBO_buffer);
     }
 
-    bind_program(program_index_images, true);
+    bind_program(GL_image_display_program_index_images, true);
     assert_opengl();
     glBindTexture( GL_TEXTURE_2D, ctx->texture_ID);
     assert_opengl();
