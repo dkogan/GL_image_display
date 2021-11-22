@@ -65,4 +65,33 @@ CXXFLAGS += $(CXXFLAGS_FLTK)
 GL_image_display-test-fltk: LDLIBS += $(LIB_TARGET_SO_FULL_FLTK)
 GL_image_display-test-fltk: LDLIBS += -lfltk -lX11
 
+############### FLTK widget Python wrapper ############
+%.py %_pywrap.cc: %.i
+	swig \
+	  -w302 -w312 -w325 -w362 -w389 -w401 -w473 -w509 \
+	  -I/usr/include/ \
+	  -DFL_EXPORT \
+	  -DPYTHON \
+	  -DPYTHON3 \
+	  -py3 \
+	  -python \
+	  -c++ \
+	  -keyword \
+	  -shadow \
+	  -fastdispatch \
+	  -outdir . \
+	  -o $*_pywrap.cc \
+	  $<
+
+EXTRA_CLEAN += *_pywrap.cc
+
+Fl_Gl_Image_Widget_pywrap.o: CXXFLAGS += $(PY_MRBUILD_CFLAGS)
+_Fl_Gl_Image_Widget$(PY_EXT_SUFFIX): Fl_Gl_Image_Widget_pywrap.o libGL_image_display_fltk.so
+	$(PY_MRBUILD_LINKER) $(LDFLAGS) $(PY_MRBUILD_LDFLAGS) -Wl,-rpath=$$ORIGIN/ $^ -o $@
+
+# The python libraries (compiled ones and ones written in python) all live in
+# mrcal/
+DIST_PY3_MODULES := Fl_Gl_Image_Widget.py _Fl_Gl_Image_Widget$(PY_EXT_SUFFIX)
+
+
 include /usr/include/mrbuild/Makefile.common.footer
