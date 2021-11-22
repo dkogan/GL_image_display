@@ -36,6 +36,9 @@ if self.parent() != None:
 
 CHANGE_OWNERSHIP(Fl_Gl_Image_Widget)
 
+%init %{
+import_array();
+%}
 
 %extend Fl_Gl_Image_Widget
 {
@@ -43,13 +46,6 @@ CHANGE_OWNERSHIP(Fl_Gl_Image_Widget)
                            PyObject*   image_array     = NULL,
                            bool upside_down = false)
     {
-        static bool done;
-        if(!done)
-        {
-            done = true;
-            import_array();
-        }
-
         PyObject* result = NULL;
 
         const npy_intp* dims = NULL;
