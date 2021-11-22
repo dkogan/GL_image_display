@@ -11,7 +11,7 @@ extern "C"
 #include <FL/Fl_Gl_Window.H>
 #include <string.h>
 
-class GLWidget : public Fl_Gl_Window
+class Fl_Gl_Image_Widget : public Fl_Gl_Window
 {
     GL_image_display_context_t m_ctx;
     int                  m_last_drag_update_xy[2];
@@ -77,7 +77,7 @@ class GLWidget : public Fl_Gl_Window
             return true;
         }
 
-        bool apply(GLWidget* w)
+        bool apply(Fl_Gl_Image_Widget* w)
         {
             if(image_filename == NULL && image_data == NULL)
                 return true;
@@ -98,7 +98,7 @@ class GLWidget : public Fl_Gl_Window
 
 
 public:
-    GLWidget(int x, int y, int w, int h,
+    Fl_Gl_Image_Widget(int x, int y, int w, int h,
              int decimation_level = 0) :
         Fl_Gl_Window(x, y, w, h),
         m_decimation_level(decimation_level),
@@ -108,7 +108,7 @@ public:
         memset(&m_ctx, 0, sizeof(m_ctx));
     }
 
-    ~GLWidget()
+    ~Fl_Gl_Image_Widget()
     {
         if(m_ctx.did_init)
             GL_image_display_deinit(&m_ctx);
@@ -124,12 +124,12 @@ public:
     {
         if(image_filename == NULL && image_data == NULL)
         {
-            MSG("GLWidget:update_image(): exactly one of (image_filename,image_data) must be non-NULL. Instead both were NULL");
+            MSG("Fl_Gl_Image_Widget:update_image(): exactly one of (image_filename,image_data) must be non-NULL. Instead both were NULL");
             return false;
         }
         if(image_filename != NULL && image_data != NULL)
         {
-            MSG("GLWidget:update_image(): exactly one of (image_filename,image_data) must be non-NULL. Instead both were non-NULL");
+            MSG("Fl_Gl_Image_Widget:update_image(): exactly one of (image_filename,image_data) must be non-NULL. Instead both were non-NULL");
             return false;
         }
 
