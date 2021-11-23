@@ -201,48 +201,48 @@ import_array();
 %extend Fl_Gl_Image_Widget
 {
     PyObject* update_image(const char* image_filename = NULL,
-                           PyObject*   image_array    = NULL)
+                           PyObject*   image_data     = NULL)
     {
         PyObject* result = NULL;
 
         const npy_intp* dims = NULL;
         const char*     data = NULL;
 
-        if(image_array == NULL || image_array == Py_None)
-           image_array = NULL;
-        else if(!PyArray_Check((PyArrayObject*)image_array))
+        if(image_data == NULL || image_data == Py_None)
+           image_data = NULL;
+        else if(!PyArray_Check((PyArrayObject*)image_data))
         {
             PyErr_SetString(PyExc_RuntimeError,
-                            "update_image(): 'image_array' argument must be None or a numpy array");
+                            "update_image(): 'image_data' argument must be None or a numpy array");
             goto done;
         }
         else
         {
-            dims = PyArray_DIMS((PyArrayObject*)image_array);
-            data = (const char*)PyArray_DATA((PyArrayObject*)image_array);
+            dims = PyArray_DIMS((PyArrayObject*)image_data);
+            data = (const char*)PyArray_DATA((PyArrayObject*)image_data);
 
-            int ndim = PyArray_NDIM((PyArrayObject*)image_array);
-            int type = PyArray_TYPE((PyArrayObject*)image_array);
-            const npy_intp* strides = PyArray_STRIDES((PyArrayObject*)image_array);
+            int ndim = PyArray_NDIM((PyArrayObject*)image_data);
+            int type = PyArray_TYPE((PyArrayObject*)image_data);
+            const npy_intp* strides = PyArray_STRIDES((PyArrayObject*)image_data);
 
             if(ndim != 2)
             {
                 PyErr_Format(PyExc_RuntimeError,
-                             "update_image(): 'image_array' argument must be None or a 2-dimensional numpy array. Got %d-dimensional array",
+                             "update_image(): 'image_data' argument must be None or a 2-dimensional numpy array. Got %d-dimensional array",
                              ndim);
                 goto done;
             }
             else if (type != NPY_UINT8)
             {
                 PyErr_Format(PyExc_RuntimeError,
-                             "update_image(): 'image_array' argument must be a numpy array with type=uint8. Got dtype=%d",
+                             "update_image(): 'image_data' argument must be a numpy array with type=uint8. Got dtype=%d",
                              type);
                 goto done;
             }
             else if (strides[1] != 1)
             {
                 PyErr_Format(PyExc_RuntimeError,
-                             "update_image(): 'image_array' argument must be a numpy array with each row stored densely. Got dims=(%d,%d), strides=(%d,%d)",
+                             "update_image(): 'image_data' argument must be a numpy array with each row stored densely. Got dims=(%d,%d), strides=(%d,%d)",
                              dims[0],    dims[1],
                              strides[0], strides[1]);
                 goto done;
@@ -252,25 +252,25 @@ import_array();
             else if (strides[0] != dims[1])
             {
                 PyErr_Format(PyExc_RuntimeError,
-                             "update_image(): 'image_array' argument must be a contiguous numpy array. Got dims=(%d,%d), strides=(%d,%d)",
+                             "update_image(): 'image_data' argument must be a contiguous numpy array. Got dims=(%d,%d), strides=(%d,%d)",
                              dims[0],    dims[1],
                              strides[0], strides[1]);
                 goto done;
             }
 
-            if((image_array == NULL && image_filename == NULL) ||
-               (image_array != NULL && image_filename != NULL))
+            if((image_data == NULL && image_filename == NULL) ||
+               (image_data != NULL && image_filename != NULL))
             {
                 PyErr_Format(PyExc_RuntimeError,
-                             "update_image(): exactly one of ('image_filename', 'image_array') must be given");
+                             "update_image(): exactly one of ('image_filename', 'image_data') must be given");
                 goto done;
             }
         }
 
         if( self->update_image(image_filename,
-                               image_array == NULL ? NULL : data,
-                               image_array == NULL ? 0    : dims[1],
-                               image_array == NULL ? 0    : dims[0]))
+                               image_data == NULL ? NULL : data,
+                               image_data == NULL ? 0    : dims[1],
+                               image_data == NULL ? 0    : dims[0]))
         {
             // success
             Py_INCREF(Py_None);

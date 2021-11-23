@@ -41,6 +41,6 @@ if 1:
 else:
     import cv2
     import numpy as np
-    image.update_image(image_array = np.ascontiguousarray(cv2.imread(image_filename)[...,0]))
+    image.update_image(image_data = np.ascontiguousarray(cv2.imread(image_filename)[...,0]))
 
 Fl.run()
