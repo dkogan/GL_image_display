@@ -5,7 +5,7 @@
 
 import sys
 from fltk import *
-import Fl_Gl_Image_Widget
+from Fl_Gl_Image_Widget import Fl_Gl_Image_Widget
 
 
 try:
@@ -15,7 +15,7 @@ except:
     sys.exit(1)
 
 
-class Fl_Gl_Image_Widget_Derived(Fl_Gl_Image_Widget.Fl_Gl_Image_Widget):
+class Fl_Gl_Image_Widget_Derived(Fl_Gl_Image_Widget):
 
     def handle(self, event):
         if event == FL_ENTER:
