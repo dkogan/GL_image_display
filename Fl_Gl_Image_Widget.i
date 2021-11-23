@@ -1,4 +1,24 @@
-%module(docstring="module docstring", package="_Fl_Gl_Image_Widget") Fl_Gl_Image_Widget
+%define DOCSTRING
+"""Wrapper module containing the Gl_Image_Widget class
+
+This is the FLTK widget in the GL_image_display project:
+
+  https://github.com/dkogan/GL_image_display
+
+It displays an image in an FLTK widget, using OpenGL internally, which gives us
+efficient draws and redraws.
+
+The widget is intended to work with the FLTK GUI tookit:
+
+  https://www.fltk.org/
+
+with Python bindings provided by the pyfltk project:
+
+  https://pyfltk.sourceforge.io/"""
+%enddef
+
+%module(docstring=DOCSTRING,
+        package="_Fl_Gl_Image_Widget") Fl_Gl_Image_Widget
 
 %feature("compactdefaultargs");
 
@@ -8,9 +28,136 @@
 %feature("autodoc", "1");
 
 %feature("docstring") ::Fl_Gl_Image_Widget
-"""
-class docstring
-""" ;
+"""Gl_Image_Widget class: efficient image display in FLTK
+
+SYNOPSIS
+
+  from fltk import *
+  import Fl_Gl_Image_Widget
+
+  w = Fl_Window(800, 600, 'Image display with Fl_Gl_Image_Widget')
+  g = Fl_Gl_Image_Widget.Fl_Gl_Image_Widget(0,0, 800,600)
+  w.resizable(w)
+  w.end()
+  w.show()
+
+  g.update_image(image_filename = 'image.jpg')
+  Fl.run()
+
+This is the FLTK widget in the GL_image_display project:
+
+  https://github.com/dkogan/GL_image_display
+
+It displays an image in an FLTK widget, using OpenGL internally, which gives us
+efficient draws and redraws.
+
+The widget is intended to work with the FLTK GUI tookit:
+
+  https://www.fltk.org/
+
+with Python bindings provided by the pyfltk project:
+
+  https://pyfltk.sourceforge.io/
+""";
+
+%feature("docstring") Fl_Gl_Image_Widget::Fl_Gl_Image_Widget
+"""Fl_Gl_Image_Widget constructor
+
+SYNOPSIS
+
+  from fltk import *
+  import Fl_Gl_Image_Widget
+
+  w = Fl_Window(800, 600, 'Image display with Fl_Gl_Image_Widget')
+  g = Fl_Gl_Image_Widget.Fl_Gl_Image_Widget(0,0, 800,600)
+  w.resizable(w)
+  w.end()
+  w.show()
+
+  g.update_image(image_filename = 'image.jpg')
+  Fl.run()
+
+The Fl_Gl_Image_Widget is initialized like any other FLTK widget, using the
+sequential arguments: x, y, width, height. The data being displayed is NOT given
+to this method: Fl_Gl_Image_Widget.update_image() needs to be called to provide
+this data
+
+ARGUMENTS:
+
+- x: required integer that specifies the x pixel coordinate of the top-left
+  corner of the widget
+
+- y: required integer that specifies the y pixel coordinate of the top-left
+  corner of the widget
+
+- w: required integer that specifies the width of the widget
+
+- h: required integer that specifies the height of the widget
+
+- decimation_level: optional integer, defaulting to 0. Specifies the resolution
+  of the displayed image.
+
+  - if 0: the given images are displayed at full resolution
+
+  - if 1: the given images are displayed at half-resolution
+
+  - if 2: the given images are displayed at quarter-resolution
+
+  - and so on
+ """;
+
+%feature("docstring") Fl_Gl_Image_Widget::draw
+"""Fl_Gl_Image_Widget draw() routine
+
+This is a draw() method that all FLTK widgets have, and works the same way.
+Usually the end user does not need to call this method
+
+""";
+
+%feature("docstring") Fl_Gl_Image_Widget::update_image
+"""Change the image being displayed in the widget
+
+SYNOPSIS
+
+  from fltk import *
+  import Fl_Gl_Image_Widget
+
+  w = Fl_Window(800, 600, 'Image display with Fl_Gl_Image_Widget')
+  g = Fl_Gl_Image_Widget.Fl_Gl_Image_Widget(0,0, 800,600)
+  w.resizable(w)
+  w.end()
+  w.show()
+
+  g.update_image(image_filename = 'image.jpg')
+  Fl.run()
+
+The data displayed by the widget is providing using this update_image() method.
+This method is given the FULL-resolution data; it may be downsampled before
+displaying, if the decimation_level argument to the constructor was non-zero.
+
+This method may be called as many times as necessary.
+
+The data may be passed-in to this method in one of two ways:
+
+- image_filename is not None: the image is read from a file on disk, with the
+  given filename. image_data must be None
+
+- image_data is not None: the image data is read from the given numpy array.
+  image_filename must be None
+
+An exception is raised on error
+
+ARGUMENTS
+
+- image_filename: optional string, specifying the filename containing the image
+  to display. Exclusive with image_data
+
+- image_data: optional numpy array with the data being displayed. Exclusive with
+  image_filename
+
+- upside_down: optional boolean, defaulting to False. If upside_down: the image
+  is flipped upside down before display
+ """;
 
 %import(module="fltk") "FL/Fl_Group.H"
 %import(module="fltk") "FL/Fl_Widget.H"
