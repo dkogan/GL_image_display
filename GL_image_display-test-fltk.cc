@@ -53,10 +53,10 @@ void timer_callback(void* cookie __attribute__((unused)))
 int main(int argc, char** argv)
 {
     if(argc != 5)
-        {
-            MSG("ERROR: Need 4 images on the commandline");
-            return 1;
-        }
+    {
+        MSG("ERROR: Need 4 images on the commandline");
+        return 1;
+    }
 
     g_images = (const char*const*)&argv[1];
 
