@@ -4,6 +4,7 @@
 
 #include <FL/Fl.H>
 #include <FL/Fl_Double_Window.H>
+#include <FL/Fl_Output.H>
 #include <FL/Fl_Gl_Window.H>
 #include <GL/gl.h>
 #include <math.h>
@@ -20,13 +21,66 @@ extern "C"
 
 #define WINDOW_W   800
 #define WINDOW_H   600
-#define DECIMATION 3
+#define STATUS_H   20
+#define DECIMATION 2
+
+
+class Fl_Gl_Image_Widget_Derived;
 
 static Fl_Double_Window*   g_window;
-static Fl_Gl_Image_Widget* g_gl_widgets[4];
-
+static Fl_Gl_Image_Widget_Derived* g_gl_widgets[4];
+static Fl_Output*          g_status_text;
 
 static const char*const* g_images;
+
+
+class Fl_Gl_Image_Widget_Derived : public Fl_Gl_Image_Widget
+{
+public:
+    Fl_Gl_Image_Widget_Derived(int x, int y, int w, int h,
+                               int decimation_level = 0) :
+        Fl_Gl_Image_Widget(x,y,w,h,decimation_level)
+    {}
+
+    int handle(int event)
+    {
+
+        switch(event)
+        {
+        case FL_ENTER:
+            // I want FL_MOVE events
+            return 1;
+
+        case FL_MOVE:
+            {
+                double image_pixel_x, image_pixel_y;
+                GL_image_display_map_pixel_image_from_viewport(&m_ctx,
+                                                               &image_pixel_x,
+                                                               &image_pixel_y,
+                                                               (double)Fl::event_x(),
+                                                               (double)Fl::event_y());
+
+                char* s;
+                asprintf(&s, "At widget coords (%d,%d), pixel coords (%.2f,%.2f)",
+                         Fl::event_x(),
+                         Fl::event_y(),
+                         image_pixel_x,
+                         image_pixel_y);
+                g_status_text->value(s);
+                free(s);
+
+                // do the other stuff too
+                break;
+            }
+        default: ;
+        }
+
+        return Fl_Gl_Image_Widget::handle(event);
+    }
+};
+
+
+
 
 static
 void timer_callback(void* cookie __attribute__((unused)))
@@ -62,24 +116,40 @@ int main(int argc, char** argv)
 
     g_window = new Fl_Double_Window( WINDOW_W, WINDOW_H, "OpenGL image visualizer" );
 
-    int w = WINDOW_W/2;
-    int h = WINDOW_H/2;
-    g_gl_widgets[0] = new Fl_Gl_Image_Widget(0, 0, w, h,
-                                             DECIMATION);
-    g_gl_widgets[1] = new Fl_Gl_Image_Widget(w, 0,
-                                             WINDOW_W-w,
-                                             h,
-                                             DECIMATION);
-    g_gl_widgets[2] = new Fl_Gl_Image_Widget(0, h,
-                                             w,
-                                             WINDOW_H-h,
-                                             DECIMATION);
-    g_gl_widgets[3] = new Fl_Gl_Image_Widget(w, h,
-                                             WINDOW_W-w,
-                                             WINDOW_H-h,
-                                             DECIMATION);
+    Fl_Group* images = new Fl_Group(0,0,WINDOW_W,WINDOW_H-STATUS_H);
+    {
+        int w = WINDOW_W/2;
+        int h = (WINDOW_H - STATUS_H)/2;
+        int y = 0;
+        g_gl_widgets[0] = new Fl_Gl_Image_Widget_Derived(0, y,
+                                                         w, h,
+                                                         DECIMATION);
+        g_gl_widgets[1] = new Fl_Gl_Image_Widget_Derived(w, y,
+                                                         WINDOW_W-w,
+                                                         h,
+                                                         DECIMATION);
+        y = h;
+        h = WINDOW_H - STATUS_H - y;
+        g_gl_widgets[2] = new Fl_Gl_Image_Widget_Derived(0, y,
+                                                         w,
+                                                         h,
+                                                         DECIMATION);
+        g_gl_widgets[3] = new Fl_Gl_Image_Widget_Derived(w, y,
+                                                         WINDOW_W-w,
+                                                         h,
+                                                         DECIMATION);
 
-    g_window->resizable(g_window);
+    }
+    images->end();
+
+    {
+        // nonfocusable so that keystrokes all go to the gl window, and are
+        // processed there
+        g_status_text = new Fl_Output(0, WINDOW_H-STATUS_H,
+                                      WINDOW_W, STATUS_H);
+    }
+
+    g_window->resizable(images);
     g_window->end();
     g_window->show();
 

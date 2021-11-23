@@ -9,6 +9,7 @@ extern "C"
 
 class Fl_Gl_Image_Widget : public Fl_Gl_Window
 {
+protected:
     GL_image_display_context_t m_ctx;
     int                        m_last_drag_update_xy[2];
 
