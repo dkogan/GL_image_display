@@ -54,7 +54,7 @@ install_lib_fltk: $(LIB_TARGET_SO_ALL_FLTK)
 	ln -fs $(notdir $(LIB_TARGET_SO_FULL_FLTK)) $(DESTDIR)/$(USRLIB)/$(notdir $(LIB_TARGET_SO_BARE_FLTK))
 
 $(LIB_TARGET_SO_FULL_FLTK): lib$(PROJECT_NAME).so
-$(LIB_TARGET_SO_FULL_FLTK): LDLIBS += -lfltk_gl -lfltk
+$(LIB_TARGET_SO_FULL_FLTK): LDLIBS += -lfltk_gl -lfltk -lX11
 
 ############### FLTK test application ############
 BIN_SOURCES += \
@@ -63,7 +63,7 @@ CXXFLAGS_FLTK := $(shell fltk-config --use-images --cxxflags)
 CXXFLAGS += $(CXXFLAGS_FLTK)
 
 GL_image_display-test-fltk: LDLIBS += $(LIB_TARGET_SO_FULL_FLTK)
-GL_image_display-test-fltk: LDLIBS += -lfltk -lX11
+GL_image_display-test-fltk: LDLIBS += -lfltk_gl -lfltk -lX11
 
 ############### FLTK widget Python wrapper ############
 all: Fl_Gl_Image_Widget.py _Fl_Gl_Image_Widget$(PY_EXT_SUFFIX)
