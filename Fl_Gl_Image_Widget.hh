@@ -21,7 +21,7 @@ protected:
         ~UpdateImageCache();
         void dealloc(void);
 
-        bool save( const char* _filename,
+        bool save( const char* _image_filename,
                    const char* _image_data,
                    int         _image_width,
                    int         _image_height,

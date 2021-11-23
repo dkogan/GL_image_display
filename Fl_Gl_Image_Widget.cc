@@ -26,7 +26,7 @@ void Fl_Gl_Image_Widget::UpdateImageCache::dealloc(void)
     image_data = NULL;
 }
 
-bool Fl_Gl_Image_Widget::UpdateImageCache::save( const char* _filename,
+bool Fl_Gl_Image_Widget::UpdateImageCache::save( const char* _image_filename,
                                                  const char* _image_data,
                                                  int         _image_width,
                                                  int         _image_height,
@@ -34,12 +34,12 @@ bool Fl_Gl_Image_Widget::UpdateImageCache::save( const char* _filename,
 {
     dealloc();
 
-    if(_filename != NULL)
+    if(_image_filename != NULL)
     {
-        image_filename = strdup(_filename);
+        image_filename = strdup(_image_filename);
         if(image_filename == NULL)
         {
-            MSG("strdup(_filename) failed! Giving up");
+            MSG("strdup(_image_filename) failed! Giving up");
             dealloc();
             return false;
         }
