@@ -286,7 +286,6 @@ import_array();
         return result;
     }
 }
-
 %ignore Fl_Gl_Image_Widget::update_image( // Either this should be given
                                           const char* image_filename,
                                           // Or these should be given
