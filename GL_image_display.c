@@ -576,3 +576,54 @@ bool GL_image_display_redraw(GL_image_display_context_t* ctx)
 
     return true;
 }
+
+bool GL_image_display_map_pixel_viewport_from_image(GL_image_display_context_t* ctx,
+                                                    double* xout, double* yout,
+                                                    double x, double y)
+{
+    // This is analogous to what the vertex shader (vertex.glsl) does
+
+    CONFIRM_SET(did_set_extents);
+    CONFIRM_SET(did_init_texture);
+    CONFIRM_SET(did_set_aspect);
+
+    double vertex_x = (x+0.5) / (double)ctx->image_width;
+    double vertex_y = (y+0.5) / (double)ctx->image_height;
+
+    *xout =
+        ( (vertex_x - ctx->center01_x) /
+          ctx->visible_width01 * ctx->aspect_x + 0.5 )
+        * (double)ctx->viewport_width - 0.5;
+    *yout =
+        ( (vertex_y - ctx->center01_y) /
+          ctx->visible_width01 * ctx->aspect_y + 0.5 )
+        * (double)ctx->viewport_height - 0.5;
+    return true;
+}
+
+
+bool GL_image_display_map_pixel_image_from_viewport(GL_image_display_context_t* ctx,
+                                                    double* xout, double* yout,
+                                                    double x, double y)
+{
+    // This is analogous to what the vertex shader (vertex.glsl) does, in
+    // reverse
+
+    CONFIRM_SET(did_set_extents);
+    CONFIRM_SET(did_init_texture);
+    CONFIRM_SET(did_set_aspect);
+
+    double vertex_x =
+        (((x+0.5) / (double)ctx->viewport_width)  - 0.5) /
+        ctx->aspect_x * ctx->visible_width01 +
+        ctx->center01_x;
+    double vertex_y =
+        (((y+0.5) / (double)ctx->viewport_height) - 0.5) /
+        ctx->aspect_y * ctx->visible_width01 +
+        ctx->center01_y;
+
+    *xout = vertex_x*(double)ctx->image_width  - 0.5;
+    *yout = vertex_y*(double)ctx->image_height - 0.5;
+
+    return true;
+}

@@ -93,3 +93,11 @@ bool GL_image_display_set_extents(GL_image_display_context_t* ctx,
                             double visible_width_pixels);
 
 bool GL_image_display_redraw(GL_image_display_context_t* ctx);
+
+bool GL_image_display_map_pixel_viewport_from_image(GL_image_display_context_t* ctx,
+                                                    double* xout, double* yout,
+                                                    double x, double y);
+
+bool GL_image_display_map_pixel_image_from_viewport(GL_image_display_context_t* ctx,
+                                                    double* xout, double* yout,
+                                                    double x, double y);
