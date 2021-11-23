@@ -354,6 +354,60 @@ import_array();
 }
 %ignore Fl_Gl_Image_Widget::map_pixel_image_from_viewport(double* xout, double* yout,
                                                           double x, double y);
+%feature("docstring") Fl_Gl_Image_Widget::map_pixel_image_from_viewport
+"""Compute image pixel coords from viewport pixel coords
+
+SYNOPSIS
+
+  from fltk import *
+  from Fl_Gl_Image_Widget import Fl_Gl_Image_Widget
+
+  class Fl_Gl_Image_Widget_Derived(Fl_Gl_Image_Widget):
+
+      def handle(self, event):
+          if event == FL_ENTER:
+              return 1
+          if event == FL_MOVE:
+              try:
+                  qi = self.map_pixel_image_from_viewport( (Fl.event_x(),Fl.event_y()), )
+                  status.value(f'{qi[0]:.2f},{qi[1]:.2f}')
+              except:
+                  status.value('')
+          return super().handle(event)
+
+  window = Fl_Window(800, 600, 'Image display with Fl_Gl_Image_Widget')
+  image  = Fl_Gl_Image_Widget_Derived(0,0, 800,580)
+  status = Fl_Output(0,580,800,20)
+  window.resizable(image)
+  window.end()
+  window.show()
+
+  image.update_image(image_filename = 'image.png')
+
+  Fl.run()
+
+The map_pixel_image_from_viewport() and map_pixel_viewport_from_image()
+functions map between the coordinates of the viewport and the image being
+displayed (original image; prior to any decimation). This is useful to implement
+user interaction methods that respond to user clicks or draw overlays.
+
+The inputs and outputs both contain floating-point pixels. The map is linear, so
+no out-of-bounds checking is done on the input or on the output: negative values
+can be ingested or output.
+
+An exception is thrown in case of error (usually, if something hasn't been
+initialized yet or if the input is invalid).
+
+ARGUMENTS
+
+- qin: the input pixel coordinate. This is an iterable of length two that
+  contains two floating-point values. This may be a numpy array of a tuple or
+  a list, for instance.
+
+RETURN VALUE
+
+A length-2 tuple containing the mapped pixel coordinate
+""";
 
 %extend Fl_Gl_Image_Widget
 {
@@ -414,5 +468,59 @@ import_array();
 }
 %ignore Fl_Gl_Image_Widget::map_pixel_viewport_from_image(double* xout, double* yout,
                                                           double x, double y);
+%feature("docstring") Fl_Gl_Image_Widget::map_pixel_viewport_from_image
+"""Compute viewport pixel coords from image pixel coords
+
+SYNOPSIS
+
+  from fltk import *
+  from Fl_Gl_Image_Widget import Fl_Gl_Image_Widget
+
+  class Fl_Gl_Image_Widget_Derived(Fl_Gl_Image_Widget):
+
+      def handle(self, event):
+          if event == FL_ENTER:
+              return 1
+          if event == FL_MOVE:
+              try:
+                  qi = self.map_pixel_image_from_viewport( (Fl.event_x(),Fl.event_y()), )
+                  status.value(f'{qi[0]:.2f},{qi[1]:.2f}')
+              except:
+                  status.value('')
+          return super().handle(event)
+
+  window = Fl_Window(800, 600, 'Image display with Fl_Gl_Image_Widget')
+  image  = Fl_Gl_Image_Widget_Derived(0,0, 800,580)
+  status = Fl_Output(0,580,800,20)
+  window.resizable(image)
+  window.end()
+  window.show()
+
+  image.update_image(image_filename = 'image.png')
+
+  Fl.run()
+
+The map_pixel_image_from_viewport() and map_pixel_viewport_from_image()
+functions map between the coordinates of the viewport and the image being
+displayed (original image; prior to any decimation). This is useful to implement
+user interaction methods that respond to user clicks or draw overlays.
+
+The inputs and outputs both contain floating-point pixels. The map is linear, so
+no out-of-bounds checking is done on the input or on the output: negative values
+can be ingested or output.
+
+An exception is thrown in case of error (usually, if something hasn't been
+initialized yet or if the input is invalid).
+
+ARGUMENTS
+
+- qin: the input pixel coordinate. This is an iterable of length two that
+  contains two floating-point values. This may be a numpy array of a tuple or
+  a list, for instance.
+
+RETURN VALUE
+
+A length-2 tuple containing the mapped pixel coordinate
+""";
 
 %include "Fl_Gl_Image_Widget.hh"
