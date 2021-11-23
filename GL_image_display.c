@@ -312,17 +312,19 @@ bool GL_image_display_update_textures( GL_image_display_context_t* ctx,
 
         image_data = (char*)FreeImage_GetBits(fib);
 
-        set_uniform_1i(ctx, upside_down,
-                       // FreeImage_Load() loads images upside down
-                       !upside_down);
+        // FreeImage_Load() loads images upside down
+        upside_down = !upside_down;
     }
-    else
-        set_uniform_1i(ctx, upside_down, upside_down);
+
+    ctx->upside_down = upside_down;
+    set_uniform_1i(ctx, upside_down, upside_down);
 
     if(!ctx->did_init_texture)
     {
         ctx->image_width  = image_width  >> decimation_level;
         ctx->image_height = image_height >> decimation_level;
+
+        ctx->decimation_level = decimation_level;
 
         glGenTextures(1, &ctx->texture_ID);
         assert_opengl();
@@ -384,6 +386,15 @@ bool GL_image_display_update_textures( GL_image_display_context_t* ctx,
                 image_filename == NULL ? "(explicitly given data)" : image_filename,
                 image_width  >> decimation_level,
                 image_height >> decimation_level);
+            goto done;
+        }
+
+        if(ctx->decimation_level != decimation_level)
+        {
+            MSG("Inconsistent decimation level. Initialized with %d, but new image '%s' has %d. Ignoring the new image",
+                ctx->decimation_level,
+                image_filename == NULL ? "(explicitly given data)" : image_filename,
+                decimation_level);
             goto done;
         }
 

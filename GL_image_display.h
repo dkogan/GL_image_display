@@ -43,6 +43,7 @@ typedef struct
 
     // valid if did_init_texture
     int image_width, image_height;
+    int decimation_level;
 
     // valid if did_set_aspect
     int viewport_width, viewport_height;
@@ -54,6 +55,7 @@ typedef struct
     double center01_x, center01_y;
     double aspect_x, aspect_y;
 
+    bool upside_down       : 1;
     bool did_init          : 1;
     bool did_init_texture  : 1;
     bool did_set_aspect    : 1;
