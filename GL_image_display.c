@@ -503,9 +503,9 @@ bool GL_image_display_resize_viewport(GL_image_display_context_t* ctx,
 }
 
 bool GL_image_display_set_extents(GL_image_display_context_t* ctx,
-                            double x_centerpixel,
-                            double y_centerpixel,
-                            double visible_width_pixels)
+                                  double x_centerpixel,
+                                  double y_centerpixel,
+                                  double visible_width_pixels)
 {
     CONFIRM_SET(did_init_texture);
 

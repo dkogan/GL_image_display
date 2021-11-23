@@ -70,27 +70,27 @@ bool GL_image_display_init( // output
                       bool use_glut);
 
 bool GL_image_display_update_textures( GL_image_display_context_t* ctx,
-                                 int decimation_level,
+                                       int decimation_level,
 
-                                 // Either this should be given
-                                 const char* image_filename,
+                                       // Either this should be given
+                                       const char* image_filename,
 
-                                 // Or these should be given
-                                 const char* image_data,
-                                 int image_width,
-                                 int image_height,
-                                 bool upside_down);
+                                       // Or these should be given
+                                       const char* image_data,
+                                       int image_width,
+                                       int image_height,
+                                       bool upside_down);
 
 void GL_image_display_deinit( GL_image_display_context_t* ctx );
 
 bool GL_image_display_resize_viewport(GL_image_display_context_t* ctx,
-                                int viewport_width,
-                                int viewport_height);
+                                      int viewport_width,
+                                      int viewport_height);
 
 bool GL_image_display_set_extents(GL_image_display_context_t* ctx,
-                            double x_centerpixel,
-                            double y_centerpixel,
-                            double visible_width_pixels);
+                                  double x_centerpixel,
+                                  double y_centerpixel,
+                                  double visible_width_pixels);
 
 bool GL_image_display_redraw(GL_image_display_context_t* ctx);
 
