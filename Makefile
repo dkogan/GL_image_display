@@ -62,7 +62,7 @@ BIN_SOURCES += \
 CXXFLAGS_FLTK := $(shell fltk-config --use-images --cxxflags)
 CXXFLAGS += $(CXXFLAGS_FLTK)
 
-GL_image_display-test-fltk: LDLIBS += $(LIB_TARGET_SO_FULL_FLTK)
+GL_image_display-test-fltk: $(LIB_TARGET_SO_FULL_FLTK)
 GL_image_display-test-fltk: LDLIBS += -lfltk_gl -lfltk -lX11
 
 ############### FLTK widget Python wrapper ############
@@ -85,9 +85,10 @@ all: Fl_Gl_Image_Widget.py _Fl_Gl_Image_Widget$(PY_EXT_SUFFIX)
 	  $<
 
 EXTRA_CLEAN += *_pywrap.cc
+Fl_Gl_Image_Widget.py Fl_Gl_Image_Widget_pywrap.cc: Fl_Gl_Image_Widget.hh
 
 Fl_Gl_Image_Widget_pywrap.o: CXXFLAGS += $(PY_MRBUILD_CFLAGS)
-_Fl_Gl_Image_Widget$(PY_EXT_SUFFIX): Fl_Gl_Image_Widget_pywrap.o libGL_image_display_fltk.so
+_Fl_Gl_Image_Widget$(PY_EXT_SUFFIX): Fl_Gl_Image_Widget_pywrap.o $(LIB_TARGET_SO_FULL_FLTK)
 	$(PY_MRBUILD_LINKER) $(LDFLAGS) $(PY_MRBUILD_LDFLAGS) -Wl,-rpath=$$ORIGIN/ $^ -o $@
 
 # The python libraries (compiled ones and ones written in python) all live in
