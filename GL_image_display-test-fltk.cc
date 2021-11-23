@@ -59,17 +59,14 @@ public:
                                                                &image_pixel_y,
                                                                (double)Fl::event_x(),
                                                                (double)Fl::event_y());
-
                 char* s;
-                asprintf(&s, "At widget coords (%d,%d), pixel coords (%.2f,%.2f)",
-                         Fl::event_x(),
-                         Fl::event_y(),
+                asprintf(&s, "Image pixel coords (%.2f,%.2f)",
                          image_pixel_x,
                          image_pixel_y);
                 g_status_text->value(s);
                 free(s);
 
-                // do the other stuff too
+                // Let the other handlers run
                 break;
             }
         default: ;
