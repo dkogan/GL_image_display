@@ -598,17 +598,28 @@ bool GL_image_display_map_pixel_viewport_from_image(GL_image_display_context_t* 
     CONFIRM_SET(did_init_texture);
     CONFIRM_SET(did_set_aspect);
 
-    double vertex_x = (x+0.5) / (double)ctx->image_width;
-    double vertex_y = (y+0.5) / (double)ctx->image_height;
+    double vertex_x = (x+0.5) / ((double)(1 << ctx->decimation_level)*(double)ctx->image_width);
+    double vertex_y = (y+0.5) / ((double)(1 << ctx->decimation_level)*(double)ctx->image_height);
 
+    if(ctx->upside_down)
+        vertex_y = 1.0 - vertex_y;
+
+    // gl_Position. In [-1,1]
+    double glpos_x =
+        (vertex_x - ctx->center01_x) /
+        ctx->visible_width01 * 2. * ctx->aspect_x;
+    double glpos_y =
+        (vertex_y - ctx->center01_y) /
+        ctx->visible_width01 * 2. * ctx->aspect_y;
+
+    // gl_Position in [0,1]
+    double glpos01_x = glpos_x / 2. + 0.5;
+    double glpos01_y = glpos_y / 2. + 0.5;
+    glpos01_y = 1. - glpos01_y; // GL does things upside dow
     *xout =
-        ( (vertex_x - ctx->center01_x) /
-          ctx->visible_width01 * ctx->aspect_x + 0.5 )
-        * (double)ctx->viewport_width - 0.5;
+        glpos01_x * (double)ctx->viewport_width  - 0.5;
     *yout =
-        ( (vertex_y - ctx->center01_y) /
-          ctx->visible_width01 * ctx->aspect_y + 0.5 )
-        * (double)ctx->viewport_height - 0.5;
+        glpos01_y * (double)ctx->viewport_height - 0.5;
     return true;
 }
 
@@ -624,17 +635,25 @@ bool GL_image_display_map_pixel_image_from_viewport(GL_image_display_context_t* 
     CONFIRM_SET(did_init_texture);
     CONFIRM_SET(did_set_aspect);
 
-    double vertex_x =
-        (((x+0.5) / (double)ctx->viewport_width)  - 0.5) /
-        ctx->aspect_x * ctx->visible_width01 +
-        ctx->center01_x;
-    double vertex_y =
-        (((y+0.5) / (double)ctx->viewport_height) - 0.5) /
-        ctx->aspect_y * ctx->visible_width01 +
-        ctx->center01_y;
+    // gl_Position in [0,1]
+    double glpos01_x = ((x+0.5) / (double)ctx->viewport_width);
+    double glpos01_y = ((y+0.5) / (double)ctx->viewport_height);
+    glpos01_y = 1. - glpos01_y; // GL does things upside down
 
-    *xout = vertex_x*(double)ctx->image_width  - 0.5;
-    *yout = vertex_y*(double)ctx->image_height - 0.5;
+    // gl_Position. In [-1,1]
+    double glpos_x = glpos01_x*2. - 1.;
+    double glpos_y = glpos01_y*2. - 1.;
+
+    double vertex_x =
+        glpos_x / (2. * ctx->aspect_x) * ctx->visible_width01 + ctx->center01_x;
+    double vertex_y =
+        glpos_y / (2. * ctx->aspect_y) * ctx->visible_width01 + ctx->center01_y;
+
+    if(ctx->upside_down)
+        vertex_y = 1.0 - vertex_y;
+
+    *xout = vertex_x*(double)(1 << ctx->decimation_level)*(double)ctx->image_width  - 0.5;
+    *yout = vertex_y*(double)(1 << ctx->decimation_level)*(double)ctx->image_height - 0.5;
 
     return true;
 }
