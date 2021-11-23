@@ -44,9 +44,15 @@ typedef struct
     // valid if did_init_texture
     int image_width, image_height;
 
+    // valid if did_set_aspect
+    int viewport_width, viewport_height;
+
     double x_centerpixel;
     double y_centerpixel;
     double visible_width_pixels;
+    double visible_width01;
+    double center01_x, center01_y;
+    double aspect_x, aspect_y;
 
     bool did_init          : 1;
     bool did_init_texture  : 1;
@@ -78,8 +84,8 @@ bool GL_image_display_update_textures( GL_image_display_context_t* ctx,
 void GL_image_display_deinit( GL_image_display_context_t* ctx );
 
 bool GL_image_display_resize_viewport(GL_image_display_context_t* ctx,
-                                int width_viewport,
-                                int height_viewport);
+                                int viewport_width,
+                                int viewport_height);
 
 bool GL_image_display_set_extents(GL_image_display_context_t* ctx,
                             double x_centerpixel,

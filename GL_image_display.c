@@ -461,9 +461,11 @@ void GL_image_display_deinit( GL_image_display_context_t* ctx )
     }
 }
 
+#define CONFIRM_SET(what) if(!ctx->what) { return false; }
+
 bool GL_image_display_resize_viewport(GL_image_display_context_t* ctx,
-                                int width_viewport,
-                                int height_viewport)
+                                      int viewport_width,
+                                      int viewport_height)
 {
     if(!ctx->did_init)
     {
@@ -478,22 +480,26 @@ bool GL_image_display_resize_viewport(GL_image_display_context_t* ctx,
         glutSetWindow(ctx->glut_window);
     }
 
-    glViewport(0, 0, width_viewport, height_viewport);
+    ctx->viewport_width  = viewport_width;
+    ctx->viewport_height = viewport_height;
+
+    glViewport(0, 0,
+               viewport_width, viewport_height);
 
     // I scale the dimensions to keep the displayed aspect ratio square and to
     // not cut off any part of the image
-    if( width_viewport*ctx->image_height < ctx->image_width*height_viewport )
+    if( viewport_width*ctx->image_height < ctx->image_width*viewport_height )
     {
-        set_uniform_2f(ctx, aspect,
-                       1.0f,
-                       (float)(width_viewport*ctx->image_height) / (float)(height_viewport*ctx->image_width));
+        ctx->aspect_x = 1.0;
+        ctx->aspect_y = (double)(viewport_width*ctx->image_height) / (double)(viewport_height*ctx->image_width);
     }
     else
     {
-        set_uniform_2f(ctx, aspect,
-                       (float)(height_viewport*ctx->image_width) / (float)(width_viewport*ctx->image_height),
-                       1.0f);
+        ctx->aspect_x = (double)(viewport_height*ctx->image_width) / (double)(viewport_width*ctx->image_height);
+        ctx->aspect_y = 1.0;
     }
+    set_uniform_2f(ctx, aspect,
+                   (float)ctx->aspect_x, (float)ctx->aspect_y);
 
     ctx->did_set_aspect = true;
     return true;
@@ -504,15 +510,14 @@ bool GL_image_display_set_extents(GL_image_display_context_t* ctx,
                             double y_centerpixel,
                             double visible_width_pixels)
 {
-    if(!ctx->did_init_texture)
-        return false;
+    CONFIRM_SET(did_init_texture);
 
     ctx->x_centerpixel        = x_centerpixel;
     ctx->y_centerpixel        = y_centerpixel;
     ctx->visible_width_pixels = visible_width_pixels;
-
+    ctx->visible_width01      = visible_width_pixels / (double)ctx->image_width;
     set_uniform_1f(ctx, visible_width01,
-                   (float)(visible_width_pixels / (double)ctx->image_width));
+                   (float)ctx->visible_width01);
 
     // Adjustments:
     //
@@ -521,9 +526,12 @@ bool GL_image_display_set_extents(GL_image_display_context_t* ctx,
     //   OpenGL [0,1] extents look at the left edge of the leftmost pixel and
     //   the right edge of the rightmost pixel respectively, so an offset of 0.5
     //   pixels is required
+    ctx->center01_x = (                                x_centerpixel + 0.5) / (double)ctx->image_width;
+    ctx->center01_y = ((double)(ctx->image_height-1) - y_centerpixel + 0.5) / (double)ctx->image_height;
+
     set_uniform_2f(ctx, center01,
-                   (float)((                                x_centerpixel + 0.5) / (double)ctx->image_width),
-                   (float)(((double)(ctx->image_height-1) - y_centerpixel + 0.5) / (double)ctx->image_height));
+                   (float)ctx->center01_x,
+                   (float)ctx->center01_y);
 
     ctx->did_set_extents = true;
     return true;
@@ -531,14 +539,10 @@ bool GL_image_display_set_extents(GL_image_display_context_t* ctx,
 
 bool GL_image_display_redraw(GL_image_display_context_t* ctx)
 {
-#define CONFIRM_SET(what) if(!ctx->what) { return false; }
-
     CONFIRM_SET(did_init);
     CONFIRM_SET(did_init_texture);
     CONFIRM_SET(did_set_aspect);
     CONFIRM_SET(did_set_extents);
-
-#undef CONFIRM_SET
 
     if(ctx->use_glut)
     {
