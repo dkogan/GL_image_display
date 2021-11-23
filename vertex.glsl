@@ -10,9 +10,9 @@ uniform int upside_down;
 
 void main(void)
 {
-    // vertex is in [0,1]
-    // tex_xy_geometry is in [0,1]
-    // gl_Position is in [-1,1]
+    // vertex is in [0,1]: the image we're displaying, possibly upside-down
+    // tex_xy_geometry is in [0,1]: the image we're displaying
+    // gl_Position is in [-1,1]: this is the viewport
 
     // I conditionally flip the image upside down since OpenGL stores it that
     // way. The caller says whether to do that or not. Generally if given a raw
