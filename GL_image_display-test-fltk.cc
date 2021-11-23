@@ -22,8 +22,6 @@ extern "C"
 #define WINDOW_H   600
 #define DECIMATION 3
 
-class Fl_Gl_Image_Widget;
-
 static Fl_Double_Window*   g_window;
 static Fl_Gl_Image_Widget* g_gl_widgets[4];
 
