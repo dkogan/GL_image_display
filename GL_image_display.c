@@ -600,8 +600,12 @@ bool GL_image_display_map_pixel_viewport_from_image(GL_image_display_context_t* 
     double vertex_x = (x+0.5) / ((double)(1 << ctx->decimation_level)*(double)ctx->image_width);
     double vertex_y = (y+0.5) / ((double)(1 << ctx->decimation_level)*(double)ctx->image_height);
 
-    if(ctx->upside_down)
-        vertex_y = 1.0 - vertex_y;
+    // GL does things upside down. It looks like this should be unconditional,
+    // independent of ctx->upside_down. The shader has an if(). I'm not
+    // completely sure why this is so, but tests say that it is, and I'm
+    // confident that if I think hard enough I will convince myself that it is
+    // right
+    vertex_y = 1.0 - vertex_y;
 
     // gl_Position. In [-1,1]
     double glpos_x =
@@ -614,7 +618,7 @@ bool GL_image_display_map_pixel_viewport_from_image(GL_image_display_context_t* 
     // gl_Position in [0,1]
     double glpos01_x = glpos_x / 2. + 0.5;
     double glpos01_y = glpos_y / 2. + 0.5;
-    glpos01_y = 1. - glpos01_y; // GL does things upside dow
+    glpos01_y = 1. - glpos01_y; // GL does things upside down
     *xout =
         glpos01_x * (double)ctx->viewport_width  - 0.5;
     *yout =
@@ -648,8 +652,12 @@ bool GL_image_display_map_pixel_image_from_viewport(GL_image_display_context_t* 
     double vertex_y =
         glpos_y / (2. * ctx->aspect_y) * ctx->visible_width01 + ctx->center01_y;
 
-    if(ctx->upside_down)
-        vertex_y = 1.0 - vertex_y;
+    // GL does things upside down. It looks like this should be unconditional,
+    // independent of ctx->upside_down. The shader has an if(). I'm not
+    // completely sure why this is so, but tests say that it is, and I'm
+    // confident that if I think hard enough I will convince myself that it is
+    // right
+    vertex_y = 1.0 - vertex_y;
 
     *xout = vertex_x*(double)(1 << ctx->decimation_level)*(double)ctx->image_width  - 0.5;
     *yout = vertex_y*(double)(1 << ctx->decimation_level)*(double)ctx->image_height - 0.5;
