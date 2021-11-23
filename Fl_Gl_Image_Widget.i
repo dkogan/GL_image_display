@@ -294,4 +294,125 @@ import_array();
                                           int         image_height,
                                           bool        upside_down);
 
+
+%extend Fl_Gl_Image_Widget
+{
+    PyObject* map_pixel_image_from_viewport(PyObject* qin)
+    {
+        PyObject* result = NULL;
+        PyObject* qx_py = NULL;
+        PyObject* qy_py = NULL;
+        double qx, qy;
+        double xyout[2];
+
+        if(!PySequence_Check(qin))
+        {
+            PyErr_SetString(PyExc_RuntimeError,
+                            "map_pixel_image_from_viewport() should be given one argument: qin (an iterable of length 2). This isn't an iterable");
+            goto done;
+        }
+        if(2 != PySequence_Length(qin))
+        {
+            PyErr_SetString(PyExc_RuntimeError,
+                            "map_pixel_image_from_viewport() should be given one argument: qin (an iterable of length 2). This doesn't have length 2");
+            goto done;
+        }
+
+        qx_py = PySequence_ITEM(qin, 0);
+        qy_py = PySequence_ITEM(qin, 1);
+
+        qx = PyFloat_AsDouble(qx_py);
+        if(PyErr_Occurred())
+        {
+            PyErr_SetString(PyExc_RuntimeError,
+                            "map_pixel_image_from_viewport() should be given one argument: qin (an iterable of length 2). First value is not parse-able as a floating point number");
+            goto done;
+        }
+        qy = PyFloat_AsDouble(qy_py);
+        if(PyErr_Occurred())
+        {
+            PyErr_SetString(PyExc_RuntimeError,
+                            "map_pixel_image_from_viewport() should be given one argument: qin (an iterable of length 2). Second value is not parse-able as a floating point number");
+            goto done;
+        }
+
+        if(!self->map_pixel_image_from_viewport(&xyout[0], &xyout[1],
+                                                qx, qy))
+        {
+            PyErr_SetString(PyExc_RuntimeError,
+                            "map_pixel_image_from_viewport() failed!");
+            goto done;
+        }
+
+        result = Py_BuildValue("(dd)", xyout[0], xyout[1]);
+
+    done:
+        Py_XDECREF(qx_py);
+        Py_XDECREF(qy_py);
+        return result;
+    }
+}
+%ignore Fl_Gl_Image_Widget::map_pixel_image_from_viewport(double* xout, double* yout,
+                                                          double x, double y);
+
+%extend Fl_Gl_Image_Widget
+{
+    PyObject* map_pixel_viewport_from_image(PyObject* qin)
+    {
+        PyObject* result = NULL;
+        PyObject* qx_py = NULL;
+        PyObject* qy_py = NULL;
+        double qx, qy;
+        double xyout[2];
+
+        if(!PySequence_Check(qin))
+        {
+            PyErr_SetString(PyExc_RuntimeError,
+                            "map_pixel_viewport_from_image() should be given one argument: qin (an iterable of length 2). This isn't an iterable");
+            goto done;
+        }
+        if(2 != PySequence_Length(qin))
+        {
+            PyErr_SetString(PyExc_RuntimeError,
+                            "map_pixel_viewport_from_image() should be given one argument: qin (an iterable of length 2). This doesn't have length 2");
+            goto done;
+        }
+
+        qx_py = PySequence_ITEM(qin, 0);
+        qy_py = PySequence_ITEM(qin, 1);
+
+        qx = PyFloat_AsDouble(qx_py);
+        if(PyErr_Occurred())
+        {
+            PyErr_SetString(PyExc_RuntimeError,
+                            "map_pixel_viewport_from_image() should be given one argument: qin (an iterable of length 2). First value is not parse-able as a floating point number");
+            goto done;
+        }
+        qy = PyFloat_AsDouble(qy_py);
+        if(PyErr_Occurred())
+        {
+            PyErr_SetString(PyExc_RuntimeError,
+                            "map_pixel_viewport_from_image() should be given one argument: qin (an iterable of length 2). Second value is not parse-able as a floating point number");
+            goto done;
+        }
+
+        if(!self->map_pixel_viewport_from_image(&xyout[0], &xyout[1],
+                                                qx, qy))
+        {
+            PyErr_SetString(PyExc_RuntimeError,
+                            "map_pixel_viewport_from_image() failed!");
+            goto done;
+        }
+
+        result = Py_BuildValue("(dd)", xyout[0], xyout[1]);
+
+    done:
+        Py_XDECREF(qx_py);
+        Py_XDECREF(qy_py);
+        return result;
+    }
+}
+%ignore Fl_Gl_Image_Widget::map_pixel_viewport_from_image(double* xout, double* yout,
+                                                          double x, double y);
+
 %include "Fl_Gl_Image_Widget.hh"
