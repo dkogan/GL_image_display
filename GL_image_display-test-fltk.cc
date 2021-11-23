@@ -1,3 +1,6 @@
+// This is the C++ Fl_Gl_Image_Widget FLTK widget sample program. The Python
+// test program is separate, and lives in GL_image_display-test-fltk.py
+
 #include <string.h>
 #include <stdio.h>
 #include <getopt.h>
