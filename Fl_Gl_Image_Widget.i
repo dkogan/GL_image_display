@@ -170,6 +170,7 @@ ARGUMENTS
 #include <numpy/arrayobject.h>
 %}
 
+// Comes directly from pyfltk/swig/macros.i
 %define CHANGE_OWNERSHIP(name)
 %pythonappend name##::##name %{
 if len(args) == 5:
@@ -180,7 +181,6 @@ if self.parent() != None:
     self.this.disown()
 %}
 %enddef
-
 CHANGE_OWNERSHIP(Fl_Gl_Image_Widget)
 
 %init %{
@@ -190,8 +190,8 @@ import_array();
 %extend Fl_Gl_Image_Widget
 {
     PyObject* update_image(const char* image_filename = NULL,
-                           PyObject*   image_array     = NULL,
-                           bool upside_down = false)
+                           PyObject*   image_array    = NULL,
+                           bool        upside_down    = false)
     {
         PyObject* result = NULL;
 
@@ -199,7 +199,7 @@ import_array();
         const char*     data = NULL;
 
         if(image_array == NULL || image_array == Py_None)
-            image_array = NULL;
+           image_array = NULL;
         else if(!PyArray_Check((PyArrayObject*)image_array))
         {
             PyErr_SetString(PyExc_RuntimeError,
