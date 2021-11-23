@@ -342,3 +342,21 @@ int Fl_Gl_Image_Widget::handle(int event)
 
     return Fl_Gl_Window::handle(event);
 }
+
+bool Fl_Gl_Image_Widget::map_pixel_viewport_from_image(double* xout, double* yout,
+                                                       double x, double y)
+{
+    return
+        GL_image_display_map_pixel_viewport_from_image(&m_ctx,
+                                                       xout, yout,
+                                                       x, y);
+}
+
+bool Fl_Gl_Image_Widget::map_pixel_image_from_viewport(double* xout, double* yout,
+                                                       double x, double y)
+{
+    return
+        GL_image_display_map_pixel_image_from_viewport(&m_ctx,
+                                                       xout, yout,
+                                                       x, y);
+}

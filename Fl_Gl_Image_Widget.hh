@@ -53,4 +53,10 @@ public:
     void draw(void);
 
     virtual int handle(int event);
+
+    bool map_pixel_viewport_from_image(double* xout, double* yout,
+                                       double x, double y);
+
+    bool map_pixel_image_from_viewport(double* xout, double* yout,
+                                       double x, double y);
 };
