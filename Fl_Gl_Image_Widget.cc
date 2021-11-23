@@ -197,33 +197,39 @@ int Fl_Gl_Image_Widget::handle(int event)
                 double z = 1. + 0.2*(double)Fl::event_dy();
                 z = fmin(fmax(z, 0.4), 2.);
 
-                // I have the new visible_width_pixels: I scale it by z. I
-                // need to compute the new center coords that keep the pixel
-                // under the mouse in the same spot. Let's say I'm at pixel
-                // eventxy (measured from the center of first pixel) in the
-                // viewport, corresponding to pixel qxy (measured from the
-                // left edge of the first pixel) in the image. I then have
+                // logic follows vertex.glsl
                 //
-                //   (eventx+0.5)/viewport_width - 0.5 = (qx - centerx) / visible_width
+                // I affect the zoom by scaling visible_width_pixels. I need to
+                // compute the new center coords that keep the pixel under the
+                // mouse in the same spot. Let's say I'm at viewport pixel qv,
+                // and image pixel qi. I then have (as in
+                // GL_image_display_map_pixel_image_from_viewport)
                 //
-                // I want eventx,qx to be invariant, so:
+                // qix = ((((qvx+0.5)/viewport_width)*2-1)/(2*aspect_x)*visible_width01+center01_x)*image_width - 0.5
                 //
-                // -> centerx = qx - ((eventx+0.5)/viewport_width - 0.5) * visible_width
+                // I want qvx,qix to be invariant, so I choose center01_x to
+                // compensate for the changes in visible_width01:
                 //
-                // And if I scale visible_width by z, the centerx update
-                // expression is
+                // ((((qvx+0.5)/viewport_width)*2-1)/(2*aspect_x)* visible_width01   +center01_x    )*image_width - 0.5 =
+                // ((((qvx+0.5)/viewport_width)*2-1)/(2*aspect_x)*(visible_width01*z)+center01_x_new)*image_width - 0.5
                 //
-                //   centerx += ((eventx+0.5)/viewport_width - 0.5) * visible_width * (1-z)
-                m_ctx.x_centerpixel +=
-                    ((0.5 + (double)Fl::event_x())/(double)pixel_w() - 0.5) *
-                    m_ctx.visible_width_pixels *
-                    (1. - z);
+                // (((qvx+0.5)/viewport_width)*2-1)/(2*aspect_x)* visible_width01   +center01_x     =
+                // (((qvx+0.5)/viewport_width)*2-1)/(2*aspect_x)*(visible_width01*z)+center01_x_new
+                //
+                // center01_x_new = center01_x +
+                //   (((qvx+0.5)/viewport_width)*2-1)/(2*aspect_x)* visible_width01*(1-z)
+                // x_centerpixel is center01_x/image_width
+                double qvx = (double)Fl::event_x();
+                double qvy = (double)Fl::event_y();
+                double viewport_width  = (double)pixel_w();
+                double viewport_height = (double)pixel_h();
 
-                // The y axis works the same way, proportionally
-                m_ctx.y_centerpixel +=
-                    ( (0.5 + (double)Fl::event_y()) - 0.5*(double)pixel_h()) *
-                    m_ctx.visible_width_pixels / (double)pixel_w() *
-                    (1. - z);
+                m_ctx.x_centerpixel +=
+                    (((qvx+0.5)/viewport_width)*2.-1.)/(2.*m_ctx.aspect_x) *
+                    m_ctx.visible_width01*(1.-z) * (double)m_ctx.image_width;
+                m_ctx.y_centerpixel -=
+                    (((1. - (qvy+0.5)/viewport_height))*2.-1.)/(2.*m_ctx.aspect_y) *
+                    m_ctx.visible_width01*(1.-z) * (double)m_ctx.image_height;
 
                 m_ctx.visible_width_pixels *= z;
 
@@ -286,26 +292,35 @@ int Fl_Gl_Image_Widget::handle(int event)
         {
             make_current();
 
-            // I need to compute the new center coords that keep the pixel
-            // under the mouse in the same spot. Let's say I'm at pixel
-            // eventxy (measured from the center of first pixel) in the
-            // viewport, corresponding to pixel qxy (measured from the left
-            // edge of the first pixel) in the image. I then have
+            // logic follows vertex.glsl
             //
-            //   (eventx+0.5)/viewport_width - 0.5 = (qx - centerx) / visible_width
+            // I need to compute the new center coords that keep the pixel under
+            // the mouse in the same spot. Let's say I'm at viewport pixel qv,
+            // and image pixel qi. I then have (looking at scaling only,
+            // ignoring ALL translations)
             //
-            // I want eventx,qx to be invariant, so:
+            //   qvx/viewport_width ~
+            //   qix/image_width / visible_width01*aspectx
             //
-            // -> centerx = qx - ((eventx+0.5)/viewport_width - 0.5) * visible_width
-            //            = qx - eventx/viewport_width*visible_width + ...
+            // -> qix ~ qvx*visible_width01/aspectx/viewport_width*image_width
             //
-            // y works the same way, but using the x axis scale factor: I
-            // enforce a square aspect ratio
+            // I want to always point at the same pixel: qix is constant.
+            // Changes in qvx should be compensated by moving centerx. Since I'm
+            // looking at relative changes only, I don't care about the
+            // translations, and they could be ignored in the above expression
             double dx = Fl::event_x() - m_last_drag_update_xy[0];
             double dy = Fl::event_y() - m_last_drag_update_xy[1];
 
-            m_ctx.x_centerpixel -= dx * m_ctx.visible_width_pixels / (double)pixel_w();
-            m_ctx.y_centerpixel -= dy * m_ctx.visible_width_pixels / (double)pixel_w();
+            double viewport_width  = (double)pixel_w();
+            double viewport_height = (double)pixel_h();
+            m_ctx.x_centerpixel -=
+                dx * m_ctx.visible_width01 /
+                (m_ctx.aspect_x * viewport_width) *
+                (double)m_ctx.image_width;
+            m_ctx.y_centerpixel -=
+                dy * m_ctx.visible_width01 /
+                (m_ctx.aspect_y * viewport_height) *
+                (double)m_ctx.image_height;
 
             if(!GL_image_display_set_extents(&m_ctx,
                                              m_ctx.x_centerpixel,
