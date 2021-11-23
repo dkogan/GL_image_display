@@ -114,6 +114,14 @@ Usually the end user does not need to call this method
 
 """;
 
+%feature("docstring") Fl_Gl_Image_Widget::handle
+"""Event handling() routine
+
+This is the usual handle() method that all FLTK widgets use to process events.
+Usually the end user does not need to call this method
+
+""";
+
 %feature("docstring") Fl_Gl_Image_Widget::update_image
 """Change the image being displayed in the widget
 
