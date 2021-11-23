@@ -654,6 +654,5 @@ bool GL_image_display_map_pixel_image_from_viewport(GL_image_display_context_t* 
 
     *xout = vertex_x*(double)(1 << ctx->decimation_level)*(double)ctx->image_width  - 0.5;
     *yout = vertex_y*(double)(1 << ctx->decimation_level)*(double)ctx->image_height - 0.5;
-
     return true;
 }
