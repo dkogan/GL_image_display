@@ -18,9 +18,15 @@ with Python bindings provided by the pyfltk project:
 %enddef
 
 %module(docstring=DOCSTRING,
+        directors="1",
         package="_Fl_Gl_Image_Widget") Fl_Gl_Image_Widget
 
 %feature("compactdefaultargs");
+
+// Enable directors globally, except for show(). Otherwise show() gets into an
+// infinite self-recursing loop. I don't know why
+%feature("director");
+%feature("nodirector") Fl_Gl_Image_Widget::show;
 
 // ignore all variables -> no getters and setters
 %rename("$ignore",%$isvariable) "";
