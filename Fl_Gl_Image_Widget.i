@@ -168,9 +168,6 @@ ARGUMENTS
 
 - image_data: optional numpy array with the data being displayed. Exclusive with
   image_filename
-
-- upside_down: optional boolean, defaulting to False. If upside_down: the image
-  is flipped upside down before display
  """;
 
 %import(module="fltk") "FL/Fl_Group.H"
@@ -204,8 +201,7 @@ import_array();
 %extend Fl_Gl_Image_Widget
 {
     PyObject* update_image(const char* image_filename = NULL,
-                           PyObject*   image_array    = NULL,
-                           bool        upside_down    = false)
+                           PyObject*   image_array    = NULL)
     {
         PyObject* result = NULL;
 
@@ -274,8 +270,7 @@ import_array();
         if( self->update_image(image_filename,
                                image_array == NULL ? NULL : data,
                                image_array == NULL ? 0    : dims[1],
-                               image_array == NULL ? 0    : dims[0],
-                               upside_down) )
+                               image_array == NULL ? 0    : dims[0]))
         {
             // success
             Py_INCREF(Py_None);
@@ -297,8 +292,7 @@ import_array();
                                           // Or these should be given
                                           const char* image_data,
                                           int         image_width,
-                                          int         image_height,
-                                          bool        upside_down);
+                                          int         image_height);
 
 
 %extend Fl_Gl_Image_Widget

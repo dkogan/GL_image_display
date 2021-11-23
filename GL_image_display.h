@@ -80,8 +80,7 @@ bool GL_image_display_update_textures( GL_image_display_context_t* ctx,
                                        // Or these should be given
                                        const char* image_data,
                                        int image_width,
-                                       int image_height,
-                                       bool upside_down);
+                                       int image_height);
 
 void GL_image_display_deinit( GL_image_display_context_t* ctx );
 

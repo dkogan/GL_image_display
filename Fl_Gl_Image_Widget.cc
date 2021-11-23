@@ -29,8 +29,7 @@ void Fl_Gl_Image_Widget::UpdateImageCache::dealloc(void)
 bool Fl_Gl_Image_Widget::UpdateImageCache::save( const char* _image_filename,
                                                  const char* _image_data,
                                                  int         _image_width,
-                                                 int         _image_height,
-                                                 bool        _upside_down)
+                                                 int         _image_height)
 {
     dealloc();
 
@@ -57,9 +56,8 @@ bool Fl_Gl_Image_Widget::UpdateImageCache::save( const char* _image_filename,
         memcpy(image_data, _image_data, size);
     }
 
-    image_width               = _image_width;
-    image_height              = _image_height;
-    upside_down = _upside_down;
+    image_width  = _image_width;
+    image_height = _image_height;
     return true;
 }
 
@@ -69,8 +67,7 @@ bool Fl_Gl_Image_Widget::UpdateImageCache::apply(Fl_Gl_Image_Widget* w)
         return true;
     bool result = w->update_image(image_filename,
                                   image_data,
-                                  image_width, image_height,
-                                  upside_down);
+                                  image_width, image_height);
     dealloc();
     return result;
 }
@@ -97,8 +94,7 @@ bool Fl_Gl_Image_Widget::update_image( // Either this should be given
                                        // Or these should be given
                                        const char* image_data,
                                        int         image_width,
-                                       int         image_height,
-                                       bool        upside_down)
+                                       int         image_height)
 {
     if(image_filename == NULL && image_data == NULL)
     {
@@ -124,8 +120,7 @@ bool Fl_Gl_Image_Widget::update_image( // Either this should be given
         // ready
         if(!m_update_image_cache.save(image_filename,
                                       image_data,
-                                      image_width, image_height,
-                                      upside_down))
+                                      image_width, image_height))
         {
             MSG("m_update_image_cache.save() failed");
             return false;
@@ -135,7 +130,7 @@ bool Fl_Gl_Image_Widget::update_image( // Either this should be given
     // have new image to ingest
     if( !GL_image_display_update_textures(&m_ctx, m_decimation_level,
                                           image_filename,
-                                          image_data,image_width,image_height,upside_down) )
+                                          image_data,image_width,image_height) )
     {
         MSG("GL_image_display_update_textures() failed");
         return false;

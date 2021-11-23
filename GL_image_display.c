@@ -242,17 +242,15 @@ bool GL_image_display_init( // output
 }
 
 bool GL_image_display_update_textures( GL_image_display_context_t* ctx,
-                                 int decimation_level,
+                                       int decimation_level,
 
-                                 // Either this should be given
-                                 const char* image_filename,
+                                       // Either this should be given
+                                       const char* image_filename,
 
-                                 // Or these should be given
-                                 const char* image_data,
-                                 int image_width,
-                                 int image_height,
-
-                                 bool upside_down)
+                                       // Or these should be given
+                                       const char* image_data,
+                                       int image_width,
+                                       int image_height)
 {
     if(image_filename == NULL &&
        !(image_data != NULL && image_width > 0 && image_height > 0))
@@ -313,11 +311,12 @@ bool GL_image_display_update_textures( GL_image_display_context_t* ctx,
         image_data = (char*)FreeImage_GetBits(fib);
 
         // FreeImage_Load() loads images upside down
-        upside_down = !upside_down;
+        ctx->upside_down = true;
     }
+    else
+        ctx->upside_down = false;
 
-    ctx->upside_down = upside_down;
-    set_uniform_1i(ctx, upside_down, upside_down);
+    set_uniform_1i(ctx, upside_down, ctx->upside_down);
 
     if(!ctx->did_init_texture)
     {
