@@ -39,7 +39,7 @@ public:
     Fl_Gl_Image_Widget(int x, int y, int w, int h,
                        int decimation_level = 0);
 
-    ~Fl_Gl_Image_Widget();
+    virtual ~Fl_Gl_Image_Widget();
 
     bool update_image( // Either this should be given
                        const char* image_filename,
