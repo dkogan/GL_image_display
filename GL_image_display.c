@@ -467,11 +467,8 @@ bool GL_image_display_resize_viewport(GL_image_display_context_t* ctx,
                                       int viewport_width,
                                       int viewport_height)
 {
-    if(!ctx->did_init)
-    {
-        MSG("Error: did_init uninitialized");
-        return false;
-    }
+    CONFIRM_SET(did_init);
+    CONFIRM_SET(did_init_texture);
 
     if(ctx->use_glut)
     {
