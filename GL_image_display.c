@@ -120,6 +120,10 @@ bool GL_image_display_init( // output
 
     glClearColor(0, 0, 0, 0);
 
+    // Needed to make non-multiple-of-4-width images work. Otherwise
+    // glTexSubImage2D() fails
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
     // vertices
     {
         glGenVertexArrays(1, &ctx->programs[GL_image_display_program_index_images].VBO_array);
