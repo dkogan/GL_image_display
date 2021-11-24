@@ -373,3 +373,14 @@ bool Fl_Gl_Image_Widget::map_pixel_image_from_viewport(double* xout, double* you
                                                        xout, yout,
                                                        x, y);
 }
+
+bool Fl_Gl_Image_Widget::set_lines(const GL_image_display_line_segments_t* line_segment_sets,
+                                   int Nline_segment_sets,
+                                   const float* vertex_pool)
+{
+    return
+        GL_image_display_set_lines(&m_ctx,
+                                   line_segment_sets,
+                                   Nline_segment_sets,
+                                   vertex_pool);
+}
