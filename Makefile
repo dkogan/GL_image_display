@@ -102,4 +102,10 @@ DIST_INCLUDE := \
 # I don't ship any binaries
 DIST_BIN := ""
 
+DIST_DOC := \
+  GL_image_display-test-fltk.cc \
+  GL_image_display-test-fltk.py \
+  GL_image_display-test-glut.c
+
+
 include /usr/include/mrbuild/Makefile.common.footer
