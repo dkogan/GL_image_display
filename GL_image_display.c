@@ -18,6 +18,8 @@
 #include "GL_image_display.h"
 #include "util.h"
 
+#define MAX_NUMBER_LINE_VERTICES 1024
+
 #define assert_opengl()                                 \
     do {                                                \
         int error = glGetError();                       \
@@ -170,14 +172,13 @@ bool GL_image_display_init( // output
 
             glEnableVertexAttribArray(VBO_location_line);
 
-            GLbyte x[2] = {0, 1};
             glBufferData(GL_ARRAY_BUFFER,
-                         2*sizeof(x[0]),
-                         x,
-                         GL_STATIC_DRAW);
+                         MAX_NUMBER_LINE_VERTICES*2*sizeof(float),
+                         NULL,
+                         GL_DYNAMIC_DRAW);
             glVertexAttribPointer(VBO_location_line,
-                                  1, // 2 value per vertex. z = 0 for all
-                                  GL_BYTE,
+                                  2, // 2 values per vertex. z = 0 for all
+                                  GL_FLOAT,
                                   GL_FALSE, 0, NULL);
         }
     }
@@ -254,6 +255,8 @@ bool GL_image_display_init( // output
             assert_opengl();                                    \
         }
 
+        make_uniform(image_width_full);
+        make_uniform(image_height_full);
         make_uniform(aspect);
         make_uniform(center01);
         make_uniform(visible_width01);
@@ -395,6 +398,9 @@ bool GL_image_display_update_textures( GL_image_display_context_t* ctx,
     {
         ctx->image_width  = image_width  >> decimation_level;
         ctx->image_height = image_height >> decimation_level;
+
+        set_uniform_1i(ctx, image_width_full,  image_width);
+        set_uniform_1i(ctx, image_height_full, image_height);
 
         ctx->decimation_level = decimation_level;
 
@@ -633,6 +639,63 @@ bool GL_image_display_set_extents(GL_image_display_context_t* ctx,
     return true;
 }
 
+bool GL_image_display_set_lines(GL_image_display_context_t* ctx,
+                                const GL_image_display_line_segments_t* line_segment_sets,
+                                int Nline_segment_sets,
+                                const float* vertex_pool)
+{
+    CONFIRM_SET(did_init);
+
+    ctx->Nline_segment_sets = Nline_segment_sets;
+
+    if(Nline_segment_sets <= 0)
+        return true;
+
+
+    glBindVertexArray(ctx->programs[GL_image_display_program_index_line].VBO_array);
+    glBindBuffer(GL_ARRAY_BUFFER,
+                 ctx->programs[GL_image_display_program_index_line].VBO_buffer);
+    float* buffer = glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
+    assert(buffer);
+
+    int Nvertices_stored = 0;
+
+    for(int iset=0; iset<Nline_segment_sets; iset++)
+    {
+        const GL_image_display_line_segments_t* set =
+            &line_segment_sets[iset];
+
+        if(Nvertices_stored + 2*set->Nsegments > MAX_NUMBER_LINE_VERTICES)
+        {
+            MSG("Too many line segment vertices. Increase MAX_NUMBER_LINE_VERTICES. Giving up on all the lines");
+            ctx->Nline_segment_sets = 0;
+            free(ctx->line_segment_sets);
+            ctx->line_segment_sets = NULL;
+            return false;
+        }
+        memcpy(buffer, vertex_pool, 4*set->Nsegments*sizeof(float));
+
+        Nvertices_stored += 2*set->Nsegments;
+        buffer      = &buffer     [4*set->Nsegments];
+        vertex_pool = &vertex_pool[4*set->Nsegments];
+        set++;
+    }
+
+    int res = glUnmapBuffer(GL_ARRAY_BUFFER);
+    assert( res == GL_TRUE );
+
+
+    ctx->line_segment_sets = realloc(ctx->line_segment_sets,
+                                     Nline_segment_sets * sizeof(line_segment_sets[0]));
+    if(ctx->line_segment_sets == NULL)
+    {
+        MSG("realloc(line segment sets failed");
+        return false;
+    }
+    memcpy(ctx->line_segment_sets, line_segment_sets, Nline_segment_sets * sizeof(line_segment_sets[0]));
+    return true;
+}
+
 bool GL_image_display_redraw(GL_image_display_context_t* ctx)
 {
     CONFIRM_SET(did_init);
@@ -676,12 +739,25 @@ bool GL_image_display_redraw(GL_image_display_context_t* ctx)
 
     ///////////// Render the overlaid lines
     {
-        bind_program(GL_image_display_program_index_line, false);
+        bind_program(GL_image_display_program_index_line);
         assert_opengl();
-        glDrawElements(GL_LINES,
-                       2,
-                       GL_UNSIGNED_BYTE,
-                       ((uint8_t[]){0,1}));
+
+        int ipoint0 = 0;
+        for(int iset=0; iset<ctx->Nline_segment_sets; iset++)
+        {
+            const GL_image_display_line_segments_t* set =
+                &ctx->line_segment_sets[iset];
+
+            uint16_t indices[set->Nsegments*2];
+            for(int i=0; i<set->Nsegments*2; i++)
+                indices[i] = i+ipoint0;
+
+            glDrawElements(GL_LINES,
+                           set->Nsegments*2,
+                           GL_UNSIGNED_SHORT,
+                           indices);
+            ipoint0 += set->Nsegments*2;
+        }
     }
 
     return true;

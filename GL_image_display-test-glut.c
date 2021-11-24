@@ -38,11 +38,32 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    if( !GL_image_display_set_extents(&ctx, 867, 1521, 1500) )
+    if( !GL_image_display_set_extents(&ctx, 1580, 900, 2200) )
     {
         fprintf(stderr, "GL_image_display_set_extents() failed\n");
         return 1;
     }
+
+    if( !GL_image_display_set_lines(&ctx,
+                                    ((const GL_image_display_line_segments_t[])
+                                     { {.Nsegments = 1,
+                                        .color     = {1.f,0.f,0.f}},
+                                       {.Nsegments = 2,
+                                        .color     = {0.f,1.f,0.f}}}),
+                                    2,
+                                    ((float[]){63, 113,
+                                               937,557,
+                                               1749,645,
+                                               1597,100,
+                                               1597,100,
+                                               1247,224})
+                                    ))
+    {
+        fprintf(stderr, "GL_image_display_set_lines() failed\n");
+        return 1;
+    }
+
+
 
     void timerfunc(int cookie __attribute__((unused)))
     {

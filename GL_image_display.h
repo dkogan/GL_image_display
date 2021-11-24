@@ -10,6 +10,8 @@ enum {
 };
 
 enum {
+        GL_image_display_uniform_index_image_width_full,
+        GL_image_display_uniform_index_image_height_full,
         GL_image_display_uniform_index_aspect,
         GL_image_display_uniform_index_center01,
         GL_image_display_uniform_index_visible_width01,
@@ -28,6 +30,16 @@ typedef struct
     uint32_t program;
 }  GL_image_display_opengl_program_t;
 
+// The rendered line segments are defined as a number of segment sets. Each
+// segment set contains Nsegments line segments, with each line segment being
+// defined with 4 floats: {x0,y0,x1,y1}. The coordinates live contiguously in
+// the vertex_pool passed to GL_image_display_set_lines
+typedef struct
+{
+    int   Nsegments;
+} GL_image_display_line_segments_t;
+
+// By default, everything in this structure is set to 0 at init time
 typedef struct
 {
     bool use_glut;
@@ -46,6 +58,9 @@ typedef struct
 
     // valid if did_set_aspect
     int viewport_width, viewport_height;
+
+    int Nline_segment_sets;
+    GL_image_display_line_segments_t* line_segment_sets;
 
     double x_centerpixel;
     double y_centerpixel;
@@ -96,6 +111,11 @@ bool GL_image_display_set_extents(GL_image_display_context_t* ctx,
                                   double x_centerpixel,
                                   double y_centerpixel,
                                   double visible_width_pixels);
+
+bool GL_image_display_set_lines(GL_image_display_context_t* ctx,
+                                const GL_image_display_line_segments_t* line_segment_sets,
+                                int Nline_segment_sets,
+                                const float* vertex_pool);
 
 bool GL_image_display_redraw(GL_image_display_context_t* ctx);
 
