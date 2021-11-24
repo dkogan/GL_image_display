@@ -460,7 +460,6 @@ bool GL_image_display_update_textures( GL_image_display_context_t* ctx,
     {
         // Copy the buffer
         const int step_input = 1 << decimation_level;
-        const int bytes_per_pixel = image_bpp / 8;
 
         for(int i=0; i<ctx->image_height; i++)
         {
