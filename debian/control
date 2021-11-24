@@ -1,0 +1,54 @@
+Source: gl-image-display
+Priority: optional
+Section: devel
+Build-Depends:
+# Please do not "fix" to use debhelper-compat. I want this to remain compatible
+# with older debian-based distros
+ debhelper (>= 11),
+ dh-python,
+ mrbuild,
+ swig,
+ libgl1-mesa-dev,
+ libepoxy-dev,
+ libfltk1.3-dev,
+ libpython3-dev,
+ python3,
+ chrpath
+Maintainer: Dima Kogan <dima@secretsauce.net>
+Standards-Version: 4.6.0
+Homepage:    https://www.github.com/dkogan/GL_image_display
+Vcs-Git:     https://www.github.com/dkogan/GL_image_display
+Vcs-Browser: https://www.github.com/dkogan/GL_image_display
+
+Package: libgl-image-display0
+Section: libs
+Architecture: any
+Multi-Arch: same
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: OpenGL-based image visualizer
+ A library to render images with OpenGL. After the initial load, the panning and
+ zooming is done in hardware, with zero CPU cost. This package provides the
+ runtime C libraries and the binaries for the C++ FLTK widget
+
+Package: libgl-image-display-dev
+Section: libdevel
+Architecture: any
+Multi-Arch: same
+Depends: ${misc:Depends}, libgl-image-display0 (= ${binary:Version})
+Description: OpenGL-based image visualizer
+ A library to render images with OpenGL. After the initial load, the panning and
+ zooming is done in hardware, with zero CPU cost. This package provides the
+ headers for the C libraries and for the C++ FLTK widget
+
+Package: python3-gl-image-display
+Section: python
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, libgl-image-display0 (= ${binary:Version}),
+         ${python3:Depends},
+         python3-fltk
+Provides: ${python3:Provides}
+Description: Calibration and SFM library
+ A photogrammetry toolkit that provides improved methods for making and using
+ camera models (calibration, tracking, mapping, etc). The focus is on
+ calibration and uncertainty propagation to produce the most accurate models
+ possible. This package provides the Python FLTK widget
