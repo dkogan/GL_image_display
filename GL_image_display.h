@@ -71,11 +71,11 @@ typedef struct
     double center01_x, center01_y;
     double aspect_x, aspect_y;
 
-    bool upside_down : 1;
-    bool did_init                     : 1;
-    bool did_init_texture             : 1;
-    bool did_set_aspect               : 1;
-    bool did_set_extents              : 1;
+    bool upside_down      : 1;
+    bool did_init         : 1;
+    bool did_init_texture : 1;
+    bool did_set_aspect   : 1;
+    bool did_set_extents  : 1;
 } GL_image_display_context_t;
 
 // The main init routine. We support 2 modes:
