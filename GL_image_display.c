@@ -171,13 +171,13 @@ bool GL_image_display_init( // output
     // shaders
     {
         const GLchar* image_vertex_glsl =
-#include "vertex.glsl.h"
+#include "image.vertex.glsl.h"
             ;
         const GLchar* image_geometry_glsl =
-#include "geometry.glsl.h"
+#include "image.geometry.glsl.h"
             ;
         const GLchar* image_fragment_glsl =
-#include "fragment.glsl.h"
+#include "image.fragment.glsl.h"
             ;
 
         char msg[1024];
