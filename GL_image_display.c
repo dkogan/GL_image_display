@@ -126,11 +126,11 @@ bool GL_image_display_init( // output
 
     // vertices
     {
-        glGenVertexArrays(1, &ctx->programs[GL_image_display_program_index_images].VBO_array);
-        glBindVertexArray(ctx->programs[GL_image_display_program_index_images].VBO_array);
+        glGenVertexArrays(1, &ctx->programs[GL_image_display_program_index_image].VBO_array);
+        glBindVertexArray(ctx->programs[GL_image_display_program_index_image].VBO_array);
 
-        glGenBuffers(1, &ctx->programs[GL_image_display_program_index_images].VBO_buffer);
-        glBindBuffer(GL_ARRAY_BUFFER, ctx->programs[GL_image_display_program_index_images].VBO_buffer);
+        glGenBuffers(1, &ctx->programs[GL_image_display_program_index_image].VBO_buffer);
+        glBindBuffer(GL_ARRAY_BUFFER, ctx->programs[GL_image_display_program_index_image].VBO_buffer);
 
         glEnableVertexAttribArray(0);
 
@@ -154,12 +154,12 @@ bool GL_image_display_init( // output
 
     // indices
     {
-        glBindVertexArray(ctx->programs[GL_image_display_program_index_images].VBO_array);
+        glBindVertexArray(ctx->programs[GL_image_display_program_index_image].VBO_array);
         glBindBuffer(GL_ARRAY_BUFFER,
-                     ctx->programs[GL_image_display_program_index_images].VBO_buffer);
+                     ctx->programs[GL_image_display_program_index_image].VBO_buffer);
 
-        glGenBuffers(1, &ctx->programs[GL_image_display_program_index_images].IBO_buffer);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ctx->programs[GL_image_display_program_index_images].IBO_buffer);
+        glGenBuffers(1, &ctx->programs[GL_image_display_program_index_image].IBO_buffer);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ctx->programs[GL_image_display_program_index_image].IBO_buffer);
 
         uint8_t indices[] = {0,1,2,
                              2,1,3};
@@ -170,13 +170,13 @@ bool GL_image_display_init( // output
 
     // shaders
     {
-        const GLchar* images_vertex_glsl =
+        const GLchar* image_vertex_glsl =
 #include "vertex.glsl.h"
             ;
-        const GLchar* images_geometry_glsl =
+        const GLchar* image_geometry_glsl =
 #include "geometry.glsl.h"
             ;
-        const GLchar* images_fragment_glsl =
+        const GLchar* image_fragment_glsl =
 #include "fragment.glsl.h"
             ;
 
@@ -218,7 +218,7 @@ bool GL_image_display_init( // output
                 printf(#programtype" program info after glLinkProgram(): %s\n", msg); \
         }
 
-        build_program(images);
+        build_program(image);
 
         // I use the same uniforms for all the programs
 #define make_uniform(name)                                      \
@@ -640,7 +640,7 @@ bool GL_image_display_redraw(GL_image_display_context_t* ctx)
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ctx->programs[program_index].IBO_buffer);
     }
 
-    bind_program(GL_image_display_program_index_images, true);
+    bind_program(GL_image_display_program_index_image, true);
     assert_opengl();
     glBindTexture( GL_TEXTURE_2D, ctx->texture_ID);
     assert_opengl();

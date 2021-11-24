@@ -3,10 +3,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-// Multiple simultaneous shader programs available, in case I want to render
-// more than just the images
 enum {
-        GL_image_display_program_index_images,
+        GL_image_display_program_index_image,
         GL_image_display_num_programs
 };
 
