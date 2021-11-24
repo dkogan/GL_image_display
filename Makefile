@@ -95,5 +95,11 @@ _Fl_Gl_Image_Widget$(PY_EXT_SUFFIX): Fl_Gl_Image_Widget_pywrap.o $(LIB_TARGET_SO
 # mrcal/
 DIST_PY3_MODULES := Fl_Gl_Image_Widget.py _Fl_Gl_Image_Widget$(PY_EXT_SUFFIX)
 
+DIST_INCLUDE := \
+  Fl_Gl_Image_Widget.hh \
+  GL_image_display.h
+
+# I don't ship any binaries
+DIST_BIN := ""
 
 include /usr/include/mrbuild/Makefile.common.footer
