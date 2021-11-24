@@ -5,6 +5,7 @@
 
 enum {
         GL_image_display_program_index_image,
+        GL_image_display_program_index_line,
         GL_image_display_num_programs
 };
 

@@ -126,46 +126,82 @@ bool GL_image_display_init( // output
 
     // vertices
     {
-        glGenVertexArrays(1, &ctx->programs[GL_image_display_program_index_image].VBO_array);
-        glBindVertexArray(ctx->programs[GL_image_display_program_index_image].VBO_array);
+        // image
+        {
+            // The location specified in the layout in image.vertex.glsl
+            const int VBO_location_image = 0;
 
-        glGenBuffers(1, &ctx->programs[GL_image_display_program_index_image].VBO_buffer);
-        glBindBuffer(GL_ARRAY_BUFFER, ctx->programs[GL_image_display_program_index_image].VBO_buffer);
+            glGenVertexArrays(1, &ctx->programs[GL_image_display_program_index_image].VBO_array);
+            glBindVertexArray(ctx->programs[GL_image_display_program_index_image].VBO_array);
 
-        glEnableVertexAttribArray(0);
+            glGenBuffers(1, &ctx->programs[GL_image_display_program_index_image].VBO_buffer);
+            glBindBuffer(GL_ARRAY_BUFFER, ctx->programs[GL_image_display_program_index_image].VBO_buffer);
 
-        GLbyte xy[2*2*2];
-        for(int i=0; i<2; i++)
-            for(int j=0; j<2; j++)
-            {
-                xy[(i*2+j)*2 + 0] = j;
-                xy[(i*2+j)*2 + 1] = i;
-            }
+            glEnableVertexAttribArray(VBO_location_image);
 
-        glBufferData(GL_ARRAY_BUFFER,
-                     2*2*2*sizeof(xy[0]),
-                     xy,
-                     GL_STATIC_DRAW);
-        glVertexAttribPointer(0,
-                              2, // 2 values per vertex. z = 0 for all
-                              GL_BYTE,
-                              GL_FALSE, 0, NULL);
+            GLbyte xy[2*2*2];
+            for(int i=0; i<2; i++)
+                for(int j=0; j<2; j++)
+                {
+                    xy[(i*2+j)*2 + 0] = j;
+                    xy[(i*2+j)*2 + 1] = i;
+                }
+
+            glBufferData(GL_ARRAY_BUFFER,
+                         2*2*2*sizeof(xy[0]),
+                         xy,
+                         GL_STATIC_DRAW);
+            glVertexAttribPointer(VBO_location_image,
+                                  2, // 2 values per vertex. z = 0 for all
+                                  GL_BYTE,
+                                  GL_FALSE, 0, NULL);
+        }
+
+        // line
+        {
+            // The location specified in the layout in line.vertex.glsl
+            const int VBO_location_line = 1;
+
+            glGenVertexArrays(1, &ctx->programs[GL_image_display_program_index_line].VBO_array);
+            glBindVertexArray(ctx->programs[GL_image_display_program_index_line].VBO_array);
+
+            glGenBuffers(1, &ctx->programs[GL_image_display_program_index_line].VBO_buffer);
+            glBindBuffer(GL_ARRAY_BUFFER, ctx->programs[GL_image_display_program_index_line].VBO_buffer);
+
+            glEnableVertexAttribArray(VBO_location_line);
+
+            GLbyte x[2] = {0, 1};
+            glBufferData(GL_ARRAY_BUFFER,
+                         2*sizeof(x[0]),
+                         x,
+                         GL_STATIC_DRAW);
+            glVertexAttribPointer(VBO_location_line,
+                                  1, // 2 value per vertex. z = 0 for all
+                                  GL_BYTE,
+                                  GL_FALSE, 0, NULL);
+        }
     }
 
     // indices
     {
-        glBindVertexArray(ctx->programs[GL_image_display_program_index_image].VBO_array);
-        glBindBuffer(GL_ARRAY_BUFFER,
-                     ctx->programs[GL_image_display_program_index_image].VBO_buffer);
+        // image
+        {
+            glBindVertexArray(ctx->programs[GL_image_display_program_index_image].VBO_array);
+            glBindBuffer(GL_ARRAY_BUFFER,
+                         ctx->programs[GL_image_display_program_index_image].VBO_buffer);
 
-        glGenBuffers(1, &ctx->programs[GL_image_display_program_index_image].IBO_buffer);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ctx->programs[GL_image_display_program_index_image].IBO_buffer);
+            glGenBuffers(1, &ctx->programs[GL_image_display_program_index_image].IBO_buffer);
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ctx->programs[GL_image_display_program_index_image].IBO_buffer);
 
-        uint8_t indices[] = {0,1,2,
-                             2,1,3};
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER,
-                     sizeof(indices), indices,
-                     GL_STATIC_DRAW);
+            uint8_t indices[] = {0,1,2,
+                                 2,1,3};
+            glBufferData(GL_ELEMENT_ARRAY_BUFFER,
+                         sizeof(indices), indices,
+                         GL_STATIC_DRAW);
+        }
+
+        // line: don't need explicit indices. The glDrawElements() call
+        // gets those
     }
 
     // shaders
@@ -178,6 +214,15 @@ bool GL_image_display_init( // output
             ;
         const GLchar* image_fragment_glsl =
 #include "image.fragment.glsl.h"
+            ;
+        const GLchar* line_vertex_glsl =
+#include "line.vertex.glsl.h"
+            ;
+        const GLchar* line_geometry_glsl =
+#include "line.geometry.glsl.h"
+            ;
+        const GLchar* line_fragment_glsl =
+#include "line.fragment.glsl.h"
             ;
 
         char msg[1024];
@@ -219,6 +264,7 @@ bool GL_image_display_init( // output
         }
 
         build_program(image);
+        build_program(line);
 
         // I use the same uniforms for all the programs
 #define make_uniform(name)                                      \
@@ -640,14 +686,27 @@ bool GL_image_display_redraw(GL_image_display_context_t* ctx)
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ctx->programs[program_index].IBO_buffer);
     }
 
-    bind_program(GL_image_display_program_index_image, true);
-    assert_opengl();
-    glBindTexture( GL_TEXTURE_2D, ctx->texture_ID);
-    assert_opengl();
-    glDrawElements(GL_TRIANGLES,
-                   2*3,
-                   GL_UNSIGNED_BYTE,
-                   NULL);
+    ///////////// Render the image
+    {
+        bind_program(GL_image_display_program_index_image, true);
+        assert_opengl();
+        glBindTexture( GL_TEXTURE_2D, ctx->texture_ID);
+        assert_opengl();
+        glDrawElements(GL_TRIANGLES,
+                       2*3,
+                       GL_UNSIGNED_BYTE,
+                       NULL);
+    }
+
+    ///////////// Render the overlaid lines
+    {
+        bind_program(GL_image_display_program_index_line, false);
+        assert_opengl();
+        glDrawElements(GL_LINES,
+                       2,
+                       GL_UNSIGNED_BYTE,
+                       ((uint8_t[]){0,1}));
+    }
 
     return true;
 }
