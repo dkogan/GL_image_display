@@ -80,7 +80,12 @@ bool GL_image_display_update_textures( GL_image_display_context_t* ctx,
                                        // Or these should be given
                                        const char* image_data,
                                        int image_width,
-                                       int image_height);
+                                       int image_height,
+                                       // Supported:
+                                       // - 8  for "grayscale"
+                                       // - 24 for "bgr"
+                                       int image_bpp,
+                                       int image_pitch);
 
 void GL_image_display_deinit( GL_image_display_context_t* ctx );
 

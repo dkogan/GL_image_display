@@ -24,13 +24,17 @@ protected:
         bool save( const char* _image_filename,
                    const char* _image_data,
                    int         _image_width,
-                   int         _image_height);
+                   int         _image_height,
+                   int         _image_bpp,
+                   int         _image_pitch);
         bool apply(Fl_Gl_Image_Widget* w);
 
         char* image_filename;
         char* image_data;
         int   image_width;
         int   image_height;
+        int   image_bpp;
+        int   image_pitch;
     } m_update_image_cache;
 
 
@@ -45,7 +49,9 @@ public:
                        // Or these should be given
                        const char* image_data       = NULL,
                        int         image_width      = 0,
-                       int         image_height     = 0);
+                       int         image_height     = 0,
+                       int         image_bpp        = 0,
+                       int         image_pitch      = 0);
 
     void draw(void);
 

@@ -32,7 +32,7 @@ int main(int argc, char* argv[])
 
     if( !GL_image_display_update_textures(&ctx,0,
                                           images[i_image],
-                                          NULL,0,0) )
+                                          NULL,0,0,0,0) )
     {
         fprintf(stderr, "GL_image_display_update_textures() failed\n");
         return 1;
@@ -50,7 +50,7 @@ int main(int argc, char* argv[])
 
         if( !GL_image_display_update_textures(&ctx,0,
                                               images[i_image],
-                                              NULL,0,0) )
+                                              NULL,0,0,0,0) )
         {
             fprintf(stderr, "GL_image_display_update_textures() failed\n");
             return;

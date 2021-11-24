@@ -250,7 +250,12 @@ bool GL_image_display_update_textures( GL_image_display_context_t* ctx,
                                        // Or these should be given
                                        const char* image_data,
                                        int image_width,
-                                       int image_height)
+                                       int image_height,
+                                       // Supported:
+                                       // - 8  for "grayscale"
+                                       // - 24 for "bgr"
+                                       int image_bpp,
+                                       int image_pitch)
 {
     if(image_filename == NULL &&
        !(image_data != NULL && image_width > 0 && image_height > 0))
@@ -263,6 +268,21 @@ bool GL_image_display_update_textures( GL_image_display_context_t* ctx,
     {
         MSG("image_filename is not NULL, so all of (image_data, image_width, image_height) must have null values");
         return false;
+    }
+
+    if(image_width > 0)
+    {
+        if(!(image_bpp == 8 || image_bpp == 24))
+        {
+            MSG("I support 8 bits-per-pixel and 24 bits-per-pixel images. Got %d",
+                image_bpp);
+            return false;
+        }
+        if(image_pitch <= 0)
+        {
+            // Pitch isn't given, so I assume the image data is stored densely
+            image_pitch = image_width*image_bpp/8;
+        }
     }
 
     bool      result = false;
@@ -288,27 +308,52 @@ bool GL_image_display_update_textures( GL_image_display_context_t* ctx,
         if(fib == NULL)
         {
             MSG("Couldn't load '%s'", image_filename);
-            return false;
+            goto done;
         }
 
-        if(! (FreeImage_GetColorType(fib) == FIC_MINISBLACK &&
-              FreeImage_GetBPP(fib)       == 8))
+        // grayscale
+        if(FreeImage_GetColorType(fib) == FIC_MINISBLACK &&
+           FreeImage_GetBPP(fib)       == 8)
         {
-            MSG("Only 8-bit grayscale images are supported");
-            goto done;
+            image_bpp = 8;
+        }
+        else
+        {
+            // normalize images
+            if( // palettized
+                FreeImage_GetColorType(fib)  == FIC_PALETTE ||
+
+                // 32-bit RGBA
+                (FreeImage_GetColorType(fib) == FIC_RGBALPHA &&
+                 FreeImage_GetBPP(fib)       == 32) )
+
+            {
+                // I explicitly un-palettize images, if that's what I was given
+                FIBITMAP* fib24 = FreeImage_ConvertTo24Bits(fib);
+                FreeImage_Unload(fib);
+                fib = fib24;
+
+                if(fib == NULL)
+                {
+                    MSG("Couldn't unpalettize '%s'", image_filename);
+                    goto done;
+                }
+            }
+
+            if(!(FreeImage_GetColorType(fib) == FIC_RGB &&
+                 FreeImage_GetBPP(fib) == 24))
+            {
+                MSG("Only 8-bit grayscale and 24-bit RGB images and 32-bit RGBA images are supported. Conversion to 24-bit didn't work. Giving up.");
+                goto done;
+            }
+
+            image_bpp = 24;
         }
 
         image_width  = (int)FreeImage_GetWidth(fib);
         image_height = (int)FreeImage_GetHeight(fib);
-
-        if(image_width != (int)FreeImage_GetPitch(fib))
-        {
-            MSG("Only densely-packed images are supported. width=%d, FreeImage_GetPitch()=%d",
-                image_width, (int)FreeImage_GetPitch(fib));
-            goto done;
-        }
-
-        image_data = (char*)FreeImage_GetBits(fib);
+        image_pitch  = (int)FreeImage_GetPitch(fib);
+        image_data   = (char*)FreeImage_GetBits(fib);
 
         // FreeImage_Load() loads images upside down
         ctx->upside_down = true;
@@ -336,9 +381,9 @@ bool GL_image_display_update_textures( GL_image_display_context_t* ctx,
         glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_REPEAT);
         glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_REPEAT);
 
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RED,
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB,
                      ctx->image_width, ctx->image_height,
-                     0, GL_RED,
+                     0, GL_BGR,
                      GL_UNSIGNED_BYTE, (const GLvoid *)NULL);
         assert_opengl();
 
@@ -351,7 +396,7 @@ bool GL_image_display_update_textures( GL_image_display_context_t* ctx,
         assert_opengl();
 
         glBufferData(GL_PIXEL_UNPACK_BUFFER,
-                     ctx->image_width*ctx->image_height,
+                     ctx->image_width*ctx->image_height*3,
                      NULL,
                      GL_STREAM_DRAW);
         assert_opengl();
@@ -412,27 +457,44 @@ bool GL_image_display_update_textures( GL_image_display_context_t* ctx,
         goto done;
     }
 
-    if(decimation_level == 0)
     {
-        // No decimation. Just copy the buffer
-        memcpy(buf, image_data,
-               ctx->image_width*ctx->image_height);
-    }
-    else
-    {
-        // We need to copy the buffer while decimating. I do that manually, even
-        // though there REALLY should be a library call. OpenCV makes me use
-        // C++, and freeimage doesn't work in-place. I don't interpolate: I just
-        // decimate the input.
-        const int step_input   = 1 << decimation_level;
-        const int stride_input = (fib == NULL) ? image_width : (int)FreeImage_GetPitch(fib);
+        // Copy the buffer
+        const int step_input = 1 << decimation_level;
+        const int bytes_per_pixel = image_bpp / 8;
 
         for(int i=0; i<ctx->image_height; i++)
         {
-            const char* row_input = &image_data[i*step_input*stride_input];
-            for(int j=0; j<ctx->image_width; j++)
+            const char* row_input  = &image_data[i*step_input*image_pitch];
+            char*       row_output = &buf[       i*           ctx->image_width*3];
+            if(image_bpp == 24)
             {
-                buf[i*ctx->image_width + j] = row_input[j*step_input];
+                // 24-bit input images. Same as the texture
+                if(step_input == 1)
+                {
+                    // easy no-decimation case
+                    memcpy(row_output, row_input, 3*ctx->image_width);
+                }
+                else
+                {
+                    for(int j=0; j<ctx->image_width; j++)
+                    {
+                        for(int k=0; k<3; k++)
+                            row_output[k] = row_input[k];
+                        row_input  += 3*step_input;
+                        row_output += 3;
+                    }
+                }
+            }
+            else
+            {
+                // 8-bit input images, but 24-bit texture
+                for(int j=0; j<ctx->image_width; j++)
+                {
+                    for(int k=0; k<3; k++)
+                        row_output[k] = row_input[0];
+                    row_input  += 1*step_input;
+                    row_output += 3;
+                }
             }
         }
     }
@@ -444,7 +506,7 @@ bool GL_image_display_update_textures( GL_image_display_context_t* ctx,
     glTexSubImage2D(GL_TEXTURE_2D, 0,
                     0,0,
                     ctx->image_width, ctx->image_height,
-                    GL_RED, GL_UNSIGNED_BYTE,
+                    GL_BGR, GL_UNSIGNED_BYTE,
                     0);
     assert_opengl();
 

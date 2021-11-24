@@ -216,8 +216,10 @@ import_array();
     {
         PyObject* result = NULL;
 
-        const npy_intp* dims = NULL;
-        const char*     data = NULL;
+        const npy_intp* dims    = NULL;
+        const char*     data    = NULL;
+        const npy_intp* strides = NULL;
+        int bpp                 = 0;
 
         if(image_data == NULL || image_data == Py_None)
            image_data = NULL;
@@ -234,38 +236,49 @@ import_array();
 
             int ndim = PyArray_NDIM((PyArrayObject*)image_data);
             int type = PyArray_TYPE((PyArrayObject*)image_data);
-            const npy_intp* strides = PyArray_STRIDES((PyArrayObject*)image_data);
+            strides = PyArray_STRIDES((PyArrayObject*)image_data);
 
-            if(ndim != 2)
-            {
-                PyErr_Format(PyExc_RuntimeError,
-                             "update_image(): 'image_data' argument must be None or a 2-dimensional numpy array. Got %d-dimensional array",
-                             ndim);
-                goto done;
-            }
-            else if (type != NPY_UINT8)
+            if (type != NPY_UINT8)
             {
                 PyErr_Format(PyExc_RuntimeError,
                              "update_image(): 'image_data' argument must be a numpy array with type=uint8. Got dtype=%d",
                              type);
                 goto done;
             }
-            else if (strides[1] != 1)
+            if(!(ndim == 2 || ndim == 3))
             {
                 PyErr_Format(PyExc_RuntimeError,
-                             "update_image(): 'image_data' argument must be a numpy array with each row stored densely. Got dims=(%d,%d), strides=(%d,%d)",
-                             dims[0],    dims[1],
-                             strides[0], strides[1]);
+                             "update_image(): 'image_data' argument must be None or a 2-dimensional or a 3-dimensional numpy array. Got %d-dimensional array",
+                             ndim);
                 goto done;
             }
 
-            // Remove this check to allow non-contiguous data
-            else if (strides[0] != dims[1])
+            if (ndim == 3)
+            {
+                if(dims[2] != 3)
+                {
+                    PyErr_Format(PyExc_RuntimeError,
+                                 "update_image(): 'image_data' argument is a 3-dimensional array. I expected the last dim to have length 3 (BGR), but it has length %d",
+                                 dims[2]);
+                    goto done;
+                }
+                if(strides[2] != 1)
+                {
+                    PyErr_Format(PyExc_RuntimeError,
+                                 "update_image(): 'image_data' argument is a 3-dimensional array. The last dim (BGR) must be stored densely",
+                                 dims[2]);
+                    goto done;
+                }
+
+                bpp = 24;
+            }
+            else
+                bpp = 8;
+
+            if (strides[1] != (ndim == 3 ? 3 : 1))
             {
                 PyErr_Format(PyExc_RuntimeError,
-                             "update_image(): 'image_data' argument must be a contiguous numpy array. Got dims=(%d,%d), strides=(%d,%d)",
-                             dims[0],    dims[1],
-                             strides[0], strides[1]);
+                             "update_image(): 'image_data' argument must be a numpy array with each row stored densely");
                 goto done;
             }
 
@@ -281,7 +294,9 @@ import_array();
         if( self->update_image(image_filename,
                                image_data == NULL ? NULL : data,
                                image_data == NULL ? 0    : dims[1],
-                               image_data == NULL ? 0    : dims[0]))
+                               image_data == NULL ? 0    : dims[0],
+                               image_data == NULL ? 0    : bpp,
+                               image_data == NULL ? 0    : strides[0]))
         {
             // success
             Py_INCREF(Py_None);
@@ -303,7 +318,9 @@ import_array();
                                           // Or these should be given
                                           const char* image_data,
                                           int         image_width,
-                                          int         image_height);
+                                          int         image_height,
+                                          int         image_bpp,
+                                          int         image_pitch);
 
 
 %extend Fl_Gl_Image_Widget

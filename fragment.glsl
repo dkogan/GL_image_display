@@ -13,6 +13,6 @@ void main(void)
     }
     else
     {
-        frag_color = vec3(texture2D(tex, tex_xy_fragment).r);
+        frag_color = texture2D(tex, tex_xy_fragment).xyz;
     }
 }

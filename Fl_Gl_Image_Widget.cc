@@ -29,7 +29,9 @@ void Fl_Gl_Image_Widget::UpdateImageCache::dealloc(void)
 bool Fl_Gl_Image_Widget::UpdateImageCache::save( const char* _image_filename,
                                                  const char* _image_data,
                                                  int         _image_width,
-                                                 int         _image_height)
+                                                 int         _image_height,
+                                                 int         _image_bpp,
+                                                 int         _image_pitch)
 {
     dealloc();
 
@@ -43,9 +45,19 @@ bool Fl_Gl_Image_Widget::UpdateImageCache::save( const char* _image_filename,
             return false;
         }
     }
-    if(_image_data != NULL)
+    else if(_image_data != NULL)
     {
-        const int size = _image_width*_image_height;
+        if(!(_image_bpp == 8 || _image_bpp == 24))
+        {
+            MSG("I support only 8 bits-per-pixel images and 24 bits-per-pixel images. Got %d", _image_bpp);
+            return false;
+        }
+        if(_image_pitch <= 0)
+        {
+            _image_pitch = _image_width * _image_bpp/8;
+        }
+
+        const int size = _image_pitch*_image_height;
         image_data = (char*)malloc(size);
         if(image_data == NULL)
         {
@@ -58,6 +70,8 @@ bool Fl_Gl_Image_Widget::UpdateImageCache::save( const char* _image_filename,
 
     image_width  = _image_width;
     image_height = _image_height;
+    image_bpp    = _image_bpp;
+    image_pitch  = _image_pitch;
     return true;
 }
 
@@ -67,7 +81,8 @@ bool Fl_Gl_Image_Widget::UpdateImageCache::apply(Fl_Gl_Image_Widget* w)
         return true;
     bool result = w->update_image(image_filename,
                                   image_data,
-                                  image_width, image_height);
+                                  image_width, image_height,
+                                  image_bpp,   image_pitch);
     dealloc();
     return result;
 }
@@ -94,7 +109,9 @@ bool Fl_Gl_Image_Widget::update_image( // Either this should be given
                                        // Or these should be given
                                        const char* image_data,
                                        int         image_width,
-                                       int         image_height)
+                                       int         image_height,
+                                       int         image_bpp,
+                                       int         image_pitch)
 {
     if(image_filename == NULL && image_data == NULL)
     {
@@ -120,7 +137,8 @@ bool Fl_Gl_Image_Widget::update_image( // Either this should be given
         // ready
         if(!m_update_image_cache.save(image_filename,
                                       image_data,
-                                      image_width, image_height))
+                                      image_width, image_height,
+                                      image_bpp, image_pitch))
         {
             MSG("m_update_image_cache.save() failed");
             return false;
@@ -130,7 +148,7 @@ bool Fl_Gl_Image_Widget::update_image( // Either this should be given
     // have new image to ingest
     if( !GL_image_display_update_textures(&m_ctx, m_decimation_level,
                                           image_filename,
-                                          image_data,image_width,image_height) )
+                                          image_data,image_width,image_height,image_bpp,image_pitch) )
     {
         MSG("GL_image_display_update_textures() failed");
         return false;
