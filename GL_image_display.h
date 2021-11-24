@@ -16,6 +16,7 @@ enum {
         GL_image_display_uniform_index_center01,
         GL_image_display_uniform_index_visible_width01,
         GL_image_display_uniform_index_upside_down,
+        GL_image_display_uniform_index_line_color_rgb,
         GL_image_display_num_uniforms
 };
 
@@ -37,6 +38,7 @@ typedef struct
 typedef struct
 {
     int   Nsegments;
+    float color_rgb[3];
 } GL_image_display_line_segments_t;
 
 // By default, everything in this structure is set to 0 at init time

@@ -42,6 +42,7 @@ static bool select_program_indexed(GL_image_display_context_t* ctx,
 // Set a uniform in all my programs
 #define set_uniform_1f(...)  _set_uniform(1f,  ##__VA_ARGS__)
 #define set_uniform_2f(...)  _set_uniform(2f,  ##__VA_ARGS__)
+#define set_uniform_3f(...)  _set_uniform(3f,  ##__VA_ARGS__)
 #define set_uniform_1fv(...) _set_uniform(1fv, ##__VA_ARGS__)
 #define set_uniform_1i(...)  _set_uniform(1i,  ##__VA_ARGS__)
 #define _set_uniform(kind, ctx, uniform, ...)                           \
@@ -261,6 +262,7 @@ bool GL_image_display_init( // output
         make_uniform(center01);
         make_uniform(visible_width01);
         make_uniform(upside_down);
+        make_uniform(line_color_rgb);
 
 #undef make_uniform
     }
@@ -751,6 +753,9 @@ bool GL_image_display_redraw(GL_image_display_context_t* ctx)
             uint16_t indices[set->Nsegments*2];
             for(int i=0; i<set->Nsegments*2; i++)
                 indices[i] = i+ipoint0;
+
+            set_uniform_3f(ctx, line_color_rgb,
+                           set->color_rgb[0], set->color_rgb[1], set->color_rgb[2]);
 
             glDrawElements(GL_LINES,
                            set->Nsegments*2,
