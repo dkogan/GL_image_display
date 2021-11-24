@@ -23,7 +23,7 @@ typedef struct
     // I will static_assert() this in the .c to make sure they are compatible
     int32_t uniforms[GL_image_display_num_uniforms];
 
-    uint32_t VBO_array, VBO_buffer, IBO_buffer;
+    uint32_t VBO_array, VBO_buffer;
 
     uint32_t program;
 }  GL_image_display_opengl_program_t;

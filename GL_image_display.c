@@ -182,28 +182,6 @@ bool GL_image_display_init( // output
         }
     }
 
-    // indices
-    {
-        // image
-        {
-            glBindVertexArray(ctx->programs[GL_image_display_program_index_image].VBO_array);
-            glBindBuffer(GL_ARRAY_BUFFER,
-                         ctx->programs[GL_image_display_program_index_image].VBO_buffer);
-
-            glGenBuffers(1, &ctx->programs[GL_image_display_program_index_image].IBO_buffer);
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ctx->programs[GL_image_display_program_index_image].IBO_buffer);
-
-            uint8_t indices[] = {0,1,2,
-                                 2,1,3};
-            glBufferData(GL_ELEMENT_ARRAY_BUFFER,
-                         sizeof(indices), indices,
-                         GL_STATIC_DRAW);
-        }
-
-        // line: don't need explicit indices. The glDrawElements() call
-        // gets those
-    }
-
     // shaders
     {
         const GLchar* image_vertex_glsl =
@@ -674,7 +652,7 @@ bool GL_image_display_redraw(GL_image_display_context_t* ctx)
     // // Wireframe rendering. For testing
     // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE );
 
-    void bind_program(int program_index, bool use_ibo)
+    void bind_program(int program_index)
     {
         glUseProgram(ctx->programs[program_index].program);
         assert_opengl();
@@ -682,20 +660,18 @@ bool GL_image_display_redraw(GL_image_display_context_t* ctx)
         glBindVertexArray(ctx->programs[program_index].VBO_array);
         glBindBuffer(GL_ARRAY_BUFFER,
                      ctx->programs[program_index].VBO_buffer);
-        if(use_ibo)
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ctx->programs[program_index].IBO_buffer);
     }
 
     ///////////// Render the image
     {
-        bind_program(GL_image_display_program_index_image, true);
+        bind_program(GL_image_display_program_index_image);
         assert_opengl();
         glBindTexture( GL_TEXTURE_2D, ctx->texture_ID);
         assert_opengl();
         glDrawElements(GL_TRIANGLES,
                        2*3,
                        GL_UNSIGNED_BYTE,
-                       NULL);
+                       ((uint8_t[]){0,1,2,  2,1,3}));
     }
 
     ///////////// Render the overlaid lines
