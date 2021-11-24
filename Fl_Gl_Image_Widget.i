@@ -28,6 +28,17 @@ with Python bindings provided by the pyfltk project:
 %feature("director");
 %feature("nodirector") Fl_Gl_Image_Widget::show;
 
+%feature("director:except") {
+    if ($error != NULL) {
+        throw Swig::DirectorMethodException();
+    }
+}
+%exception {
+    try { $action }
+    catch (Swig::DirectorException &e) { SWIG_fail; }
+}
+
+
 // ignore all variables -> no getters and setters
 %rename("$ignore",%$isvariable) "";
 
