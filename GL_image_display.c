@@ -643,8 +643,7 @@ bool GL_image_display_set_extents(GL_image_display_context_t* ctx,
 
 bool GL_image_display_set_lines(GL_image_display_context_t* ctx,
                                 const GL_image_display_line_segments_t* line_segment_sets,
-                                int Nline_segment_sets,
-                                const float* vertex_pool)
+                                int Nline_segment_sets)
 {
     CONFIRM_SET(did_init);
 
@@ -653,39 +652,11 @@ bool GL_image_display_set_lines(GL_image_display_context_t* ctx,
     if(Nline_segment_sets <= 0)
         return true;
 
-
     glBindVertexArray(ctx->programs[GL_image_display_program_index_line].VBO_array);
     glBindBuffer(GL_ARRAY_BUFFER,
                  ctx->programs[GL_image_display_program_index_line].VBO_buffer);
     float* buffer = glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
     assert(buffer);
-
-    int Nvertices_stored = 0;
-
-    for(int iset=0; iset<Nline_segment_sets; iset++)
-    {
-        const GL_image_display_line_segments_t* set =
-            &line_segment_sets[iset];
-
-        if(Nvertices_stored + 2*set->Nsegments > MAX_NUMBER_LINE_VERTICES)
-        {
-            MSG("Too many line segment vertices. Increase MAX_NUMBER_LINE_VERTICES. Giving up on all the lines");
-            ctx->Nline_segment_sets = 0;
-            free(ctx->line_segment_sets);
-            ctx->line_segment_sets = NULL;
-            return false;
-        }
-        memcpy(buffer, vertex_pool, 4*set->Nsegments*sizeof(float));
-
-        Nvertices_stored += 2*set->Nsegments;
-        buffer      = &buffer     [4*set->Nsegments];
-        vertex_pool = &vertex_pool[4*set->Nsegments];
-        set++;
-    }
-
-    int res = glUnmapBuffer(GL_ARRAY_BUFFER);
-    assert( res == GL_TRUE );
-
 
     ctx->line_segment_sets = realloc(ctx->line_segment_sets,
                                      Nline_segment_sets * sizeof(line_segment_sets[0]));
@@ -694,7 +665,37 @@ bool GL_image_display_set_lines(GL_image_display_context_t* ctx,
         MSG("realloc(line segment sets failed");
         return false;
     }
-    memcpy(ctx->line_segment_sets, line_segment_sets, Nline_segment_sets * sizeof(line_segment_sets[0]));
+
+    int Nvertices_stored = 0;
+    for(int iset=0; iset<Nline_segment_sets; iset++)
+    {
+        const GL_image_display_line_segments_t* set =
+            &line_segment_sets[iset];
+
+        int Nsegments = set->segments.Nsegments;
+
+        if(Nvertices_stored + 2*Nsegments > MAX_NUMBER_LINE_VERTICES)
+        {
+            MSG("Too many line segment vertices. Increase MAX_NUMBER_LINE_VERTICES. Giving up on all the lines");
+            ctx->Nline_segment_sets = 0;
+            free(ctx->line_segment_sets);
+            ctx->line_segment_sets = NULL;
+            return false;
+        }
+        memcpy(buffer,
+               set->qxy,
+               4*Nsegments*sizeof(float));
+
+        ctx->line_segment_sets[iset] = set->segments;
+
+        Nvertices_stored += 2*Nsegments;
+        buffer      = &buffer[4*Nsegments];
+        set++;
+    }
+
+    int res = glUnmapBuffer(GL_ARRAY_BUFFER);
+    assert( res == GL_TRUE );
+
     return true;
 }
 
@@ -747,7 +748,7 @@ bool GL_image_display_redraw(GL_image_display_context_t* ctx)
         int ipoint0 = 0;
         for(int iset=0; iset<ctx->Nline_segment_sets; iset++)
         {
-            const GL_image_display_line_segments_t* set =
+            const GL_image_display_line_segments_nopoints_t* set =
                 &ctx->line_segment_sets[iset];
 
             uint16_t indices[set->Nsegments*2];

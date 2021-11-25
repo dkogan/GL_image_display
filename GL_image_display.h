@@ -37,8 +37,14 @@ typedef struct
 // the vertex_pool passed to GL_image_display_set_lines
 typedef struct
 {
-    int   Nsegments;
-    float color_rgb[3];
+    int          Nsegments;
+    float        color_rgb[3];
+} GL_image_display_line_segments_nopoints_t;
+typedef struct
+{
+    GL_image_display_line_segments_nopoints_t segments;
+    // Nsegments*2*2 values. Each segment has two points. Each point has (x,y)
+    const float* qxy;
 } GL_image_display_line_segments_t;
 
 // By default, everything in this structure is set to 0 at init time
@@ -62,7 +68,7 @@ typedef struct
     int viewport_width, viewport_height;
 
     int Nline_segment_sets;
-    GL_image_display_line_segments_t* line_segment_sets;
+    GL_image_display_line_segments_nopoints_t* line_segment_sets;
 
     double x_centerpixel;
     double y_centerpixel;
@@ -116,8 +122,7 @@ bool GL_image_display_set_extents(GL_image_display_context_t* ctx,
 
 bool GL_image_display_set_lines(GL_image_display_context_t* ctx,
                                 const GL_image_display_line_segments_t* line_segment_sets,
-                                int Nline_segment_sets,
-                                const float* vertex_pool);
+                                int Nline_segment_sets);
 
 bool GL_image_display_redraw(GL_image_display_context_t* ctx);
 

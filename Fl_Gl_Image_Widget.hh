@@ -64,6 +64,5 @@ public:
                                        double x, double y);
 
     bool set_lines(const GL_image_display_line_segments_t* line_segment_sets,
-                   int Nline_segment_sets,
-                   const float* vertex_pool);
+                   int Nline_segment_sets);
 };
