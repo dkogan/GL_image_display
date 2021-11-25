@@ -10,3 +10,6 @@ __pycache__
 *.rej
 GL_image_display-test-glut
 GL_image_display-test-fltk
+
+Fl_Gl_Image_Widget_pywrap.*
+Fl_Gl_Image_Widget.py
