@@ -81,11 +81,11 @@ public:
                                                                &image_pixel_y,
                                                                (double)Fl::event_x(),
                                                                (double)Fl::event_y());
-                const float pool[] = {(float)image_pixel_x - 10, (float)image_pixel_y,
-                                      (float)image_pixel_x + 10, (float)image_pixel_y,
+                const float pool[] = {(float)image_pixel_x - 50, (float)image_pixel_y,
+                                      (float)image_pixel_x + 50, (float)image_pixel_y,
 
-                                      (float)image_pixel_x,      (float)image_pixel_y - 10,
-                                      (float)image_pixel_x,      (float)image_pixel_y + 10};
+                                      (float)image_pixel_x,      (float)image_pixel_y - 50,
+                                      (float)image_pixel_x,      (float)image_pixel_y + 50};
 
                 const GL_image_display_line_segments_t cross =
                     { .segments = {.Nsegments = 2,
