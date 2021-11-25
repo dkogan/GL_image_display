@@ -7,6 +7,8 @@ import sys
 from fltk import *
 from Fl_Gl_Image_Widget import Fl_Gl_Image_Widget
 
+import numpy as np
+
 
 try:
     image_filename = sys.argv[1]
@@ -26,6 +28,21 @@ class Fl_Gl_Image_Widget_Derived(Fl_Gl_Image_Widget):
                 status.value(f"{qi[0]:.2f},{qi[1]:.2f}")
             except:
                 status.value("")
+        if event == FL_PUSH:
+            try:
+                x,y = self.map_pixel_image_from_viewport( (Fl.event_x(),Fl.event_y()), )
+            except:
+                return super().handle(event)
+
+            self.set_lines( (dict(points =
+                                 np.array( (((x - 50, y),
+                                             (x + 50, y)),
+                                            ((x,      y - 50),
+                                             (x,      y + 50))),
+                                           dtype=np.float32),
+                                  color_rgb = np.array((1,0,0), dtype=np.float32) ),))
+            self.redraw()
+
         return super().handle(event)
 
 
@@ -40,7 +57,6 @@ if 1:
     image.update_image(image_filename = image_filename)
 else:
     import cv2
-    import numpy as np
     image.update_image(image_data = cv2.imread(image_filename))
 
 Fl.run()

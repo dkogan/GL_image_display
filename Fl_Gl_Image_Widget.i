@@ -551,4 +551,116 @@ RETURN VALUE
 A length-2 tuple containing the mapped pixel coordinate
 """;
 
+%extend Fl_Gl_Image_Widget
+{
+    PyObject* set_lines(PyObject* args)
+    {
+        PyObject* result = NULL;
+        PyObject* set    = NULL;
+        int Nsets        = 0;
+
+        if(!PySequence_Check(args))
+        {
+            PyErr_SetString(PyExc_RuntimeError,
+                            "set_lines() argument list isn't a list. This is a bug");
+            goto done;
+        }
+
+        Nsets = PySequence_Length(args);
+
+        {
+            GL_image_display_line_segments_t sets[Nsets];
+
+            PyObject* points;
+            PyObject* color_rgb;
+
+            int ndim                = 0;
+            const npy_intp* dims    = NULL;
+
+            for(int i=0; i<Nsets; i++)
+            {
+                set = PySequence_ITEM(args, i);
+                if(!PyDict_Check(set))
+                {
+                    PyErr_SetString(PyExc_RuntimeError,
+                                    "set_lines(): each argument should be a dict");
+                    goto done;
+                }
+
+                color_rgb  = PyDict_GetItemString(set, "color_rgb");
+                if(color_rgb == NULL)
+                {
+                    PyErr_SetString(PyExc_RuntimeError,
+                                    "set_lines(): each argument should be a dict with keys 'points' and 'color_rgb'. Missing: 'color_rgb'");
+                    goto done;
+                }
+                if(!PyArray_Check((PyArrayObject*)color_rgb))
+                {
+                    PyErr_SetString(PyExc_RuntimeError,
+                                    "set_lines(): each argument should be a dict with keys 'points' and 'color_rgb', both pointing to numpy arrays. 'color_rgb' element is not a numpy array");
+                    goto done;
+                }
+                ndim    = PyArray_NDIM((PyArrayObject*)color_rgb);
+                dims    = PyArray_DIMS((PyArrayObject*)color_rgb);
+                if(! (ndim == 1 && dims[0] == 3 &&
+                      PyArray_TYPE((PyArrayObject*)color_rgb) == NPY_FLOAT32 &&
+                      PyArray_CHKFLAGS((PyArrayObject*)color_rgb, NPY_ARRAY_C_CONTIGUOUS)) )
+                {
+                    PyErr_SetString(PyExc_RuntimeError,
+                                    "set_lines(): color_rgb needs to have shape (3,), contain float32 and be contiguous");
+                    goto done;
+                }
+
+                points = PyDict_GetItemString(set, "points");
+                if(points == NULL)
+                {
+                    PyErr_SetString(PyExc_RuntimeError,
+                                    "set_lines(): each argument should be a dict with keys 'points' and 'color_rgb'. Missing: 'points'");
+                    goto done;
+                }
+                if(!PyArray_Check((PyArrayObject*)points))
+                {
+                    PyErr_SetString(PyExc_RuntimeError,
+                                    "set_lines(): each argument should be a dict with keys 'points' and 'color_rgb', both pointing to numpy arrays. 'points' element is not a numpy array");
+                    goto done;
+                }
+                ndim    = PyArray_NDIM((PyArrayObject*)points);
+                dims    = PyArray_DIMS((PyArrayObject*)points);
+                if(! (ndim == 3 && dims[1] == 2 && dims[2] == 2 &&
+                      PyArray_TYPE((PyArrayObject*)points) == NPY_FLOAT32 &&
+                      PyArray_CHKFLAGS((PyArrayObject*)points, NPY_ARRAY_C_CONTIGUOUS)) )
+                {
+                    PyErr_SetString(PyExc_RuntimeError,
+                                    "set_lines(): points need to have shape (N,2,2), contain float32 and be contiguous");
+                    goto done;
+                }
+
+                sets[i].segments.Nsegments = dims[0];
+                memcpy(sets[i].segments.color_rgb,
+                       PyArray_DATA((PyArrayObject*)color_rgb),
+                       3*sizeof(float));
+                sets[i].qxy = (const float*)PyArray_DATA((PyArrayObject*)points);
+
+                Py_XDECREF(set);
+                set = NULL;
+            }
+
+            if(!self->set_lines(sets, Nsets))
+            {
+                PyErr_SetString(PyExc_RuntimeError,
+                                "set_lines() failed");
+                goto done;
+            }
+        }
+        Py_INCREF(Py_None);
+        result = Py_None;
+
+    done:
+        Py_XDECREF(set);
+        return result;
+    }
+}
+%ignore Fl_Gl_Image_Widget::set_lines(const GL_image_display_line_segments_t* line_segment_sets,
+                                      int Nline_segment_sets);
+
 %include "Fl_Gl_Image_Widget.hh"
