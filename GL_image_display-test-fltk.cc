@@ -72,6 +72,34 @@ public:
                 // Let the other handlers run
                 break;
             }
+
+        case FL_PUSH:
+            {
+                double image_pixel_x, image_pixel_y;
+                GL_image_display_map_pixel_image_from_viewport(&m_ctx,
+                                                               &image_pixel_x,
+                                                               &image_pixel_y,
+                                                               (double)Fl::event_x(),
+                                                               (double)Fl::event_y());
+                const float pool[] = {(float)image_pixel_x - 10, (float)image_pixel_y,
+                                      (float)image_pixel_x + 10, (float)image_pixel_y,
+
+                                      (float)image_pixel_x,      (float)image_pixel_y - 10,
+                                      (float)image_pixel_x,      (float)image_pixel_y + 10};
+
+                const GL_image_display_line_segments_t cross =
+                    { .segments = {.Nsegments = 2,
+                                   .color_rgb = {1.f,0.f,0.f}},
+                      .qxy      = pool };
+                if( !set_lines(&cross, 1))
+                {
+                    fprintf(stderr, "GL_image_display_set_lines() failed\n");
+                }
+
+                redraw();
+                break;
+            }
+
         default: ;
         }
 
