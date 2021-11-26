@@ -26,7 +26,8 @@ void Fl_Gl_Image_Widget::UpdateTexturesCache::dealloc(void)
     image_data = NULL;
 }
 
-bool Fl_Gl_Image_Widget::UpdateTexturesCache::save( const char* _image_filename,
+bool Fl_Gl_Image_Widget::UpdateTexturesCache::save( int         _decimation_level,
+                                                    const char* _image_filename,
                                                     const char* _image_data,
                                                     int         _image_width,
                                                     int         _image_height,
@@ -68,10 +69,11 @@ bool Fl_Gl_Image_Widget::UpdateTexturesCache::save( const char* _image_filename,
         memcpy(image_data, _image_data, size);
     }
 
-    image_width  = _image_width;
-    image_height = _image_height;
-    image_bpp    = _image_bpp;
-    image_pitch  = _image_pitch;
+    decimation_level = _decimation_level;
+    image_width      = _image_width;
+    image_height     = _image_height;
+    image_bpp        = _image_bpp;
+    image_pitch      = _image_pitch;
     return true;
 }
 
@@ -79,7 +81,8 @@ bool Fl_Gl_Image_Widget::UpdateTexturesCache::apply(Fl_Gl_Image_Widget* w)
 {
     if(image_filename == NULL && image_data == NULL)
         return true;
-    bool result = w->update_textures(image_filename,
+    bool result = w->update_textures(decimation_level,
+                                     image_filename,
                                      image_data,
                                      image_width, image_height,
                                      image_bpp,   image_pitch);
@@ -88,10 +91,8 @@ bool Fl_Gl_Image_Widget::UpdateTexturesCache::apply(Fl_Gl_Image_Widget* w)
 }
 
 
-Fl_Gl_Image_Widget::Fl_Gl_Image_Widget(int x, int y, int w, int h,
-                                       int decimation_level) :
+Fl_Gl_Image_Widget::Fl_Gl_Image_Widget(int x, int y, int w, int h) :
     Fl_Gl_Window(x, y, w, h),
-    m_decimation_level(decimation_level),
     m_update_textures_cache()
 {
     mode(FL_DOUBLE | FL_OPENGL3);
@@ -104,48 +105,6 @@ Fl_Gl_Image_Widget::~Fl_Gl_Image_Widget()
         GL_image_display_deinit(&m_ctx);
 }
 
-bool Fl_Gl_Image_Widget::update_textures( // Either this should be given
-                                          const char* image_filename,
-                                          // Or these should be given
-                                          const char* image_data,
-                                          int         image_width,
-                                          int         image_height,
-                                          int         image_bpp,
-                                          int         image_pitch)
-{
-    if(!m_ctx.did_init)
-    {
-        // If the GL context wasn't inited yet, I must init it first. BUT in
-        // order to init it, some things about the X window must be set up.
-        // I cannot rely on them being set up here, so I init stuff only in
-        // the draw() call below. If I try to init here, I see this:
-        //
-        //   python3: ../src/dispatch_common.c:868: epoxy_get_proc_address: Assertion `0 && "Couldn't find current GLX or EGL context.\n"' failed.
-        //
-        // So I save the data in this call, and apply it later, when I'm
-        // ready
-        if(!m_update_textures_cache.save(image_filename,
-                                         image_data,
-                                         image_width, image_height,
-                                         image_bpp, image_pitch))
-        {
-            MSG("m_update_textures_cache.save() failed");
-            return false;
-        }
-        return true;
-    }
-    // have new image to ingest
-    if( !GL_image_display_update_textures(&m_ctx, m_decimation_level,
-                                          image_filename,
-                                          image_data,image_width,image_height,image_bpp,image_pitch) )
-    {
-        MSG("GL_image_display_update_textures() failed");
-        return false;
-    }
-
-    redraw();
-    return true;
-}
 
 void Fl_Gl_Image_Widget::draw(void)
 {
@@ -343,6 +302,52 @@ int Fl_Gl_Image_Widget::handle(int event)
     }
 
     return Fl_Gl_Window::handle(event);
+}
+
+bool Fl_Gl_Image_Widget::update_textures( int decimation_level,
+                                          // Either this should be given
+                                          const char* image_filename,
+                                          // Or these should be given
+                                          const char* image_data,
+                                          int         image_width,
+                                          int         image_height,
+                                          int         image_bpp,
+                                          int         image_pitch)
+{
+    if(!m_ctx.did_init)
+    {
+        // If the GL context wasn't inited yet, I must init it first. BUT in
+        // order to init it, some things about the X window must be set up.
+        // I cannot rely on them being set up here, so I init stuff only in
+        // the draw() call below. If I try to init here, I see this:
+        //
+        //   python3: ../src/dispatch_common.c:868: epoxy_get_proc_address: Assertion `0 && "Couldn't find current GLX or EGL context.\n"' failed.
+        //
+        // So I save the data in this call, and apply it later, when I'm
+        // ready
+        if(!m_update_textures_cache.save(decimation_level,
+                                         image_filename,
+                                         image_data,
+                                         image_width, image_height,
+                                         image_bpp, image_pitch))
+        {
+            MSG("m_update_textures_cache.save() failed");
+            return false;
+        }
+        return true;
+    }
+    // have new image to ingest
+    if( !GL_image_display_update_textures(&m_ctx,
+                                          decimation_level,
+                                          image_filename,
+                                          image_data,image_width,image_height,image_bpp,image_pitch) )
+    {
+        MSG("GL_image_display_update_textures() failed");
+        return false;
+    }
+
+    redraw();
+    return true;
 }
 
 bool Fl_Gl_Image_Widget::map_pixel_viewport_from_image(double* xout, double* yout,

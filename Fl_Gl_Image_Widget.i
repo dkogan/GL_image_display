@@ -110,17 +110,6 @@ ARGUMENTS:
 - w: required integer that specifies the width of the widget
 
 - h: required integer that specifies the height of the widget
-
-- decimation_level: optional integer, defaulting to 0. Specifies the resolution
-  of the displayed image.
-
-  - if 0: the given images are displayed at full resolution
-
-  - if 1: the given images are displayed at half-resolution
-
-  - if 2: the given images are displayed at quarter-resolution
-
-  - and so on
  """;
 
 %feature("docstring") Fl_Gl_Image_Widget::draw
@@ -156,13 +145,25 @@ SYNOPSIS
   g.update_textures(image_filename = 'image.jpg')
   Fl.run()
 
-The data displayed by the widget is providing using this update_textures() method.
-This method is given the FULL-resolution data; it may be downsampled before
-displaying, if the decimation_level argument to the constructor was non-zero.
+The data displayed by the widget is providing using this update_textures()
+method. This method is given the full-resolution data, subject to any decimation
+specified in decimation_level argument:
 
-This method may be called as many times as necessary.
+- if decimation_level==0: the given image is displayed at full resolution
+
+- if decimation_level==1: the given image is displayed at half-resolution
+
+- if decimation_level==2: the given image is displayed at quarter-resolution
+
+and so on.
+
+This method may be called as many times as necessary. The decimation level and
+image dimensions MUST match those given in the first call to this function.
 
 The data may be passed-in to this method in one of two ways:
+
+- decimation_level: optional integer, defaulting to 0. Specifies the resolution
+  of the displayed image.
 
 - image_filename is not None: the image is read from a file on disk, with the
   given filename. image_data must be None
@@ -211,8 +212,9 @@ import_array();
 
 %extend Fl_Gl_Image_Widget
 {
-    PyObject* update_textures(const char* image_filename = NULL,
-                           PyObject*   image_data     = NULL)
+    PyObject* update_textures(int         decimation_level = 0,
+                              const char* image_filename   = NULL,
+                              PyObject*   image_data       = NULL)
     {
         PyObject* result = NULL;
 
@@ -291,12 +293,13 @@ import_array();
             }
         }
 
-        if( self->update_textures(image_filename,
-                               image_data == NULL ? NULL : data,
-                               image_data == NULL ? 0    : dims[1],
-                               image_data == NULL ? 0    : dims[0],
-                               image_data == NULL ? 0    : bpp,
-                               image_data == NULL ? 0    : strides[0]))
+        if( self->update_textures(decimation_level,
+                                  image_filename,
+                                  image_data == NULL ? NULL : data,
+                                  image_data == NULL ? 0    : dims[1],
+                                  image_data == NULL ? 0    : dims[0],
+                                  image_data == NULL ? 0    : bpp,
+                                  image_data == NULL ? 0    : strides[0]))
         {
             // success
             Py_INCREF(Py_None);
@@ -313,14 +316,15 @@ import_array();
         return result;
     }
 }
-%ignore Fl_Gl_Image_Widget::update_textures( // Either this should be given
-                                          const char* image_filename,
-                                          // Or these should be given
-                                          const char* image_data,
-                                          int         image_width,
-                                          int         image_height,
-                                          int         image_bpp,
-                                          int         image_pitch);
+%ignore Fl_Gl_Image_Widget::update_textures( int decimation_level,
+                                             // Either this should be given
+                                             const char* image_filename,
+                                             // Or these should be given
+                                             const char* image_data,
+                                             int         image_width,
+                                             int         image_height,
+                                             int         image_bpp,
+                                             int         image_pitch);
 
 
 %extend Fl_Gl_Image_Widget

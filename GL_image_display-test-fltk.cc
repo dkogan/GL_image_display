@@ -40,9 +40,8 @@ static const char*const* g_images;
 class Fl_Gl_Image_Widget_Derived : public Fl_Gl_Image_Widget
 {
 public:
-    Fl_Gl_Image_Widget_Derived(int x, int y, int w, int h,
-                               int decimation_level = 0) :
-        Fl_Gl_Image_Widget(x,y,w,h,decimation_level)
+    Fl_Gl_Image_Widget_Derived(int x, int y, int w, int h) :
+        Fl_Gl_Image_Widget(x,y,w,h)
     {}
 
     int handle(int event)
@@ -117,7 +116,8 @@ void timer_callback(void* cookie __attribute__((unused)))
     for(int i=0; i<2; i++)
         for(int j=0; j<2; j++)
         {
-            if(!g_gl_widgets[2*i+j]->update_textures(g_images[(2*i+j + c)%4]))
+            if(!g_gl_widgets[2*i+j]->update_textures(DECIMATION,
+                                                     g_images[(2*i+j + c)%4]))
             {
                 MSG("Couldn't update the image. Giving up.");
                 g_window->hide();
@@ -150,22 +150,18 @@ int main(int argc, char** argv)
         int h = (WINDOW_H - STATUS_H)/2;
         int y = 0;
         g_gl_widgets[0] = new Fl_Gl_Image_Widget_Derived(0, y,
-                                                         w, h,
-                                                         DECIMATION);
+                                                         w, h);
         g_gl_widgets[1] = new Fl_Gl_Image_Widget_Derived(w, y,
                                                          WINDOW_W-w,
-                                                         h,
-                                                         DECIMATION);
+                                                         h);
         y = h;
         h = WINDOW_H - STATUS_H - y;
         g_gl_widgets[2] = new Fl_Gl_Image_Widget_Derived(0, y,
                                                          w,
-                                                         h,
-                                                         DECIMATION);
+                                                         h);
         g_gl_widgets[3] = new Fl_Gl_Image_Widget_Derived(w, y,
                                                          WINDOW_W-w,
-                                                         h,
-                                                         DECIMATION);
+                                                         h);
 
     }
     images->end();

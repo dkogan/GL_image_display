@@ -13,15 +13,14 @@ protected:
     GL_image_display_context_t m_ctx;
     int                        m_last_drag_update_xy[2];
 
-    int m_decimation_level;
-
     struct UpdateTexturesCache
     {
         UpdateTexturesCache();
         ~UpdateTexturesCache();
         void dealloc(void);
 
-        bool save( const char* _image_filename,
+        bool save( int         _decimation_level,
+                   const char* _image_filename,
                    const char* _image_data,
                    int         _image_width,
                    int         _image_height,
@@ -29,6 +28,7 @@ protected:
                    int         _image_pitch);
         bool apply(Fl_Gl_Image_Widget* w);
 
+        int   decimation_level;
         char* image_filename;
         char* image_data;
         int   image_width;
@@ -39,13 +39,13 @@ protected:
 
 
 public:
-    Fl_Gl_Image_Widget(int x, int y, int w, int h,
-                       int decimation_level = 0);
+    Fl_Gl_Image_Widget(int x, int y, int w, int h);
 
     virtual ~Fl_Gl_Image_Widget();
 
-    bool update_textures( // Either this should be given
-                          const char* image_filename,
+    bool update_textures( int decimation_level         = 0,
+                          // Either this should be given
+                          const char* image_filename   = NULL,
                           // Or these should be given
                           const char* image_data       = NULL,
                           int         image_width      = 0,
