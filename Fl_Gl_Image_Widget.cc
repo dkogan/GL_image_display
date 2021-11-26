@@ -194,12 +194,10 @@ int Fl_Gl_Image_Widget::handle(int event)
 
                 m_ctx.visible_width_pixels *= z;
 
-                if(!GL_image_display_set_panzoom(&m_ctx,
-                                                 m_ctx.x_centerpixel,
-                                                 m_ctx.y_centerpixel,
-                                                 m_ctx.visible_width_pixels))
+                if(!set_panzoom(m_ctx.x_centerpixel, m_ctx.y_centerpixel,
+                                m_ctx.visible_width_pixels))
                 {
-                    MSG("GL_image_display_set_panzoom() failed. Trying to continue...");
+                    MSG("set_panzoom() failed. Trying to continue...");
                     return 1;
                 }
 
@@ -220,12 +218,10 @@ int Fl_Gl_Image_Widget::handle(int event)
                 m_ctx.x_centerpixel += 50. * (double)dx * m_ctx.visible_width_pixels / (double)pixel_w();
                 m_ctx.y_centerpixel += 50. * (double)dy * m_ctx.visible_width_pixels / (double)pixel_w();
 
-                if(!GL_image_display_set_panzoom(&m_ctx,
-                                                 m_ctx.x_centerpixel,
-                                                 m_ctx.y_centerpixel,
-                                                 m_ctx.visible_width_pixels))
+                if(!set_panzoom(m_ctx.x_centerpixel, m_ctx.y_centerpixel,
+                                m_ctx.visible_width_pixels))
                 {
-                    MSG("GL_image_display_set_panzoom() failed. Trying to continue...");
+                    MSG("set_panzoom() failed. Trying to continue...");
                     return 1;
                 }
 
@@ -283,12 +279,10 @@ int Fl_Gl_Image_Widget::handle(int event)
                 (m_ctx.aspect_y * viewport_height) *
                 (double)m_ctx.image_height;
 
-            if(!GL_image_display_set_panzoom(&m_ctx,
-                                             m_ctx.x_centerpixel,
-                                             m_ctx.y_centerpixel,
-                                             m_ctx.visible_width_pixels))
+            if(!set_panzoom(m_ctx.x_centerpixel, m_ctx.y_centerpixel,
+                            m_ctx.visible_width_pixels))
             {
-                MSG("GL_image_display_set_panzoom() failed. Trying to continue...");
+                MSG("set_panzoom() failed. Trying to continue...");
                 return 1;
             }
 
@@ -357,6 +351,14 @@ bool Fl_Gl_Image_Widget::map_pixel_viewport_from_image(double* xout, double* you
         GL_image_display_map_pixel_viewport_from_image(&m_ctx,
                                                        xout, yout,
                                                        x, y);
+}
+bool Fl_Gl_Image_Widget::set_panzoom(double x_centerpixel, double y_centerpixel,
+                                     double visible_width_pixels)
+{
+    return
+        GL_image_display_set_panzoom(&m_ctx,
+                                     x_centerpixel, y_centerpixel,
+                                     visible_width_pixels);
 }
 
 bool Fl_Gl_Image_Widget::map_pixel_image_from_viewport(double* xout, double* yout,

@@ -56,6 +56,8 @@ public:
     void draw(void);
 
     virtual int handle(int event);
+    bool set_panzoom(double x_centerpixel, double y_centerpixel,
+                     double visible_width_pixels);
 
     bool map_pixel_viewport_from_image(double* xout, double* yout,
                                        double x, double y);
