@@ -6,18 +6,18 @@
 #include <string.h>
 #include <math.h>
 
-Fl_Gl_Image_Widget::UpdateImageCache::UpdateImageCache()
+Fl_Gl_Image_Widget::UpdateTexturesCache::UpdateTexturesCache()
     : image_filename(NULL),
       image_data(NULL)
 {
 }
 
-Fl_Gl_Image_Widget::UpdateImageCache::~UpdateImageCache()
+Fl_Gl_Image_Widget::UpdateTexturesCache::~UpdateTexturesCache()
 {
     dealloc();
 }
 
-void Fl_Gl_Image_Widget::UpdateImageCache::dealloc(void)
+void Fl_Gl_Image_Widget::UpdateTexturesCache::dealloc(void)
 {
     free((void*)image_filename);
     image_filename = NULL;
@@ -26,12 +26,12 @@ void Fl_Gl_Image_Widget::UpdateImageCache::dealloc(void)
     image_data = NULL;
 }
 
-bool Fl_Gl_Image_Widget::UpdateImageCache::save( const char* _image_filename,
-                                                 const char* _image_data,
-                                                 int         _image_width,
-                                                 int         _image_height,
-                                                 int         _image_bpp,
-                                                 int         _image_pitch)
+bool Fl_Gl_Image_Widget::UpdateTexturesCache::save( const char* _image_filename,
+                                                    const char* _image_data,
+                                                    int         _image_width,
+                                                    int         _image_height,
+                                                    int         _image_bpp,
+                                                    int         _image_pitch)
 {
     dealloc();
 
@@ -75,14 +75,14 @@ bool Fl_Gl_Image_Widget::UpdateImageCache::save( const char* _image_filename,
     return true;
 }
 
-bool Fl_Gl_Image_Widget::UpdateImageCache::apply(Fl_Gl_Image_Widget* w)
+bool Fl_Gl_Image_Widget::UpdateTexturesCache::apply(Fl_Gl_Image_Widget* w)
 {
     if(image_filename == NULL && image_data == NULL)
         return true;
-    bool result = w->update_image(image_filename,
-                                  image_data,
-                                  image_width, image_height,
-                                  image_bpp,   image_pitch);
+    bool result = w->update_textures(image_filename,
+                                     image_data,
+                                     image_width, image_height,
+                                     image_bpp,   image_pitch);
     dealloc();
     return result;
 }
@@ -92,7 +92,7 @@ Fl_Gl_Image_Widget::Fl_Gl_Image_Widget(int x, int y, int w, int h,
                                        int decimation_level) :
     Fl_Gl_Window(x, y, w, h),
     m_decimation_level(decimation_level),
-    m_update_image_cache()
+    m_update_textures_cache()
 {
     mode(FL_DOUBLE | FL_OPENGL3);
     memset(&m_ctx, 0, sizeof(m_ctx));
@@ -104,23 +104,23 @@ Fl_Gl_Image_Widget::~Fl_Gl_Image_Widget()
         GL_image_display_deinit(&m_ctx);
 }
 
-bool Fl_Gl_Image_Widget::update_image( // Either this should be given
-                                       const char* image_filename,
-                                       // Or these should be given
-                                       const char* image_data,
-                                       int         image_width,
-                                       int         image_height,
-                                       int         image_bpp,
-                                       int         image_pitch)
+bool Fl_Gl_Image_Widget::update_textures( // Either this should be given
+                                          const char* image_filename,
+                                          // Or these should be given
+                                          const char* image_data,
+                                          int         image_width,
+                                          int         image_height,
+                                          int         image_bpp,
+                                          int         image_pitch)
 {
     if(image_filename == NULL && image_data == NULL)
     {
-        MSG("Fl_Gl_Image_Widget:update_image(): exactly one of (image_filename,image_data) must be non-NULL. Instead both were NULL");
+        MSG("Fl_Gl_Image_Widget:update_textures(): exactly one of (image_filename,image_data) must be non-NULL. Instead both were NULL");
         return false;
     }
     if(image_filename != NULL && image_data != NULL)
     {
-        MSG("Fl_Gl_Image_Widget:update_image(): exactly one of (image_filename,image_data) must be non-NULL. Instead both were non-NULL");
+        MSG("Fl_Gl_Image_Widget:update_textures(): exactly one of (image_filename,image_data) must be non-NULL. Instead both were non-NULL");
         return false;
     }
 
@@ -135,12 +135,12 @@ bool Fl_Gl_Image_Widget::update_image( // Either this should be given
         //
         // So I save the data in this call, and apply it later, when I'm
         // ready
-        if(!m_update_image_cache.save(image_filename,
-                                      image_data,
-                                      image_width, image_height,
-                                      image_bpp, image_pitch))
+        if(!m_update_textures_cache.save(image_filename,
+                                         image_data,
+                                         image_width, image_height,
+                                         image_bpp, image_pitch))
         {
-            MSG("m_update_image_cache.save() failed");
+            MSG("m_update_textures_cache.save() failed");
             return false;
         }
         return true;
@@ -168,7 +168,7 @@ void Fl_Gl_Image_Widget::draw(void)
             return;
         }
 
-        if(!m_update_image_cache.apply(this))
+        if(!m_update_textures_cache.apply(this))
             return;
     }
 

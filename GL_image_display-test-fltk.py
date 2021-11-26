@@ -54,9 +54,9 @@ window.end()
 window.show()
 
 if 1:
-    image.update_image(image_filename = image_filename)
+    image.update_textures(image_filename = image_filename)
 else:
     import cv2
-    image.update_image(image_data = cv2.imread(image_filename))
+    image.update_textures(image_data = cv2.imread(image_filename))
 
 Fl.run()

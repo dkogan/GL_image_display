@@ -15,10 +15,10 @@ protected:
 
     int m_decimation_level;
 
-    struct UpdateImageCache
+    struct UpdateTexturesCache
     {
-        UpdateImageCache();
-        ~UpdateImageCache();
+        UpdateTexturesCache();
+        ~UpdateTexturesCache();
         void dealloc(void);
 
         bool save( const char* _image_filename,
@@ -35,7 +35,7 @@ protected:
         int   image_height;
         int   image_bpp;
         int   image_pitch;
-    } m_update_image_cache;
+    } m_update_textures_cache;
 
 
 public:
@@ -44,14 +44,14 @@ public:
 
     virtual ~Fl_Gl_Image_Widget();
 
-    bool update_image( // Either this should be given
-                       const char* image_filename,
-                       // Or these should be given
-                       const char* image_data       = NULL,
-                       int         image_width      = 0,
-                       int         image_height     = 0,
-                       int         image_bpp        = 0,
-                       int         image_pitch      = 0);
+    bool update_textures( // Either this should be given
+                          const char* image_filename,
+                          // Or these should be given
+                          const char* image_data       = NULL,
+                          int         image_width      = 0,
+                          int         image_height     = 0,
+                          int         image_bpp        = 0,
+                          int         image_pitch      = 0);
 
     void draw(void);
 
