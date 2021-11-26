@@ -347,10 +347,12 @@ bool Fl_Gl_Image_Widget::update_image( int decimation_level,
 bool Fl_Gl_Image_Widget::set_panzoom(double x_centerpixel, double y_centerpixel,
                                      double visible_width_pixels)
 {
-    return
+    bool result =
         GL_image_display_set_panzoom(&m_ctx,
                                      x_centerpixel, y_centerpixel,
                                      visible_width_pixels);
+    redraw();
+    return result;
 }
 
 bool Fl_Gl_Image_Widget::map_pixel_viewport_from_image(double* xout, double* yout,
@@ -374,8 +376,10 @@ bool Fl_Gl_Image_Widget::map_pixel_image_from_viewport(double* xout, double* you
 bool Fl_Gl_Image_Widget::set_lines(const GL_image_display_line_segments_t* line_segment_sets,
                                    int Nline_segment_sets)
 {
-    return
+    bool result =
         GL_image_display_set_lines(&m_ctx,
                                    line_segment_sets,
                                    Nline_segment_sets);
+    redraw();
+    return result;
 }
