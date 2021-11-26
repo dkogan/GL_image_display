@@ -557,20 +557,20 @@ A length-2 tuple containing the mapped pixel coordinate
 
 %extend Fl_Gl_Image_Widget
 {
-    PyObject* set_lines(PyObject* args)
+    PyObject* set_lines(PyObject* linesets)
     {
         PyObject* result = NULL;
         PyObject* set    = NULL;
         int Nsets        = 0;
 
-        if(!PySequence_Check(args))
+        if(!PySequence_Check(linesets))
         {
             PyErr_SetString(PyExc_RuntimeError,
-                            "set_lines() argument list isn't a list. This is a bug");
+                            "set_lines() argument isn't a list");
             goto done;
         }
 
-        Nsets = PySequence_Length(args);
+        Nsets = PySequence_Length(linesets);
 
         {
             GL_image_display_line_segments_t sets[Nsets];
@@ -583,7 +583,7 @@ A length-2 tuple containing the mapped pixel coordinate
 
             for(int i=0; i<Nsets; i++)
             {
-                set = PySequence_ITEM(args, i);
+                set = PySequence_ITEM(linesets, i);
                 if(!PyDict_Check(set))
                 {
                     PyErr_SetString(PyExc_RuntimeError,
