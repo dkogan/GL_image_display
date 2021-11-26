@@ -436,7 +436,7 @@ ARGUMENTS
   contains two floating-point values. This may be a numpy array of a tuple or
   a list, for instance.
 
-RETURN VALUE
+RETURNED VALUE
 
 A length-2 tuple containing the mapped pixel coordinate
 """;
@@ -550,7 +550,7 @@ ARGUMENTS
   contains two floating-point values. This may be a numpy array of a tuple or
   a list, for instance.
 
-RETURN VALUE
+RETURNED VALUE
 
 A length-2 tuple containing the mapped pixel coordinate
 """;
@@ -666,5 +666,150 @@ A length-2 tuple containing the mapped pixel coordinate
 }
 %ignore Fl_Gl_Image_Widget::set_lines(const GL_image_display_line_segments_t* line_segment_sets,
                                       int Nline_segment_sets);
+%feature("docstring") Fl_Gl_Image_Widget::set_lines
+"""Compute image pixel coords from viewport pixel coords
+
+SYNOPSIS
+
+  from fltk import *
+  from Fl_Gl_Image_Widget import Fl_Gl_Image_Widget
+
+  class Fl_Gl_Image_Widget_Derived(Fl_Gl_Image_Widget):
+
+      def handle(self, event):
+          if event == FL_PUSH:
+              try:
+                  qv = (Fl.event_x(),Fl.event_y())
+                  qi = \
+                      np.array( \
+                        self.map_pixel_image_from_viewport(qv),
+                        dtype=float ).round()
+
+                  x,y = q
+                  self.set_lines( (dict(points =
+                                        np.array( (((x - 50, y),
+                                                    (x + 50, y)),
+                                                   ((x,      y - 50),
+                                                    (x,      y + 50))),
+                                                  dtype=np.float32),
+                                        color_rgb = np.array((1,0,0),
+                                                             dtype=np.float32) ),))
+              except:
+                  self.set_lines( (), )
+              return 1
+
+          return super().handle(event)
+
+  window = Fl_Window(800, 600, 'Image display with Fl_Gl_Image_Widget')
+  image  = Fl_Gl_Image_Widget_Derived(0,0, 800,600)
+  window.resizable(image)
+  window.end()
+  window.show()
+
+  image.update_image(image_filename = 'image.png')
+
+  Fl.run()
+
+Updates the set of lines we draw as an overlay on top of the image. The
+hierarchy:
+
+- Each SET of lines is drawn with the same color, and consists of separate line
+  SEGMENTS
+
+- Each line SEGMENT connects two independent points (x0,y0) and (x1,y1) in image
+  pixel coordinates.
+
+Each call looks like
+
+  set_lines( (SET, SET, SET, ...) )
+
+Where each SET is
+
+  dict(points    = POINTS,
+       color_rgb = COLOR)
+
+- POINTS is a numpy array of shape (Nsegments,2,2) where each innermost row is
+  (x,y). This array must have dtype=np.float32 and must be stored contiguously
+
+- COLOR is the (red,green,blue) tuple to use for the line. This is a numpy array
+  of shape (3,). This array must have dtype=np.float32 and must be stored
+  contiguously. The color is passed directly to OpenGL, and uses values in [0,1]
+
+RETURNED VALUE
+
+None on success. An exception is thrown in case of error (usually, if something
+hasn't been initialized yet or if the input is invalid).
+
+""";
+
+%feature("docstring") Fl_Gl_Image_Widget::set_panzoom
+"""Updates the pan, zoom settings of an image view
+
+SYNOPSIS
+
+  from fltk import *
+  from Fl_Gl_Image_Widget import Fl_Gl_Image_Widget
+
+  class Fl_Gl_Image_Widget_Derived(Fl_Gl_Image_Widget):
+
+      def set_panzoom(self,
+                      x_centerpixel, y_centerpixel,
+                      visible_width_pixels):
+          r'''Pan/zoom the image
+
+          This is an override of the function to do this: any request to
+          pan/zoom the widget will come here first. I dispatch any
+          pan/zoom commands to all the widgets, so that they all work in
+          unison. visible_width_pixels < 0 means: this is the redirected
+          call. Just call the base class
+
+          '''
+          if visible_width_pixels < 0:
+              return super().set_panzoom(x_centerpixel, y_centerpixel,
+                                         -visible_width_pixels)
+
+          # All the widgets should pan/zoom together
+          return \
+              all( w.set_panzoom(x_centerpixel, y_centerpixel,
+                                 -visible_width_pixels) \
+                   for w in (image0, image1) )
+
+  window = Fl_Window(800, 600, 'Image display with Fl_Gl_Image_Widget')
+  image0 = Fl_Gl_Image_Widget_Derived(0,  0, 400,600)
+  image1 = Fl_Gl_Image_Widget_Derived(400,0, 400,600)
+  window.resizable(image)
+  window.end()
+  window.show()
+
+  image0.update_image(image_filename = 'image0.png')
+  image1.update_image(image_filename = 'image1.png')
+
+  Fl.run()
+
+This is a thin wrapper around the C API function GL_image_display_set_panzoom().
+USUALLY there's no reason to the user to call this: the default
+Fl_Gl_Image_Widget behavior already includes interactive navigation that calls
+this function as needed.
+
+The primary reason this is available in Python is to allow the user to hook
+these calls in their derived classes to enhance or modify the pan/zoom
+behaviors. The example in the SYNOPSIS above displays two images side by size,
+and pans/zooms them in unison: when the user changes the view in one widget, the
+change is applied to BOTH widgets.
+
+ARGUMENTS
+
+- x_centerpixel, y_centerpixel: the pixel coordinates of the image to place in
+  the center of the viewport. This is the 'pan' setting
+
+- visible_width_pixels: how many horizontal image pixels should span the
+  viewport. THis is the 'zoom' setting
+
+RETURNED VALUE
+
+None on success. An exception is thrown in case of error (usually, if something
+hasn't been initialized yet or if the input is invalid).
+
+""";
 
 %include "Fl_Gl_Image_Widget.hh"
