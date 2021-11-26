@@ -147,7 +147,7 @@ int Fl_Gl_Image_Widget::handle(int event)
         return 1;
 
     case FL_MOUSEWHEEL:
-        if(m_ctx.did_init && m_ctx.did_init_texture && m_ctx.did_set_extents)
+        if(m_ctx.did_init && m_ctx.did_init_texture && m_ctx.did_set_panzoom)
         {
             if( (Fl::event_state() & FL_CTRL) &&
                 Fl::event_dy() != 0)
@@ -194,12 +194,12 @@ int Fl_Gl_Image_Widget::handle(int event)
 
                 m_ctx.visible_width_pixels *= z;
 
-                if(!GL_image_display_set_extents(&m_ctx,
+                if(!GL_image_display_set_panzoom(&m_ctx,
                                                  m_ctx.x_centerpixel,
                                                  m_ctx.y_centerpixel,
                                                  m_ctx.visible_width_pixels))
                 {
-                    MSG("GL_image_display_set_extents() failed. Trying to continue...");
+                    MSG("GL_image_display_set_panzoom() failed. Trying to continue...");
                     return 1;
                 }
 
@@ -220,12 +220,12 @@ int Fl_Gl_Image_Widget::handle(int event)
                 m_ctx.x_centerpixel += 50. * (double)dx * m_ctx.visible_width_pixels / (double)pixel_w();
                 m_ctx.y_centerpixel += 50. * (double)dy * m_ctx.visible_width_pixels / (double)pixel_w();
 
-                if(!GL_image_display_set_extents(&m_ctx,
+                if(!GL_image_display_set_panzoom(&m_ctx,
                                                  m_ctx.x_centerpixel,
                                                  m_ctx.y_centerpixel,
                                                  m_ctx.visible_width_pixels))
                 {
-                    MSG("GL_image_display_set_extents() failed. Trying to continue...");
+                    MSG("GL_image_display_set_panzoom() failed. Trying to continue...");
                     return 1;
                 }
 
@@ -248,7 +248,7 @@ int Fl_Gl_Image_Widget::handle(int event)
 
     case FL_DRAG:
         // I pan and zoom with left-click-and-drag
-        if(m_ctx.did_init && m_ctx.did_init_texture && m_ctx.did_set_extents &&
+        if(m_ctx.did_init && m_ctx.did_init_texture && m_ctx.did_set_panzoom &&
            (Fl::event_state() & FL_BUTTON1))
         {
             make_current();
@@ -283,12 +283,12 @@ int Fl_Gl_Image_Widget::handle(int event)
                 (m_ctx.aspect_y * viewport_height) *
                 (double)m_ctx.image_height;
 
-            if(!GL_image_display_set_extents(&m_ctx,
+            if(!GL_image_display_set_panzoom(&m_ctx,
                                              m_ctx.x_centerpixel,
                                              m_ctx.y_centerpixel,
                                              m_ctx.visible_width_pixels))
             {
-                MSG("GL_image_display_set_extents() failed. Trying to continue...");
+                MSG("GL_image_display_set_panzoom() failed. Trying to continue...");
                 return 1;
             }
 

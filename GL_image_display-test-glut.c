@@ -38,9 +38,9 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    if( !GL_image_display_set_extents(&ctx, 1580, 900, 3500) )
+    if( !GL_image_display_set_panzoom(&ctx, 1580, 900, 3500) )
     {
-        fprintf(stderr, "GL_image_display_set_extents() failed\n");
+        fprintf(stderr, "GL_image_display_set_panzoom() failed\n");
         return 1;
     }
 

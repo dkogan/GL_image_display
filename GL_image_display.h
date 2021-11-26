@@ -81,7 +81,7 @@ typedef struct
     bool did_init         : 1;
     bool did_init_texture : 1;
     bool did_set_aspect   : 1;
-    bool did_set_extents  : 1;
+    bool did_set_panzoom  : 1;
 } GL_image_display_context_t;
 
 // The main init routine. We support 2 modes:
@@ -115,7 +115,7 @@ bool GL_image_display_resize_viewport(GL_image_display_context_t* ctx,
                                       int viewport_width,
                                       int viewport_height);
 
-bool GL_image_display_set_extents(GL_image_display_context_t* ctx,
+bool GL_image_display_set_panzoom(GL_image_display_context_t* ctx,
                                   double x_centerpixel,
                                   double y_centerpixel,
                                   double visible_width_pixels);
@@ -129,7 +129,6 @@ bool GL_image_display_redraw(GL_image_display_context_t* ctx);
 bool GL_image_display_map_pixel_viewport_from_image(GL_image_display_context_t* ctx,
                                                     double* xout, double* yout,
                                                     double x, double y);
-
 bool GL_image_display_map_pixel_image_from_viewport(GL_image_display_context_t* ctx,
                                                     double* xout, double* yout,
                                                     double x, double y);

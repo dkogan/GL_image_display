@@ -440,7 +440,7 @@ bool GL_image_display_update_textures( GL_image_display_context_t* ctx,
 
         ctx->did_init_texture = true;
 
-        if(!GL_image_display_set_extents(ctx,
+        if(!GL_image_display_set_panzoom(ctx,
                                    (double)(ctx->image_width  - 1) / 2.,
                                    (double)(ctx->image_height - 1) / 2.,
                                    ctx->image_width))
@@ -609,7 +609,7 @@ bool GL_image_display_resize_viewport(GL_image_display_context_t* ctx,
     return true;
 }
 
-bool GL_image_display_set_extents(GL_image_display_context_t* ctx,
+bool GL_image_display_set_panzoom(GL_image_display_context_t* ctx,
                                   double x_centerpixel,
                                   double y_centerpixel,
                                   double visible_width_pixels)
@@ -637,7 +637,7 @@ bool GL_image_display_set_extents(GL_image_display_context_t* ctx,
                    (float)ctx->center01_x,
                    (float)ctx->center01_y);
 
-    ctx->did_set_extents = true;
+    ctx->did_set_panzoom = true;
     return true;
 }
 
@@ -704,7 +704,7 @@ bool GL_image_display_redraw(GL_image_display_context_t* ctx)
     CONFIRM_SET(did_init);
     CONFIRM_SET(did_init_texture);
     CONFIRM_SET(did_set_aspect);
-    CONFIRM_SET(did_set_extents);
+    CONFIRM_SET(did_set_panzoom);
 
     if(ctx->use_glut)
     {
@@ -775,7 +775,7 @@ bool GL_image_display_map_pixel_viewport_from_image(GL_image_display_context_t* 
 {
     // This is analogous to what the vertex shader (vertex.glsl) does
 
-    CONFIRM_SET(did_set_extents);
+    CONFIRM_SET(did_set_panzoom);
     CONFIRM_SET(did_init_texture);
     CONFIRM_SET(did_set_aspect);
 
@@ -816,7 +816,7 @@ bool GL_image_display_map_pixel_image_from_viewport(GL_image_display_context_t* 
     // This is analogous to what the vertex shader (vertex.glsl) does, in
     // reverse
 
-    CONFIRM_SET(did_set_extents);
+    CONFIRM_SET(did_set_panzoom);
     CONFIRM_SET(did_init_texture);
     CONFIRM_SET(did_set_aspect);
 
