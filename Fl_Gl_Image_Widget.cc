@@ -113,17 +113,6 @@ bool Fl_Gl_Image_Widget::update_textures( // Either this should be given
                                           int         image_bpp,
                                           int         image_pitch)
 {
-    if(image_filename == NULL && image_data == NULL)
-    {
-        MSG("Fl_Gl_Image_Widget:update_textures(): exactly one of (image_filename,image_data) must be non-NULL. Instead both were NULL");
-        return false;
-    }
-    if(image_filename != NULL && image_data != NULL)
-    {
-        MSG("Fl_Gl_Image_Widget:update_textures(): exactly one of (image_filename,image_data) must be non-NULL. Instead both were non-NULL");
-        return false;
-    }
-
     if(!m_ctx.did_init)
     {
         // If the GL context wasn't inited yet, I must init it first. BUT in
