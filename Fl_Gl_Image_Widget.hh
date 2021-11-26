@@ -43,6 +43,10 @@ public:
 
     virtual ~Fl_Gl_Image_Widget();
 
+    void draw(void);
+
+    virtual int handle(int event);
+
     bool update_textures( int decimation_level         = 0,
                           // Either this should be given
                           const char* image_filename   = NULL,
@@ -53,9 +57,6 @@ public:
                           int         image_bpp        = 0,
                           int         image_pitch      = 0);
 
-    void draw(void);
-
-    virtual int handle(int event);
     bool set_panzoom(double x_centerpixel, double y_centerpixel,
                      double visible_width_pixels);
 
