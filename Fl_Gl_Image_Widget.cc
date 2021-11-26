@@ -6,18 +6,18 @@
 #include <string.h>
 #include <math.h>
 
-Fl_Gl_Image_Widget::UpdateTexturesCache::UpdateTexturesCache()
+Fl_Gl_Image_Widget::UpdateImageCache::UpdateImageCache()
     : image_filename(NULL),
       image_data(NULL)
 {
 }
 
-Fl_Gl_Image_Widget::UpdateTexturesCache::~UpdateTexturesCache()
+Fl_Gl_Image_Widget::UpdateImageCache::~UpdateImageCache()
 {
     dealloc();
 }
 
-void Fl_Gl_Image_Widget::UpdateTexturesCache::dealloc(void)
+void Fl_Gl_Image_Widget::UpdateImageCache::dealloc(void)
 {
     free((void*)image_filename);
     image_filename = NULL;
@@ -26,13 +26,13 @@ void Fl_Gl_Image_Widget::UpdateTexturesCache::dealloc(void)
     image_data = NULL;
 }
 
-bool Fl_Gl_Image_Widget::UpdateTexturesCache::save( int         _decimation_level,
-                                                    const char* _image_filename,
-                                                    const char* _image_data,
-                                                    int         _image_width,
-                                                    int         _image_height,
-                                                    int         _image_bpp,
-                                                    int         _image_pitch)
+bool Fl_Gl_Image_Widget::UpdateImageCache::save( int         _decimation_level,
+                                                 const char* _image_filename,
+                                                 const char* _image_data,
+                                                 int         _image_width,
+                                                 int         _image_height,
+                                                 int         _image_bpp,
+                                                 int         _image_pitch)
 {
     dealloc();
 
@@ -77,15 +77,15 @@ bool Fl_Gl_Image_Widget::UpdateTexturesCache::save( int         _decimation_leve
     return true;
 }
 
-bool Fl_Gl_Image_Widget::UpdateTexturesCache::apply(Fl_Gl_Image_Widget* w)
+bool Fl_Gl_Image_Widget::UpdateImageCache::apply(Fl_Gl_Image_Widget* w)
 {
     if(image_filename == NULL && image_data == NULL)
         return true;
-    bool result = w->update_textures(decimation_level,
-                                     image_filename,
-                                     image_data,
-                                     image_width, image_height,
-                                     image_bpp,   image_pitch);
+    bool result = w->update_image(decimation_level,
+                                  image_filename,
+                                  image_data,
+                                  image_width, image_height,
+                                  image_bpp,   image_pitch);
     dealloc();
     return result;
 }
@@ -93,7 +93,7 @@ bool Fl_Gl_Image_Widget::UpdateTexturesCache::apply(Fl_Gl_Image_Widget* w)
 
 Fl_Gl_Image_Widget::Fl_Gl_Image_Widget(int x, int y, int w, int h) :
     Fl_Gl_Window(x, y, w, h),
-    m_update_textures_cache()
+    m_update_image_cache()
 {
     mode(FL_DOUBLE | FL_OPENGL3);
     memset(&m_ctx, 0, sizeof(m_ctx));
@@ -116,7 +116,7 @@ void Fl_Gl_Image_Widget::draw(void)
             return;
         }
 
-        if(!m_update_textures_cache.apply(this))
+        if(!m_update_image_cache.apply(this))
             return;
     }
 
@@ -298,15 +298,15 @@ int Fl_Gl_Image_Widget::handle(int event)
     return Fl_Gl_Window::handle(event);
 }
 
-bool Fl_Gl_Image_Widget::update_textures( int decimation_level,
-                                          // Either this should be given
-                                          const char* image_filename,
-                                          // Or these should be given
-                                          const char* image_data,
-                                          int         image_width,
-                                          int         image_height,
-                                          int         image_bpp,
-                                          int         image_pitch)
+bool Fl_Gl_Image_Widget::update_image( int decimation_level,
+                                       // Either this should be given
+                                       const char* image_filename,
+                                       // Or these should be given
+                                       const char* image_data,
+                                       int         image_width,
+                                       int         image_height,
+                                       int         image_bpp,
+                                       int         image_pitch)
 {
     if(!m_ctx.did_init)
     {
@@ -319,24 +319,24 @@ bool Fl_Gl_Image_Widget::update_textures( int decimation_level,
         //
         // So I save the data in this call, and apply it later, when I'm
         // ready
-        if(!m_update_textures_cache.save(decimation_level,
-                                         image_filename,
-                                         image_data,
-                                         image_width, image_height,
-                                         image_bpp, image_pitch))
+        if(!m_update_image_cache.save(decimation_level,
+                                      image_filename,
+                                      image_data,
+                                      image_width, image_height,
+                                      image_bpp, image_pitch))
         {
-            MSG("m_update_textures_cache.save() failed");
+            MSG("m_update_image_cache.save() failed");
             return false;
         }
         return true;
     }
     // have new image to ingest
-    if( !GL_image_display_update_textures(&m_ctx,
-                                          decimation_level,
-                                          image_filename,
-                                          image_data,image_width,image_height,image_bpp,image_pitch) )
+    if( !GL_image_display_update_image(&m_ctx,
+                                       decimation_level,
+                                       image_filename,
+                                       image_data,image_width,image_height,image_bpp,image_pitch) )
     {
-        MSG("GL_image_display_update_textures() failed");
+        MSG("GL_image_display_update_image() failed");
         return false;
     }
 

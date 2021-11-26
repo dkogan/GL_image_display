@@ -58,7 +58,7 @@ SYNOPSIS
   w.end()
   w.show()
 
-  g.update_textures(image_filename = 'image.jpg')
+  g.update_image(image_filename = 'image.jpg')
   Fl.run()
 
 This is the FLTK widget in the GL_image_display project:
@@ -91,12 +91,12 @@ SYNOPSIS
   w.end()
   w.show()
 
-  g.update_textures(image_filename = 'image.jpg')
+  g.update_image(image_filename = 'image.jpg')
   Fl.run()
 
 The Fl_Gl_Image_Widget is initialized like any other FLTK widget, using the
 sequential arguments: x, y, width, height. The data being displayed is NOT given
-to this method: Fl_Gl_Image_Widget.update_textures() needs to be called to provide
+to this method: Fl_Gl_Image_Widget.update_image() needs to be called to provide
 this data
 
 ARGUMENTS:
@@ -128,7 +128,7 @@ Usually the end user does not need to call this method
 
 """;
 
-%feature("docstring") Fl_Gl_Image_Widget::update_textures
+%feature("docstring") Fl_Gl_Image_Widget::update_image
 """Change the image being displayed in the widget
 
 SYNOPSIS
@@ -142,10 +142,10 @@ SYNOPSIS
   w.end()
   w.show()
 
-  g.update_textures(image_filename = 'image.jpg')
+  g.update_image(image_filename = 'image.jpg')
   Fl.run()
 
-The data displayed by the widget is providing using this update_textures()
+The data displayed by the widget is providing using this update_image()
 method. This method is given the full-resolution data, subject to any decimation
 specified in decimation_level argument:
 
@@ -212,7 +212,7 @@ import_array();
 
 %extend Fl_Gl_Image_Widget
 {
-    PyObject* update_textures(int         decimation_level = 0,
+    PyObject* update_image(int         decimation_level = 0,
                               const char* image_filename   = NULL,
                               PyObject*   image_data       = NULL)
     {
@@ -228,7 +228,7 @@ import_array();
         else if(!PyArray_Check((PyArrayObject*)image_data))
         {
             PyErr_SetString(PyExc_RuntimeError,
-                            "update_textures(): 'image_data' argument must be None or a numpy array");
+                            "update_image(): 'image_data' argument must be None or a numpy array");
             goto done;
         }
         else
@@ -243,14 +243,14 @@ import_array();
             if (type != NPY_UINT8)
             {
                 PyErr_Format(PyExc_RuntimeError,
-                             "update_textures(): 'image_data' argument must be a numpy array with type=uint8. Got dtype=%d",
+                             "update_image(): 'image_data' argument must be a numpy array with type=uint8. Got dtype=%d",
                              type);
                 goto done;
             }
             if(!(ndim == 2 || ndim == 3))
             {
                 PyErr_Format(PyExc_RuntimeError,
-                             "update_textures(): 'image_data' argument must be None or a 2-dimensional or a 3-dimensional numpy array. Got %d-dimensional array",
+                             "update_image(): 'image_data' argument must be None or a 2-dimensional or a 3-dimensional numpy array. Got %d-dimensional array",
                              ndim);
                 goto done;
             }
@@ -260,14 +260,14 @@ import_array();
                 if(dims[2] != 3)
                 {
                     PyErr_Format(PyExc_RuntimeError,
-                                 "update_textures(): 'image_data' argument is a 3-dimensional array. I expected the last dim to have length 3 (BGR), but it has length %d",
+                                 "update_image(): 'image_data' argument is a 3-dimensional array. I expected the last dim to have length 3 (BGR), but it has length %d",
                                  dims[2]);
                     goto done;
                 }
                 if(strides[2] != 1)
                 {
                     PyErr_Format(PyExc_RuntimeError,
-                                 "update_textures(): 'image_data' argument is a 3-dimensional array. The last dim (BGR) must be stored densely",
+                                 "update_image(): 'image_data' argument is a 3-dimensional array. The last dim (BGR) must be stored densely",
                                  dims[2]);
                     goto done;
                 }
@@ -280,7 +280,7 @@ import_array();
             if (strides[1] != (ndim == 3 ? 3 : 1))
             {
                 PyErr_Format(PyExc_RuntimeError,
-                             "update_textures(): 'image_data' argument must be a numpy array with each row stored densely");
+                             "update_image(): 'image_data' argument must be a numpy array with each row stored densely");
                 goto done;
             }
 
@@ -288,12 +288,12 @@ import_array();
                (image_data != NULL && image_filename != NULL))
             {
                 PyErr_Format(PyExc_RuntimeError,
-                             "update_textures(): exactly one of ('image_filename', 'image_data') must be given");
+                             "update_image(): exactly one of ('image_filename', 'image_data') must be given");
                 goto done;
             }
         }
 
-        if( self->update_textures(decimation_level,
+        if( self->update_image(decimation_level,
                                   image_filename,
                                   image_data == NULL ? NULL : data,
                                   image_data == NULL ? 0    : dims[1],
@@ -309,14 +309,14 @@ import_array();
         {
             // failure
             PyErr_SetString(PyExc_RuntimeError,
-                            "update_textures() failed!");
+                            "update_image() failed!");
         }
 
     done:
         return result;
     }
 }
-%ignore Fl_Gl_Image_Widget::update_textures( int decimation_level,
+%ignore Fl_Gl_Image_Widget::update_image( int decimation_level,
                                              // Either this should be given
                                              const char* image_filename,
                                              // Or these should be given
@@ -414,7 +414,7 @@ SYNOPSIS
   window.end()
   window.show()
 
-  image.update_textures(image_filename = 'image.png')
+  image.update_image(image_filename = 'image.png')
 
   Fl.run()
 
@@ -528,7 +528,7 @@ SYNOPSIS
   window.end()
   window.show()
 
-  image.update_textures(image_filename = 'image.png')
+  image.update_image(image_filename = 'image.png')
 
   Fl.run()
 

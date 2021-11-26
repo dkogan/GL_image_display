@@ -13,10 +13,10 @@ protected:
     GL_image_display_context_t m_ctx;
     int                        m_last_drag_update_xy[2];
 
-    struct UpdateTexturesCache
+    struct UpdateImageCache
     {
-        UpdateTexturesCache();
-        ~UpdateTexturesCache();
+        UpdateImageCache();
+        ~UpdateImageCache();
         void dealloc(void);
 
         bool save( int         _decimation_level,
@@ -35,7 +35,7 @@ protected:
         int   image_height;
         int   image_bpp;
         int   image_pitch;
-    } m_update_textures_cache;
+    } m_update_image_cache;
 
 
 public:
@@ -56,7 +56,7 @@ public:
     /////// Each of these is virtual, so a subclass could override the
     /////// implementation
     virtual
-    bool update_textures( int decimation_level         = 0,
+    bool update_image( int decimation_level         = 0,
                           // Either this should be given
                           const char* image_filename   = NULL,
                           // Or these should be given

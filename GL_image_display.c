@@ -274,21 +274,21 @@ bool GL_image_display_init( // output
     return result;
 }
 
-bool GL_image_display_update_textures( GL_image_display_context_t* ctx,
-                                       int decimation_level,
+bool GL_image_display_update_image( GL_image_display_context_t* ctx,
+                                    int decimation_level,
 
-                                       // Either this should be given
-                                       const char* image_filename,
+                                    // Either this should be given
+                                    const char* image_filename,
 
-                                       // Or these should be given
-                                       const char* image_data,
-                                       int image_width,
-                                       int image_height,
-                                       // Supported:
-                                       // - 8  for "grayscale"
-                                       // - 24 for "bgr"
-                                       int image_bpp,
-                                       int image_pitch)
+                                    // Or these should be given
+                                    const char* image_data,
+                                    int image_width,
+                                    int image_height,
+                                    // Supported:
+                                    // - 8  for "grayscale"
+                                    // - 24 for "bgr"
+                                    int image_bpp,
+                                    int image_pitch)
 {
     if(image_filename == NULL &&
        !(image_data != NULL && image_width > 0 && image_height > 0))
