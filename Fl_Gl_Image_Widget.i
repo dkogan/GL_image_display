@@ -129,7 +129,7 @@ Usually the end user does not need to call this method
 """;
 
 %feature("docstring") Fl_Gl_Image_Widget::update_image
-"""Change the image being displayed in the widget
+"""Update the image being displayed in the widget
 
 SYNOPSIS
 
