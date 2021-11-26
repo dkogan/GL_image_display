@@ -742,6 +742,31 @@ hasn't been initialized yet or if the input is invalid).
 
 """;
 
+%extend Fl_Gl_Image_Widget
+{
+    // This is mostly a no-op wrapping. The only difference is to throw an
+    // exception on error instead of returning false
+    PyObject* set_panzoom(double x_centerpixel, double y_centerpixel,
+                          double visible_width_pixels)
+    {
+        PyObject* result = NULL;
+
+        if(!self->set_panzoom(x_centerpixel, y_centerpixel, visible_width_pixels))
+        {
+            PyErr_SetString(PyExc_RuntimeError,
+                            "set_panzoom() failed!");
+            goto done;
+        }
+
+        Py_INCREF(Py_None);
+        result = Py_None;
+
+    done:
+        return result;
+    }
+}
+%ignore Fl_Gl_Image_Widget::set_panzoom(double x_centerpixel, double y_centerpixel,
+                                        double visible_width_pixels);
 %feature("docstring") Fl_Gl_Image_Widget::set_panzoom
 """Updates the pan, zoom settings of an image view
 
