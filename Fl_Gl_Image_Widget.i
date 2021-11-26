@@ -128,59 +128,6 @@ Usually the end user does not need to call this method
 
 """;
 
-%feature("docstring") Fl_Gl_Image_Widget::update_image
-"""Update the image being displayed in the widget
-
-SYNOPSIS
-
-  from fltk import *
-  import Fl_Gl_Image_Widget
-
-  w = Fl_Window(800, 600, 'Image display with Fl_Gl_Image_Widget')
-  g = Fl_Gl_Image_Widget.Fl_Gl_Image_Widget(0,0, 800,600)
-  w.resizable(w)
-  w.end()
-  w.show()
-
-  g.update_image(image_filename = 'image.jpg')
-  Fl.run()
-
-The data displayed by the widget is providing using this update_image()
-method. This method is given the full-resolution data, subject to any decimation
-specified in decimation_level argument:
-
-- if decimation_level==0: the given image is displayed at full resolution
-
-- if decimation_level==1: the given image is displayed at half-resolution
-
-- if decimation_level==2: the given image is displayed at quarter-resolution
-
-and so on.
-
-This method may be called as many times as necessary. The decimation level and
-image dimensions MUST match those given in the first call to this function.
-
-The data may be passed-in to this method in one of two ways:
-
-- decimation_level: optional integer, defaulting to 0. Specifies the resolution
-  of the displayed image.
-
-- image_filename is not None: the image is read from a file on disk, with the
-  given filename. image_data must be None
-
-- image_data is not None: the image data is read from the given numpy array.
-  image_filename must be None
-
-An exception is raised on error
-
-ARGUMENTS
-
-- image_filename: optional string, specifying the filename containing the image
-  to display. Exclusive with image_data
-
-- image_data: optional numpy array with the data being displayed. Exclusive with
-  image_filename
- """;
 
 %import(module="fltk") "FL/Fl_Group.H"
 %import(module="fltk") "FL/Fl_Widget.H"
@@ -213,8 +160,8 @@ import_array();
 %extend Fl_Gl_Image_Widget
 {
     PyObject* update_image(int         decimation_level = 0,
-                              const char* image_filename   = NULL,
-                              PyObject*   image_data       = NULL)
+                           const char* image_filename   = NULL,
+                           PyObject*   image_data       = NULL)
     {
         PyObject* result = NULL;
 
@@ -317,14 +264,67 @@ import_array();
     }
 }
 %ignore Fl_Gl_Image_Widget::update_image( int decimation_level,
-                                             // Either this should be given
-                                             const char* image_filename,
-                                             // Or these should be given
-                                             const char* image_data,
-                                             int         image_width,
-                                             int         image_height,
-                                             int         image_bpp,
-                                             int         image_pitch);
+                                          // Either this should be given
+                                          const char* image_filename,
+                                          // Or these should be given
+                                          const char* image_data,
+                                          int         image_width,
+                                          int         image_height,
+                                          int         image_bpp,
+                                          int         image_pitch);
+%feature("docstring") Fl_Gl_Image_Widget::update_image
+"""Update the image being displayed in the widget
+
+SYNOPSIS
+
+  from fltk import *
+  import Fl_Gl_Image_Widget
+
+  w = Fl_Window(800, 600, 'Image display with Fl_Gl_Image_Widget')
+  g = Fl_Gl_Image_Widget.Fl_Gl_Image_Widget(0,0, 800,600)
+  w.resizable(w)
+  w.end()
+  w.show()
+
+  g.update_image(image_filename = 'image.jpg')
+  Fl.run()
+
+The data displayed by the widget is providing using this update_image()
+method. This method is given the full-resolution data, subject to any decimation
+specified in decimation_level argument:
+
+- if decimation_level==0: the given image is displayed at full resolution
+
+- if decimation_level==1: the given image is displayed at half-resolution
+
+- if decimation_level==2: the given image is displayed at quarter-resolution
+
+and so on.
+
+This method may be called as many times as necessary. The decimation level and
+image dimensions MUST match those given in the first call to this function.
+
+The data may be passed-in to this method in one of two ways:
+
+- decimation_level: optional integer, defaulting to 0. Specifies the resolution
+  of the displayed image.
+
+- image_filename is not None: the image is read from a file on disk, with the
+  given filename. image_data must be None
+
+- image_data is not None: the image data is read from the given numpy array.
+  image_filename must be None
+
+An exception is raised on error
+
+ARGUMENTS
+
+- image_filename: optional string, specifying the filename containing the image
+  to display. Exclusive with image_data
+
+- image_data: optional numpy array with the data being displayed. Exclusive with
+  image_filename
+ """;
 
 
 %extend Fl_Gl_Image_Widget
