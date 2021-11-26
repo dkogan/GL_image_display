@@ -344,14 +344,6 @@ bool Fl_Gl_Image_Widget::update_image( int decimation_level,
     return true;
 }
 
-bool Fl_Gl_Image_Widget::map_pixel_viewport_from_image(double* xout, double* yout,
-                                                       double x, double y)
-{
-    return
-        GL_image_display_map_pixel_viewport_from_image(&m_ctx,
-                                                       xout, yout,
-                                                       x, y);
-}
 bool Fl_Gl_Image_Widget::set_panzoom(double x_centerpixel, double y_centerpixel,
                                      double visible_width_pixels)
 {
@@ -359,6 +351,15 @@ bool Fl_Gl_Image_Widget::set_panzoom(double x_centerpixel, double y_centerpixel,
         GL_image_display_set_panzoom(&m_ctx,
                                      x_centerpixel, y_centerpixel,
                                      visible_width_pixels);
+}
+
+bool Fl_Gl_Image_Widget::map_pixel_viewport_from_image(double* xout, double* yout,
+                                                       double x, double y)
+{
+    return
+        GL_image_display_map_pixel_viewport_from_image(&m_ctx,
+                                                       xout, yout,
+                                                       x, y);
 }
 
 bool Fl_Gl_Image_Widget::map_pixel_image_from_viewport(double* xout, double* yout,
