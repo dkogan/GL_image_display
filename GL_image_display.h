@@ -109,6 +109,24 @@ bool GL_image_display_update_image( GL_image_display_context_t* ctx,
                                     int image_bpp,
                                     int image_pitch);
 
+// This exists because the FLTK widget often defers the first update_image()
+// call, so I don't do error checking until it's too late. Here I try to
+// validate the input as much as I can immediately, so that common errors are
+// caught early
+bool GL_image_display_update_image__validate_input
+( // Either this should be given
+  const char* image_filename,
+
+  // Or these should be given
+  const char* image_data,
+  int image_width,
+  int image_height,
+  // Supported:
+  // - 8  for "grayscale"
+  // - 24 for "bgr"
+  int image_bpp,
+  bool check_image_file);
+
 void GL_image_display_deinit( GL_image_display_context_t* ctx );
 
 bool GL_image_display_resize_viewport(GL_image_display_context_t* ctx,

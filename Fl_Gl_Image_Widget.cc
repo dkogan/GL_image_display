@@ -319,6 +319,16 @@ bool Fl_Gl_Image_Widget::update_image( int decimation_level,
         //
         // So I save the data in this call, and apply it later, when I'm
         // ready
+        if(!GL_image_display_update_image__validate_input(image_filename,
+                                                          image_data,
+                                                          image_width,
+                                                          image_height,
+                                                          image_bpp,
+                                                          true))
+        {
+            MSG("Deferred update_image call failed validation");
+            return false;
+        }
         if(!m_update_image_cache.save(decimation_level,
                                       image_filename,
                                       image_data,

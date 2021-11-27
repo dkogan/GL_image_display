@@ -274,6 +274,117 @@ bool GL_image_display_init( // output
     return result;
 }
 
+// This exists because the FLTK widget often defers the first update_image()
+// call, so I don't do error checking until it's too late. Here I try to
+// validate the input as much as I can immediately, so that common errors are
+// caught early
+bool GL_image_display_update_image__validate_input
+( // Either this should be given
+  const char* image_filename,
+
+  // Or these should be given
+  const char* image_data,
+  int image_width,
+  int image_height,
+  // Supported:
+  // - 8  for "grayscale"
+  // - 24 for "bgr"
+  int image_bpp,
+  bool check_image_file)
+{
+    FIBITMAP* fib = NULL;
+    bool result = false;
+
+
+
+    if(image_filename == NULL &&
+       !(image_data != NULL && image_width > 0 && image_height > 0))
+    {
+        MSG("image_filename is NULL, so all of (image_data, image_width, image_height) must have valid values");
+        goto done;
+    }
+    if(image_filename != NULL &&
+       !(image_data == NULL && image_width <= 0 && image_height <= 0))
+    {
+        MSG("image_filename is not NULL, so all of (image_data, image_width, image_height) must have null values");
+        goto done;
+    }
+
+    if(image_width > 0)
+    {
+        if(!(image_bpp == 8 || image_bpp == 24))
+        {
+            MSG("I support 8 bits-per-pixel and 24 bits-per-pixel images. Got %d",
+                image_bpp);
+            goto done;
+        }
+    }
+
+    if(!check_image_file)
+    {
+        result = true;
+        goto done;
+    }
+
+
+    if( image_filename != NULL )
+    {
+        FREE_IMAGE_FORMAT format = FreeImage_GetFileType(image_filename,0);
+        if(format == FIF_UNKNOWN)
+        {
+            MSG("Couldn't load '%s'", image_filename);
+            goto done;
+        }
+
+        fib = FreeImage_Load(format, image_filename, 0);
+        if(fib == NULL)
+        {
+            MSG("Couldn't load '%s'", image_filename);
+            goto done;
+        }
+
+        // grayscale
+        if(FreeImage_GetColorType(fib) == FIC_MINISBLACK &&
+           FreeImage_GetBPP(fib)       == 8)
+        {
+            result = true;
+            goto done;
+        }
+        else
+        {
+            // normalize images
+            if( // palettized
+                FreeImage_GetColorType(fib)  == FIC_PALETTE ||
+
+                // 32-bit RGBA
+                (FreeImage_GetColorType(fib) == FIC_RGBALPHA &&
+                 FreeImage_GetBPP(fib)       == 32) )
+
+            {
+                result = true;
+                goto done;
+            }
+
+            if(FreeImage_GetColorType(fib) == FIC_RGB &&
+               FreeImage_GetBPP(fib) == 24)
+            {
+                result = true;
+                goto done;
+            }
+
+            MSG("Only 8-bit grayscale and 24-bit RGB images and 32-bit RGBA images are supported. Conversion to 24-bit didn't work. Giving up.");
+            goto done;
+        }
+    }
+    else
+        result = true;
+
+ done:
+    if(fib != NULL)
+        FreeImage_Unload(fib);
+    return result;
+}
+
 bool GL_image_display_update_image( GL_image_display_context_t* ctx,
                                     int decimation_level,
 
@@ -290,27 +401,19 @@ bool GL_image_display_update_image( GL_image_display_context_t* ctx,
                                     int image_bpp,
                                     int image_pitch)
 {
-    if(image_filename == NULL &&
-       !(image_data != NULL && image_width > 0 && image_height > 0))
+    if(!GL_image_display_update_image__validate_input
+       ( image_filename,
+         image_data,
+         image_width,
+         image_height,
+         image_bpp,
+         false))
     {
-        MSG("image_filename is NULL, so all of (image_data, image_width, image_height) must have valid values");
-        return false;
-    }
-    if(image_filename != NULL &&
-       !(image_data == NULL && image_width <= 0 && image_height <= 0))
-    {
-        MSG("image_filename is not NULL, so all of (image_data, image_width, image_height) must have null values");
         return false;
     }
 
     if(image_width > 0)
     {
-        if(!(image_bpp == 8 || image_bpp == 24))
-        {
-            MSG("I support 8 bits-per-pixel and 24 bits-per-pixel images. Got %d",
-                image_bpp);
-            return false;
-        }
         if(image_pitch <= 0)
         {
             // Pitch isn't given, so I assume the image data is stored densely
