@@ -173,14 +173,15 @@ import_array();
 
 // Errors should throw instead of returning false
 %typemap(out) bool {
+
     if(!$1)
     {
         PyErr_SetString(PyExc_RuntimeError, "Wrapped function failed!");
         SWIG_fail;
     }
 
-    Py_INCREF(Py_None);
-    $result = Py_None;
+    Py_INCREF(Py_True);
+    $result = Py_True;
 }
 %typemap(directorout) bool {
     $result = PyObject_IsTrue($1);
