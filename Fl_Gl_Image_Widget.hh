@@ -57,14 +57,14 @@ public:
     /////// implementation
     virtual
     bool update_image( int decimation_level         = 0,
-                          // Either this should be given
-                          const char* image_filename   = NULL,
-                          // Or these should be given
-                          const char* image_data       = NULL,
-                          int         image_width      = 0,
-                          int         image_height     = 0,
-                          int         image_bpp        = 0,
-                          int         image_pitch      = 0);
+                       // Either this should be given
+                       const char* image_filename   = NULL,
+                       // Or these should be given
+                       const char* image_data       = NULL,
+                       int         image_width      = 0,
+                       int         image_height     = 0,
+                       int         image_bpp        = 0,
+                       int         image_pitch      = 0);
 
     virtual
     bool set_panzoom(double x_centerpixel, double y_centerpixel,
