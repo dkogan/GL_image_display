@@ -489,9 +489,8 @@ A length-2 tuple containing the mapped pixel coordinate
 """;
 
 %typemap(in) (const GL_image_display_line_segments_t* line_segment_sets,
-              int Nline_segment_sets) {
+              int Nline_segment_sets) (PyObject* set = NULL) {
 
-    PyObject* set       = NULL;
     PyObject* points    = NULL;
     PyObject* color_rgb = NULL;
 
@@ -516,7 +515,6 @@ A length-2 tuple containing the mapped pixel coordinate
     int ndim                = 0;
     const npy_intp* dims    = NULL;
 
-    bool failed = false;
     for(int i=0; i<$2; i++)
     {
         set = PySequence_ITEM($input, i);
@@ -524,7 +522,7 @@ A length-2 tuple containing the mapped pixel coordinate
         {
             PyErr_SetString(PyExc_RuntimeError,
                             "$symname(): each argument should be a dict");
-            failed = true;
+            SWIG_fail;
             break;
         }
 
@@ -533,14 +531,14 @@ A length-2 tuple containing the mapped pixel coordinate
         {
             PyErr_SetString(PyExc_RuntimeError,
                             "$symname(): each argument should be a dict with keys 'points' and 'color_rgb'. Missing: 'color_rgb'");
-            failed = true;
+            SWIG_fail;
             break;
         }
         if(!PyArray_Check((PyArrayObject*)color_rgb))
         {
             PyErr_SetString(PyExc_RuntimeError,
                             "$symname(): each argument should be a dict with keys 'points' and 'color_rgb', both pointing to numpy arrays. 'color_rgb' element is not a numpy array");
-            failed = true;
+            SWIG_fail;
             break;
         }
         ndim    = PyArray_NDIM((PyArrayObject*)color_rgb);
@@ -551,7 +549,7 @@ A length-2 tuple containing the mapped pixel coordinate
         {
             PyErr_SetString(PyExc_RuntimeError,
                             "$symname(): color_rgb needs to have shape (3,), contain float32 and be contiguous");
-            failed = true;
+            SWIG_fail;
             break;
         }
 
@@ -560,14 +558,14 @@ A length-2 tuple containing the mapped pixel coordinate
         {
             PyErr_SetString(PyExc_RuntimeError,
                             "$symname(): each argument should be a dict with keys 'points' and 'color_rgb'. Missing: 'points'");
-            failed = true;
+            SWIG_fail;
             break;
         }
         if(!PyArray_Check((PyArrayObject*)points))
         {
             PyErr_SetString(PyExc_RuntimeError,
                             "$symname(): each argument should be a dict with keys 'points' and 'color_rgb', both pointing to numpy arrays. 'points' element is not a numpy array");
-            failed = true;
+            SWIG_fail;
             break;
         }
         ndim    = PyArray_NDIM((PyArrayObject*)points);
@@ -578,7 +576,7 @@ A length-2 tuple containing the mapped pixel coordinate
         {
             PyErr_SetString(PyExc_RuntimeError,
                             "$symname(): points need to have shape (N,2,2), contain float32 and be contiguous");
-            failed = true;
+            SWIG_fail;
             break;
         }
 
@@ -591,13 +589,11 @@ A length-2 tuple containing the mapped pixel coordinate
         Py_XDECREF(set);
         set = NULL;
     }
-    Py_XDECREF(set);
-    set = NULL;
-    if(failed) SWIG_fail;
 }
 %typemap(freearg) (const GL_image_display_line_segments_t* line_segment_sets,
                    int Nline_segment_sets) {
     free($1);
+    Py_XDECREF(set$argnum);
 }
 
 %feature("docstring") Fl_Gl_Image_Widget::set_lines
