@@ -23,10 +23,23 @@ with Python bindings provided by the pyfltk project:
 
 %feature("compactdefaultargs");
 
-// Enable directors globally, except for show(). Otherwise show() gets into an
-// infinite self-recursing loop. I don't know why
+// Enable directors globally, except for some functions that are troublesome,
+//and don't obviously benefit from directors
 %feature("director");
 %feature("nodirector") Fl_Gl_Image_Widget::show;
+%feature("nodirector") Fl_Gl_Image_Widget::draw;
+
+%feature("nodirector") Fl_Gl_Image_Widget::resize;
+%feature("nodirector") Fl_Gl_Image_Widget::hide;
+%feature("nodirector") Fl_Gl_Image_Widget::as_group;
+%feature("nodirector") Fl_Gl_Image_Widget::as_window;
+%feature("nodirector") Fl_Gl_Image_Widget::as_gl_window;
+%feature("nodirector") Fl_Gl_Image_Widget::flush;
+
+
+
+
+
 
 // Comes directly from pyfltk/swig/macros.i
 // Connect C++ exceptions to Python exceptions
@@ -157,49 +170,64 @@ CHANGE_OWNERSHIP(Fl_Gl_Image_Widget)
 import_array();
 %}
 
-%extend Fl_Gl_Image_Widget
-{
-    PyObject* update_image(int         decimation_level = 0,
-                           const char* image_filename   = NULL,
-                           PyObject*   image_data       = NULL)
+
+// Errors should throw instead of returning false
+%typemap(out) bool {
+    if(!$1)
     {
-        PyObject* result = NULL;
+        PyErr_SetString(PyExc_RuntimeError, "Wrapped function failed!");
+        SWIG_fail;
+    }
 
-        const npy_intp* dims    = NULL;
-        const char*     data    = NULL;
-        const npy_intp* strides = NULL;
-        int bpp                 = 0;
+    Py_INCREF(Py_None);
+    $result = Py_None;
+}
+%typemap(directorout) bool {
+    $result = PyObject_IsTrue($1);
+}
 
-        if(image_data == NULL || image_data == Py_None)
-           image_data = NULL;
-        else if(!PyArray_Check((PyArrayObject*)image_data))
+%typemap(in) (const char* image_data,
+              int         image_width,
+              int         image_height,
+              int         image_bpp,
+              int         image_pitch) {
+
+    if($input == NULL || $input == Py_None)
+    {
+        $1 = NULL;
+        $2 = 0;
+        $3 = 0;
+        $4 = 0;
+        $5 = 0;
+    }
+    else
+    {
+        if(!PyArray_Check((PyArrayObject*)$input))
         {
             PyErr_SetString(PyExc_RuntimeError,
                             "update_image(): 'image_data' argument must be None or a numpy array");
-            goto done;
+            SWIG_fail;
         }
-        else
-        {
-            dims = PyArray_DIMS((PyArrayObject*)image_data);
-            data = (const char*)PyArray_DATA((PyArrayObject*)image_data);
 
-            int ndim = PyArray_NDIM((PyArrayObject*)image_data);
-            int type = PyArray_TYPE((PyArrayObject*)image_data);
-            strides = PyArray_STRIDES((PyArrayObject*)image_data);
+        {
+            const npy_intp* dims    = PyArray_DIMS((PyArrayObject*)$input);
+            int ndim                = PyArray_NDIM((PyArrayObject*)$input);
+            int type                = PyArray_TYPE((PyArrayObject*)$input);
+            const npy_intp* strides = PyArray_STRIDES((PyArrayObject*)$input);
 
             if (type != NPY_UINT8)
             {
                 PyErr_Format(PyExc_RuntimeError,
                              "update_image(): 'image_data' argument must be a numpy array with type=uint8. Got dtype=%d",
                              type);
-                goto done;
+                SWIG_fail;
             }
             if(!(ndim == 2 || ndim == 3))
             {
                 PyErr_Format(PyExc_RuntimeError,
                              "update_image(): 'image_data' argument must be None or a 2-dimensional or a 3-dimensional numpy array. Got %d-dimensional array",
                              ndim);
-                goto done;
+                SWIG_fail;
             }
 
             if (ndim == 3)
@@ -209,69 +237,35 @@ import_array();
                     PyErr_Format(PyExc_RuntimeError,
                                  "update_image(): 'image_data' argument is a 3-dimensional array. I expected the last dim to have length 3 (BGR), but it has length %d",
                                  dims[2]);
-                    goto done;
+                    SWIG_fail;
                 }
                 if(strides[2] != 1)
                 {
                     PyErr_Format(PyExc_RuntimeError,
                                  "update_image(): 'image_data' argument is a 3-dimensional array. The last dim (BGR) must be stored densely",
                                  dims[2]);
-                    goto done;
+                    SWIG_fail;
                 }
 
-                bpp = 24;
+                $4 = 24;
             }
             else
-                bpp = 8;
+                $4 = 8;
 
             if (strides[1] != (ndim == 3 ? 3 : 1))
             {
                 PyErr_Format(PyExc_RuntimeError,
                              "update_image(): 'image_data' argument must be a numpy array with each row stored densely");
-                goto done;
+                SWIG_fail;
             }
 
-            if((image_data == NULL && image_filename == NULL) ||
-               (image_data != NULL && image_filename != NULL))
-            {
-                PyErr_Format(PyExc_RuntimeError,
-                             "update_image(): exactly one of ('image_filename', 'image_data') must be given");
-                goto done;
-            }
+            $1 = (char*)PyArray_DATA((PyArrayObject*)$input);
+            $2 = dims[1];
+            $3 = dims[0];
+            $5 = strides[0];
         }
-
-        if( self->update_image(decimation_level,
-                                  image_filename,
-                                  image_data == NULL ? NULL : data,
-                                  image_data == NULL ? 0    : dims[1],
-                                  image_data == NULL ? 0    : dims[0],
-                                  image_data == NULL ? 0    : bpp,
-                                  image_data == NULL ? 0    : strides[0]))
-        {
-            // success
-            Py_INCREF(Py_None);
-            result = Py_None;
-        }
-        else
-        {
-            // failure
-            PyErr_SetString(PyExc_RuntimeError,
-                            "update_image() failed!");
-        }
-
-    done:
-        return result;
     }
 }
-%ignore Fl_Gl_Image_Widget::update_image( int decimation_level,
-                                          // Either this should be given
-                                          const char* image_filename,
-                                          // Or these should be given
-                                          const char* image_data,
-                                          int         image_width,
-                                          int         image_height,
-                                          int         image_bpp,
-                                          int         image_pitch);
 %feature("docstring") Fl_Gl_Image_Widget::update_image
 """Update the image being displayed in the widget
 
@@ -326,66 +320,64 @@ ARGUMENTS
   image_filename
  """;
 
+%typemap(in, numinputs=0) (double* xout, double* yout) (double xout_temp, double yout_temp) {
+  $1 = &xout_temp;
+  $2 = &yout_temp;
+}
+%typemap(argout) (double* xout, double* yout) {
+  $result = Py_BuildValue("(dd)", *$1, *$2);
+}
+%typemap(in) (double x, double y) {
 
-%extend Fl_Gl_Image_Widget
-{
-    PyObject* map_pixel_image_from_viewport(PyObject* qin)
+    if(!PySequence_Check($input))
     {
-        PyObject* result = NULL;
-        PyObject* qx_py = NULL;
-        PyObject* qy_py = NULL;
-        double qx, qy;
-        double xyout[2];
+        PyErr_SetString(PyExc_RuntimeError,
+                        "Expected one argument: an iterable of length 2. This isn't an iterable");
+        SWIG_fail;
+    }
+    if(2 != PySequence_Length($input))
+    {
+        PyErr_SetString(PyExc_RuntimeError,
+                        "Expected one argument: an iterable of length 2. This doesn't have length 2");
+        SWIG_fail;
+    }
 
-        if(!PySequence_Check(qin))
+    {
+        PyObject* o = PySequence_ITEM($input, 0);
+        if(o == NULL)
         {
             PyErr_SetString(PyExc_RuntimeError,
-                            "map_pixel_image_from_viewport() should be given one argument: qin (an iterable of length 2). This isn't an iterable");
-            goto done;
+                            "Couldn't retrieve first element in the argument");
+            SWIG_fail;
         }
-        if(2 != PySequence_Length(qin))
-        {
-            PyErr_SetString(PyExc_RuntimeError,
-                            "map_pixel_image_from_viewport() should be given one argument: qin (an iterable of length 2). This doesn't have length 2");
-            goto done;
-        }
-
-        qx_py = PySequence_ITEM(qin, 0);
-        qy_py = PySequence_ITEM(qin, 1);
-
-        qx = PyFloat_AsDouble(qx_py);
+        $1 = PyFloat_AsDouble(o);
+        Py_DECREF(o);
         if(PyErr_Occurred())
         {
             PyErr_SetString(PyExc_RuntimeError,
-                            "map_pixel_image_from_viewport() should be given one argument: qin (an iterable of length 2). First value is not parse-able as a floating point number");
-            goto done;
+                            "Couldn't interpret first element as 'double'");
+            SWIG_fail;
         }
-        qy = PyFloat_AsDouble(qy_py);
+    }
+    {
+        PyObject* o = PySequence_ITEM($input, 1);
+        if(o == NULL)
+        {
+            PyErr_SetString(PyExc_RuntimeError,
+                            "Couldn't retrieve second element in the argument");
+            SWIG_fail;
+        }
+        $2 = PyFloat_AsDouble(o);
+        Py_DECREF(o);
         if(PyErr_Occurred())
         {
             PyErr_SetString(PyExc_RuntimeError,
-                            "map_pixel_image_from_viewport() should be given one argument: qin (an iterable of length 2). Second value is not parse-able as a floating point number");
-            goto done;
+                            "Couldn't interpret second element as 'double'");
+            SWIG_fail;
         }
-
-        if(!self->map_pixel_image_from_viewport(&xyout[0], &xyout[1],
-                                                qx, qy))
-        {
-            PyErr_SetString(PyExc_RuntimeError,
-                            "map_pixel_image_from_viewport() failed!");
-            goto done;
-        }
-
-        result = Py_BuildValue("(dd)", xyout[0], xyout[1]);
-
-    done:
-        Py_XDECREF(qx_py);
-        Py_XDECREF(qy_py);
-        return result;
     }
 }
-%ignore Fl_Gl_Image_Widget::map_pixel_image_from_viewport(double* xout, double* yout,
-                                                          double x, double y);
+
 %feature("docstring") Fl_Gl_Image_Widget::map_pixel_image_from_viewport
 """Compute image pixel coords from viewport pixel coords
 
@@ -441,65 +433,6 @@ RETURNED VALUE
 A length-2 tuple containing the mapped pixel coordinate
 """;
 
-%extend Fl_Gl_Image_Widget
-{
-    PyObject* map_pixel_viewport_from_image(PyObject* qin)
-    {
-        PyObject* result = NULL;
-        PyObject* qx_py = NULL;
-        PyObject* qy_py = NULL;
-        double qx, qy;
-        double xyout[2];
-
-        if(!PySequence_Check(qin))
-        {
-            PyErr_SetString(PyExc_RuntimeError,
-                            "map_pixel_viewport_from_image() should be given one argument: qin (an iterable of length 2). This isn't an iterable");
-            goto done;
-        }
-        if(2 != PySequence_Length(qin))
-        {
-            PyErr_SetString(PyExc_RuntimeError,
-                            "map_pixel_viewport_from_image() should be given one argument: qin (an iterable of length 2). This doesn't have length 2");
-            goto done;
-        }
-
-        qx_py = PySequence_ITEM(qin, 0);
-        qy_py = PySequence_ITEM(qin, 1);
-
-        qx = PyFloat_AsDouble(qx_py);
-        if(PyErr_Occurred())
-        {
-            PyErr_SetString(PyExc_RuntimeError,
-                            "map_pixel_viewport_from_image() should be given one argument: qin (an iterable of length 2). First value is not parse-able as a floating point number");
-            goto done;
-        }
-        qy = PyFloat_AsDouble(qy_py);
-        if(PyErr_Occurred())
-        {
-            PyErr_SetString(PyExc_RuntimeError,
-                            "map_pixel_viewport_from_image() should be given one argument: qin (an iterable of length 2). Second value is not parse-able as a floating point number");
-            goto done;
-        }
-
-        if(!self->map_pixel_viewport_from_image(&xyout[0], &xyout[1],
-                                                qx, qy))
-        {
-            PyErr_SetString(PyExc_RuntimeError,
-                            "map_pixel_viewport_from_image() failed!");
-            goto done;
-        }
-
-        result = Py_BuildValue("(dd)", xyout[0], xyout[1]);
-
-    done:
-        Py_XDECREF(qx_py);
-        Py_XDECREF(qy_py);
-        return result;
-    }
-}
-%ignore Fl_Gl_Image_Widget::map_pixel_viewport_from_image(double* xout, double* yout,
-                                                          double x, double y);
 %feature("docstring") Fl_Gl_Image_Widget::map_pixel_viewport_from_image
 """Compute viewport pixel coords from image pixel coords
 
@@ -555,117 +488,118 @@ RETURNED VALUE
 A length-2 tuple containing the mapped pixel coordinate
 """;
 
-%extend Fl_Gl_Image_Widget
-{
-    PyObject* set_lines(PyObject* linesets)
-    {
-        PyObject* result = NULL;
-        PyObject* set    = NULL;
-        int Nsets        = 0;
+%typemap(in) (const GL_image_display_line_segments_t* line_segment_sets,
+              int Nline_segment_sets) {
 
-        if(!PySequence_Check(linesets))
+    PyObject* set       = NULL;
+    PyObject* points    = NULL;
+    PyObject* color_rgb = NULL;
+
+    if(!PySequence_Check($input))
+    {
+        PyErr_SetString(PyExc_RuntimeError,
+                        "$symname() argument isn't a list");
+        SWIG_fail;
+    }
+
+    $2 = PySequence_Length($input);
+
+    $1 =
+      (GL_image_display_line_segments_t*)malloc($2*sizeof(GL_image_display_line_segments_t));
+    if($1 == NULL)
+    {
+        PyErr_SetString(PyExc_RuntimeError,
+                        "$symname() Couldn't allocate $1");
+        SWIG_fail;
+    }
+
+    int ndim                = 0;
+    const npy_intp* dims    = NULL;
+
+    bool failed = false;
+    for(int i=0; i<$2; i++)
+    {
+        set = PySequence_ITEM($input, i);
+        if(!PyDict_Check(set))
         {
             PyErr_SetString(PyExc_RuntimeError,
-                            "set_lines() argument isn't a list");
-            goto done;
+                            "$symname(): each argument should be a dict");
+            failed = true;
+            break;
         }
 
-        Nsets = PySequence_Length(linesets);
-
+        color_rgb  = PyDict_GetItemString(set, "color_rgb");
+        if(color_rgb == NULL)
         {
-            GL_image_display_line_segments_t sets[Nsets];
-
-            PyObject* points;
-            PyObject* color_rgb;
-
-            int ndim                = 0;
-            const npy_intp* dims    = NULL;
-
-            for(int i=0; i<Nsets; i++)
-            {
-                set = PySequence_ITEM(linesets, i);
-                if(!PyDict_Check(set))
-                {
-                    PyErr_SetString(PyExc_RuntimeError,
-                                    "set_lines(): each argument should be a dict");
-                    goto done;
-                }
-
-                color_rgb  = PyDict_GetItemString(set, "color_rgb");
-                if(color_rgb == NULL)
-                {
-                    PyErr_SetString(PyExc_RuntimeError,
-                                    "set_lines(): each argument should be a dict with keys 'points' and 'color_rgb'. Missing: 'color_rgb'");
-                    goto done;
-                }
-                if(!PyArray_Check((PyArrayObject*)color_rgb))
-                {
-                    PyErr_SetString(PyExc_RuntimeError,
-                                    "set_lines(): each argument should be a dict with keys 'points' and 'color_rgb', both pointing to numpy arrays. 'color_rgb' element is not a numpy array");
-                    goto done;
-                }
-                ndim    = PyArray_NDIM((PyArrayObject*)color_rgb);
-                dims    = PyArray_DIMS((PyArrayObject*)color_rgb);
-                if(! (ndim == 1 && dims[0] == 3 &&
-                      PyArray_TYPE((PyArrayObject*)color_rgb) == NPY_FLOAT32 &&
-                      PyArray_CHKFLAGS((PyArrayObject*)color_rgb, NPY_ARRAY_C_CONTIGUOUS)) )
-                {
-                    PyErr_SetString(PyExc_RuntimeError,
-                                    "set_lines(): color_rgb needs to have shape (3,), contain float32 and be contiguous");
-                    goto done;
-                }
-
-                points = PyDict_GetItemString(set, "points");
-                if(points == NULL)
-                {
-                    PyErr_SetString(PyExc_RuntimeError,
-                                    "set_lines(): each argument should be a dict with keys 'points' and 'color_rgb'. Missing: 'points'");
-                    goto done;
-                }
-                if(!PyArray_Check((PyArrayObject*)points))
-                {
-                    PyErr_SetString(PyExc_RuntimeError,
-                                    "set_lines(): each argument should be a dict with keys 'points' and 'color_rgb', both pointing to numpy arrays. 'points' element is not a numpy array");
-                    goto done;
-                }
-                ndim    = PyArray_NDIM((PyArrayObject*)points);
-                dims    = PyArray_DIMS((PyArrayObject*)points);
-                if(! (ndim == 3 && dims[1] == 2 && dims[2] == 2 &&
-                      PyArray_TYPE((PyArrayObject*)points) == NPY_FLOAT32 &&
-                      PyArray_CHKFLAGS((PyArrayObject*)points, NPY_ARRAY_C_CONTIGUOUS)) )
-                {
-                    PyErr_SetString(PyExc_RuntimeError,
-                                    "set_lines(): points need to have shape (N,2,2), contain float32 and be contiguous");
-                    goto done;
-                }
-
-                sets[i].segments.Nsegments = dims[0];
-                memcpy(sets[i].segments.color_rgb,
-                       PyArray_DATA((PyArrayObject*)color_rgb),
-                       3*sizeof(float));
-                sets[i].qxy = (const float*)PyArray_DATA((PyArrayObject*)points);
-
-                Py_XDECREF(set);
-                set = NULL;
-            }
-
-            if(!self->set_lines(sets, Nsets))
-            {
-                PyErr_SetString(PyExc_RuntimeError,
-                                "set_lines() failed");
-                goto done;
-            }
+            PyErr_SetString(PyExc_RuntimeError,
+                            "$symname(): each argument should be a dict with keys 'points' and 'color_rgb'. Missing: 'color_rgb'");
+            failed = true;
+            break;
         }
-        Py_INCREF(Py_None);
-        result = Py_None;
+        if(!PyArray_Check((PyArrayObject*)color_rgb))
+        {
+            PyErr_SetString(PyExc_RuntimeError,
+                            "$symname(): each argument should be a dict with keys 'points' and 'color_rgb', both pointing to numpy arrays. 'color_rgb' element is not a numpy array");
+            failed = true;
+            break;
+        }
+        ndim    = PyArray_NDIM((PyArrayObject*)color_rgb);
+        dims    = PyArray_DIMS((PyArrayObject*)color_rgb);
+        if(! (ndim == 1 && dims[0] == 3 &&
+              PyArray_TYPE((PyArrayObject*)color_rgb) == NPY_FLOAT32 &&
+              PyArray_CHKFLAGS((PyArrayObject*)color_rgb, NPY_ARRAY_C_CONTIGUOUS)) )
+        {
+            PyErr_SetString(PyExc_RuntimeError,
+                            "$symname(): color_rgb needs to have shape (3,), contain float32 and be contiguous");
+            failed = true;
+            break;
+        }
 
-    done:
+        points = PyDict_GetItemString(set, "points");
+        if(points == NULL)
+        {
+            PyErr_SetString(PyExc_RuntimeError,
+                            "$symname(): each argument should be a dict with keys 'points' and 'color_rgb'. Missing: 'points'");
+            failed = true;
+            break;
+        }
+        if(!PyArray_Check((PyArrayObject*)points))
+        {
+            PyErr_SetString(PyExc_RuntimeError,
+                            "$symname(): each argument should be a dict with keys 'points' and 'color_rgb', both pointing to numpy arrays. 'points' element is not a numpy array");
+            failed = true;
+            break;
+        }
+        ndim    = PyArray_NDIM((PyArrayObject*)points);
+        dims    = PyArray_DIMS((PyArrayObject*)points);
+        if(! (ndim == 3 && dims[1] == 2 && dims[2] == 2 &&
+              PyArray_TYPE((PyArrayObject*)points) == NPY_FLOAT32 &&
+              PyArray_CHKFLAGS((PyArrayObject*)points, NPY_ARRAY_C_CONTIGUOUS)) )
+        {
+            PyErr_SetString(PyExc_RuntimeError,
+                            "$symname(): points need to have shape (N,2,2), contain float32 and be contiguous");
+            failed = true;
+            break;
+        }
+
+        $1[i].segments.Nsegments = dims[0];
+        memcpy($1[i].segments.color_rgb,
+               PyArray_DATA((PyArrayObject*)color_rgb),
+               3*sizeof(float));
+        $1[i].qxy = (const float*)PyArray_DATA((PyArrayObject*)points);
+
         Py_XDECREF(set);
-        return result;
+        set = NULL;
     }
+    Py_XDECREF(set);
+    set = NULL;
+    if(failed) SWIG_fail;
 }
-%ignore Fl_Gl_Image_Widget::set_lines(const GL_image_display_line_segments_t* line_segment_sets,
-                                      int Nline_segment_sets);
+%typemap(freearg) (const GL_image_display_line_segments_t* line_segment_sets,
+                   int Nline_segment_sets) {
+    free($1);
+}
+
 %feature("docstring") Fl_Gl_Image_Widget::set_lines
 """Compute image pixel coords from viewport pixel coords
 
@@ -742,31 +676,7 @@ hasn't been initialized yet or if the input is invalid).
 
 """;
 
-%extend Fl_Gl_Image_Widget
-{
-    // This is mostly a no-op wrapping. The only difference is to throw an
-    // exception on error instead of returning false
-    PyObject* set_panzoom(double x_centerpixel, double y_centerpixel,
-                          double visible_width_pixels)
-    {
-        PyObject* result = NULL;
 
-        if(!self->set_panzoom(x_centerpixel, y_centerpixel, visible_width_pixels))
-        {
-            PyErr_SetString(PyExc_RuntimeError,
-                            "set_panzoom() failed!");
-            goto done;
-        }
-
-        Py_INCREF(Py_None);
-        result = Py_None;
-
-    done:
-        return result;
-    }
-}
-%ignore Fl_Gl_Image_Widget::set_panzoom(double x_centerpixel, double y_centerpixel,
-                                        double visible_width_pixels);
 %feature("docstring") Fl_Gl_Image_Widget::set_panzoom
 """Updates the pan, zoom settings of an image view
 
