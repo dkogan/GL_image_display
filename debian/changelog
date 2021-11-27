@@ -1,3 +1,9 @@
+gl-image-display (0.3-1) unstable; urgency=medium
+
+  * Updates
+
+ -- Dima Kogan <dkogan@debian.org>  Sat, 27 Nov 2021 15:10:42 -0800
+
 gl-image-display (0.2-1) unstable; urgency=medium
 
   * Initial release
