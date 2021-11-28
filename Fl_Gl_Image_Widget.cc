@@ -293,6 +293,21 @@ int Fl_Gl_Image_Widget::handle(int event)
             return 1;
         }
         break;
+
+    case FL_KEYUP:
+        if(m_ctx.did_init && m_ctx.did_init_texture &&
+           Fl::event_key() == 'u')
+        {
+            if(!set_panzoom( ((double)m_ctx.image_width  - 1.0f)/2.,
+                             ((double)m_ctx.image_height - 1.0f)/2.,
+                             m_ctx.image_width))
+            {
+                MSG("set_panzoom() failed. Trying to continue...");
+            }
+            redraw();
+            return 1;
+        }
+        break;
     }
 
     return Fl_Gl_Window::handle(event);
