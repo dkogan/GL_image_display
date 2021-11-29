@@ -84,16 +84,40 @@ typedef struct
     bool did_set_panzoom  : 1;
 } GL_image_display_context_t;
 
+// All API functions return true on sucesss, false on error
+
 // The main init routine. We support 2 modes:
 //
 // - GLUT: static window               (use_glut = true)
 // - no GLUT: higher-level application (use_glut = false)
-bool GL_image_display_init( // output
-                      GL_image_display_context_t* ctx,
-                      // input
-                      bool use_glut);
+//
+// The GL_image_display_context_t structure should be zeroed out before calling.
+// The usual call looks like this:
+//
+//   GL_image_display_context_t ctx = {};
+//   if( GL_image_display_init(&ctx, false) )
+//   {
+//     ERROR;
+//   }
+bool GL_image_display_init( // output stored here
+                            GL_image_display_context_t* ctx,
+                            // input
+                            bool use_glut);
 
+// Update the image data being displayed
 bool GL_image_display_update_image( GL_image_display_context_t* ctx,
+
+                                    // 0 == display full-resolution, original image
+                                    //
+                                    // 1 == decimate by a factor of 2: the
+                                    // rendered image contains one pixel from
+                                    // each 2x2 block of input
+                                    //
+                                    // 2 == decimate by a factor of 4: the
+                                    // rendered image contains one pixel from
+                                    // each 4x4 block of input
+                                    //
+                                    // and so on
                                     int decimation_level,
 
                                     // Either this should be given
@@ -107,6 +131,12 @@ bool GL_image_display_update_image( GL_image_display_context_t* ctx,
                                     // - 8  for "grayscale"
                                     // - 24 for "bgr"
                                     int image_bpp,
+
+                                    // how many bytes are used to represent each
+                                    // row in image_data. Useful to display
+                                    // non-contiguous data. As a shorthand,
+                                    // image_pitch <= 0 can be passed-in to
+                                    // indicate contiguous data
                                     int image_pitch);
 
 // This exists because the FLTK widget often defers the first update_image()
@@ -129,20 +159,28 @@ bool GL_image_display_update_image__validate_input
 
 void GL_image_display_deinit( GL_image_display_context_t* ctx );
 
+// Usually this is called in response to the higher-level viewport being
+// resized, due to the window displaying the image being resized, for instance.
 bool GL_image_display_resize_viewport(GL_image_display_context_t* ctx,
                                       int viewport_width,
                                       int viewport_height);
 
+// Called to pan/zoom the image. Usually called in response to some interactive
+// user action, such as clicking/dragging with the mouse
 bool GL_image_display_set_panzoom(GL_image_display_context_t* ctx,
                                  double x_centerpixel, double y_centerpixel,
                                   double visible_width_pixels);
 
+// Set the line overlay that we draw on top of the image. The full set of lines
+// being plotted are given in each call to this function
 bool GL_image_display_set_lines(GL_image_display_context_t* ctx,
                                 const GL_image_display_line_segments_t* line_segment_sets,
                                 int Nline_segment_sets);
 
+// Render
 bool GL_image_display_redraw(GL_image_display_context_t* ctx);
 
+// Convert a pixel from/to image coordinates to/from viewport coordinates
 bool GL_image_display_map_pixel_viewport_from_image(GL_image_display_context_t* ctx,
                                                     double* xout, double* yout,
                                                     double x, double y);
