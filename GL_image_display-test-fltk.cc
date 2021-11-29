@@ -117,7 +117,7 @@ void timer_callback(void* cookie __attribute__((unused)))
         for(int j=0; j<2; j++)
         {
             if(!g_gl_widgets[2*i+j]->update_image(DECIMATION,
-                                                     g_images[(2*i+j + c)%4]))
+                                                  g_images[(2*i+j + c)%4]))
             {
                 MSG("Couldn't update the image. Giving up.");
                 g_window->hide();
