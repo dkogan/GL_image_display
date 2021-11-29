@@ -1,3 +1,98 @@
-An in-progress library to display images in GLUT or FLTK
+This is an image-display library that uses OpenGL internally for efficient
+(re)drawing. 
 
-Not clear this is strictly necessary. Python support will be added.
+* Overview
+Image-display widgets are common in GUI toolkits (FLTK has [[https://www.fltk.org/doc-1.3/classFl__RGB__Image.html][=Fl_RGB_Image=]] for
+instance), but they generally use the CPU to draw, which becomes slow when given
+large images. By contrast, /this/ toolkit uses OpenGL hardware, so after the
+initial cost to load an image, the drawing, redrawing, panning and zooming are
+effectively free. This makes it possible to quickly build responsive
+applications that display images.
+
+Three separate interfaces are available:
+
+- C library defined in [[https://github.com/dkogan/GL_image_display/blob/master/GL_image_display.h][=GL_image_display.h=]]
+- C++ library providing an FLTK widget, defined in [[https://github.com/dkogan/GL_image_display/blob/master/Fl_Gl_Image_Widget.hh][=Fl_Gl_Image_Widget.hh=]]
+- Python library wrapping the FLTK widget to make it usable in Python. Defined
+  in the SWIG interface in [[https://github.com/dkogan/GL_image_display/blob/master/Fl_Gl_Image_Widget.i][=Fl_Gl_Image_Widget.i=]]
+
+* C library
+The core functionality in this library is made available in the C library. This
+can be used directly to build a GLUT application (sample in
+[[https://github.com/dkogan/GL_image_display/blob/master/GL_image_display-test-glut.c][=GL_image_display-test-glut.c=]]), or it can be used to implement higher-level
+components, such as the [[https://github.com/dkogan/GL_image_display/blob/master/Fl_Gl_Image_Widget.hh][=Fl_Gl_Image_Widget=]] FLTK widget.
+
+Please see [[https://github.com/dkogan/GL_image_display/blob/master/GL_image_display.h][=GL_image_display.h=]] and the GLUT sample for the API.
+
+* FLTK widget
+An =Fl_Gl_Image_Widget= is provided in [[https://github.com/dkogan/GL_image_display/blob/master/Fl_Gl_Image_Widget.hh][=Fl_Gl_Image_Widget.hh=]], with a sample
+application in [[https://github.com/dkogan/GL_image_display/blob/master/GL_image_display-test-fltk.cc][=GL_image_display-test-fltk.cc=]]. This is a "normal" FLTK widget,
+that wraps the necessary functions from the C API, and that defines the expected
+UI behaviors to make it immediately usable. The UI supported by the default
+=Fl_Gl_Image_Widget::handle()= function:
+
+- Mouse click/drag pans
+
+- Mousewheel pans. Vertical and horizontal mousewheels are supported to pan in
+  the two directions
+
+- Ctrl-vertical-mousewheel zooms
+
+- =u= key on the keyboard reverts to the original full-size view (this is the
+  key used by [[http://gnuplot.info][gnuplot]].)
+
+To define new/different interactions, subclass =Fl_Gl_Image_Widget=, and
+override the =handle()= method.
+
+The widget automatically handles resizing operations.
+
+The normal usage sequence is very simple:
+
+- Construct the =Fl_Gl_Image_Widget=
+- Call the =update_image()= method to give it data
+
+Note that the =set_panzoom()= method is =virtual=, so a derived class can
+override it to get a "notification" of any pan/zoom operation. One application
+of this is to sync the pan/zoom setting between multiple =Fl_Gl_Image_Widget=
+objects in a single application.
+
+* Python FLTK widget
+For FLTK applications written in Python using [[https://pyfltk.sourceforge.io/][pyfltk]], a Python flavor of the
+=Fl_Gl_Image_Widget= is available. The wrapper code is generated with [[http://www.swig.org][SWIG]], so
+the Python API largely mirrors the C++ API. Some Python-specific notes:
+
+- Instead of returning =False= to indicate failure, these functions raise an
+  =Exception=
+- SWIG directors are used, so the widget can be subclassed in Python, and works
+  as one would expect
+- =update_image()= can take an image filename (as in C++) /or/ a numpy array of
+  data. The dimensions, depth and pitch are all read from this array
+- The pixel mapping functions =map_pixel_viewport_from_image()= and
+  =map_pixel_image_from_viewport()= ingest a length-2 iterable (or a numpy
+  array) and return a length-2 tuple.
+- =set_lines()= takes in an iterable of =dict= objects each with keys
+  - =points=: a numpy array of shape (=Nsegments=,2,2). These are the line
+    segments, each represented as =(x0,y0)= - =(x1,y1)=
+  - =color_rgb=: a numpy array of shape (3,) which contains the RGB color for
+    this set of line segments. Each channel ranges from 0 to 1.
+
+A sample application is available in [[https://github.com/dkogan/GL_image_display/blob/master/GL_image_display-test-fltk.py][=GL_image_display-test-fltk.py=]].
+
+* Repository
+
+https://www.github.com/dkogan/GL_image_display
+
+* Author
+
+Dima Kogan (=dima@secretsauce.net=)
+
+* License and Copyright
+
+Copyright (c) 2021 California Institute of Technology ("Caltech"). U.S.
+Government sponsorship acknowledged. All rights reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
