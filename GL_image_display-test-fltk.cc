@@ -167,8 +167,6 @@ int main(int argc, char** argv)
     images->end();
 
     {
-        // nonfocusable so that keystrokes all go to the gl window, and are
-        // processed there
         g_status_text = new Fl_Output(0, WINDOW_H-STATUS_H,
                                       WINDOW_W, STATUS_H);
     }
