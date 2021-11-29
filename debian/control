@@ -6,7 +6,6 @@ Build-Depends:
 # with older debian-based distros
  debhelper (>= 11),
  dh-python,
- mrbuild,
  swig,
  libgl1-mesa-dev,
  libepoxy-dev,
