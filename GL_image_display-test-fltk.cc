@@ -152,16 +152,13 @@ int main(int argc, char** argv)
         g_gl_widgets[0] = new Fl_Gl_Image_Widget_Derived(0, y,
                                                          w, h);
         g_gl_widgets[1] = new Fl_Gl_Image_Widget_Derived(w, y,
-                                                         WINDOW_W-w,
-                                                         h);
+                                                         WINDOW_W-w, h);
         y = h;
         h = WINDOW_H - STATUS_H - y;
         g_gl_widgets[2] = new Fl_Gl_Image_Widget_Derived(0, y,
-                                                         w,
-                                                         h);
+                                                         w, h);
         g_gl_widgets[3] = new Fl_Gl_Image_Widget_Derived(w, y,
-                                                         WINDOW_W-w,
-                                                         h);
+                                                         WINDOW_W-w, h);
 
     }
     images->end();
