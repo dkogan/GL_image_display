@@ -54,9 +54,11 @@ window.end()
 window.show()
 
 if 1:
-    image.update_image(image_filename = image_filename)
+    image.update_image(image_filename   = image_filename,
+                       decimation_level = 0)
 else:
     import cv2
-    image.update_image(image_data = cv2.imread(image_filename))
+    image.update_image(image_data       = cv2.imread(image_filename),
+                       decimation_level = 0)
 
 Fl.run()
