@@ -290,6 +290,13 @@ int Fl_Gl_Image_Widget::handle(int event)
         }
         break;
 
+
+
+    case FL_ENTER:
+        // Focus follows mouse. I want to be able to receive the 'u' button
+        take_focus();
+        return 1;
+
     case FL_KEYUP:
         if(m_ctx.did_init && m_ctx.did_init_texture &&
            Fl::event_key() == 'u')
