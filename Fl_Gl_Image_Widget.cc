@@ -201,7 +201,6 @@ int Fl_Gl_Image_Widget::handle(int event)
                     return 1;
                 }
 
-                redraw();
                 return 1;
             }
             else
@@ -225,7 +224,6 @@ int Fl_Gl_Image_Widget::handle(int event)
                     return 1;
                 }
 
-                redraw();
                 return 1;
             }
         }
@@ -286,8 +284,6 @@ int Fl_Gl_Image_Widget::handle(int event)
                 return 1;
             }
 
-            redraw();
-
             m_last_drag_update_xy[0] = Fl::event_x();
             m_last_drag_update_xy[1] = Fl::event_y();
             return 1;
@@ -304,7 +300,6 @@ int Fl_Gl_Image_Widget::handle(int event)
             {
                 MSG("set_panzoom() failed. Trying to continue...");
             }
-            redraw();
             return 1;
         }
         break;
