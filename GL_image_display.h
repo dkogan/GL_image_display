@@ -168,7 +168,7 @@ bool GL_image_display_resize_viewport(GL_image_display_context_t* ctx,
 // Called to pan/zoom the image. Usually called in response to some interactive
 // user action, such as clicking/dragging with the mouse
 bool GL_image_display_set_panzoom(GL_image_display_context_t* ctx,
-                                 double x_centerpixel, double y_centerpixel,
+                                  double x_centerpixel, double y_centerpixel,
                                   double visible_width_pixels);
 
 // Set the line overlay that we draw on top of the image. The full set of lines
