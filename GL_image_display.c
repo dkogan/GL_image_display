@@ -718,10 +718,27 @@ bool GL_image_display_set_panzoom(GL_image_display_context_t* ctx,
 {
     CONFIRM_SET(did_init_texture);
 
-    ctx->x_centerpixel        = x_centerpixel;
-    ctx->y_centerpixel        = y_centerpixel;
-    ctx->visible_width_pixels = visible_width_pixels;
-    ctx->visible_width01      = visible_width_pixels / (double)ctx->image_width;
+#define TRY_EXISTING_OR_SET(what)                                                \
+    /* check for isfinite() AND big values because -ffast-mathj breaks isfinite()*/ \
+    if( !isfinite(what) || what >= 1e20 || what <= -1e20 )                       \
+    {                                                                            \
+        /* Invalid input. I keep existing value IF there is an existing value */ \
+        if(!ctx->did_set_panzoom)                                                \
+        {                                                                        \
+            MSG("set_panzoom() was asked to use previous value for " #what "but it hasn't been initialized yet. Giving up."); \
+            return false;                                                        \
+        }                                                                        \
+    }                                                                            \
+    else                                                                         \
+        ctx->what = what
+
+    TRY_EXISTING_OR_SET(x_centerpixel);
+    TRY_EXISTING_OR_SET(y_centerpixel);
+    TRY_EXISTING_OR_SET(visible_width_pixels);
+
+#undef TRY_EXISTING_OR_SET
+
+    ctx->visible_width01 = ctx->visible_width_pixels / (double)ctx->image_width;
     set_uniform_1f(ctx, visible_width01,
                    (float)ctx->visible_width01);
 
@@ -732,8 +749,8 @@ bool GL_image_display_set_panzoom(GL_image_display_context_t* ctx,
     //   OpenGL [0,1] extents look at the left edge of the leftmost pixel and
     //   the right edge of the rightmost pixel respectively, so an offset of 0.5
     //   pixels is required
-    ctx->center01_x = (                                x_centerpixel + 0.5) / (double)ctx->image_width;
-    ctx->center01_y = ((double)(ctx->image_height-1) - y_centerpixel + 0.5) / (double)ctx->image_height;
+    ctx->center01_x = (                                ctx->x_centerpixel + 0.5) / (double)ctx->image_width;
+    ctx->center01_y = ((double)(ctx->image_height-1) - ctx->y_centerpixel + 0.5) / (double)ctx->image_height;
 
     set_uniform_2f(ctx, center01,
                    (float)ctx->center01_x,

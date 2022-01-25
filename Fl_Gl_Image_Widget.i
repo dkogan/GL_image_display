@@ -729,6 +729,10 @@ behaviors. The example in the SYNOPSIS above displays two images side by size,
 and pans/zooms them in unison: when the user changes the view in one widget, the
 change is applied to BOTH widgets.
 
+If any of the given values are Inf or NaN or abs() >= 1e20, we use the
+previously-set value.
+
+
 ARGUMENTS
 
 - x_centerpixel, y_centerpixel: the pixel coordinates of the image to place in
