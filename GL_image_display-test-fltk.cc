@@ -62,12 +62,11 @@ public:
                                                                &image_pixel_y,
                                                                (double)Fl::event_x(),
                                                                (double)Fl::event_y());
-                char* s;
-                asprintf(&s, "Image pixel coords (%.2f,%.2f)",
-                         image_pixel_x,
-                         image_pixel_y);
+                char s[1024];
+                sprintf(s, "Image pixel coords (%.2f,%.2f)",
+                        image_pixel_x,
+                        image_pixel_y);
                 g_status_text->value(s);
-                free(s);
 
                 // Let the other handlers run
                 break;
