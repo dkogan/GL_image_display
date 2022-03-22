@@ -185,17 +185,15 @@ int Fl_Gl_Image_Widget::handle(int event)
                 double viewport_width  = (double)pixel_w();
                 double viewport_height = (double)pixel_h();
 
-                m_ctx.x_centerpixel +=
-                    (((qvx+0.5)/viewport_width)*2.-1.)/(2.*m_ctx.aspect_x) *
-                    m_ctx.visible_width01*(1.-z) * (double)m_ctx.image_width;
-                m_ctx.y_centerpixel -=
-                    (((1. - (qvy+0.5)/viewport_height))*2.-1.)/(2.*m_ctx.aspect_y) *
-                    m_ctx.visible_width01*(1.-z) * (double)m_ctx.image_height;
+                if(!set_panzoom( m_ctx.x_centerpixel +
+                                 (((qvx+0.5)/viewport_width)*2.-1.)/(2.*m_ctx.aspect_x) *
+                                 m_ctx.visible_width01*(1.-z) * (double)m_ctx.image_width,
 
-                m_ctx.visible_width_pixels *= z;
+                                 m_ctx.y_centerpixel -
+                                 (((1. - (qvy+0.5)/viewport_height))*2.-1.)/(2.*m_ctx.aspect_y) *
+                                 m_ctx.visible_width01*(1.-z) * (double)m_ctx.image_height,
 
-                if(!set_panzoom(m_ctx.x_centerpixel, m_ctx.y_centerpixel,
-                                m_ctx.visible_width_pixels))
+                                 m_ctx.visible_width_pixels * z ))
                 {
                     MSG("set_panzoom() failed. Trying to continue...");
                     return 1;
@@ -214,10 +212,8 @@ int Fl_Gl_Image_Widget::handle(int event)
                 if( abs(dy) > abs(dx)) dx = 0;
                 else                   dy = 0;
 
-                m_ctx.x_centerpixel += 50. * (double)dx * m_ctx.visible_width_pixels / (double)pixel_w();
-                m_ctx.y_centerpixel += 50. * (double)dy * m_ctx.visible_width_pixels / (double)pixel_w();
-
-                if(!set_panzoom(m_ctx.x_centerpixel, m_ctx.y_centerpixel,
+                if(!set_panzoom(m_ctx.x_centerpixel + 50. * (double)dx * m_ctx.visible_width_pixels / (double)pixel_w(),
+                                m_ctx.y_centerpixel + 50. * (double)dy * m_ctx.visible_width_pixels / (double)pixel_w(),
                                 m_ctx.visible_width_pixels))
                 {
                     MSG("set_panzoom() failed. Trying to continue...");
@@ -268,17 +264,18 @@ int Fl_Gl_Image_Widget::handle(int event)
 
             double viewport_width  = (double)pixel_w();
             double viewport_height = (double)pixel_h();
-            m_ctx.x_centerpixel -=
-                dx * m_ctx.visible_width01 /
-                (m_ctx.aspect_x * viewport_width) *
-                (double)m_ctx.image_width;
-            m_ctx.y_centerpixel -=
-                dy * m_ctx.visible_width01 /
-                (m_ctx.aspect_y * viewport_height) *
-                (double)m_ctx.image_height;
 
-            if(!set_panzoom(m_ctx.x_centerpixel, m_ctx.y_centerpixel,
-                            m_ctx.visible_width_pixels))
+            if(!set_panzoom( m_ctx.x_centerpixel -
+                             dx * m_ctx.visible_width01 /
+                             (m_ctx.aspect_x * viewport_width) *
+                             (double)m_ctx.image_width,
+
+                             m_ctx.y_centerpixel -
+                             dy * m_ctx.visible_width01 /
+                             (m_ctx.aspect_y * viewport_height) *
+                             (double)m_ctx.image_height,
+
+                             m_ctx.visible_width_pixels))
             {
                 MSG("set_panzoom() failed. Trying to continue...");
                 return 1;
