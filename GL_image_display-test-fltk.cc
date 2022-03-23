@@ -48,6 +48,143 @@ public:
         Fl_Gl_Image_Widget(x,y,w,h)
     {}
 
+
+    /* These override the pan/zoom commands to pan/zoom all the widgets together
+       if SHIFT is depressed */
+    bool process_mousewheel_zoom(double dy,
+                                 double x,
+                                 double y,
+                                 double viewport_width,
+                                 double viewport_height)
+    {
+        if(!(Fl::event_state() & FL_SHIFT))
+        {
+            // We do the normal thing because shift is not pressed: the user
+            // didn't ask us to do anything special with this pan/zoom call
+            return
+                Fl_Gl_Image_Widget::
+                process_mousewheel_zoom(dy, x,y,viewport_width,viewport_height);
+        }
+
+        // All the widgets should pan/zoom together
+        int Nwidgets = (int)(sizeof(g_gl_widgets)/sizeof(g_gl_widgets[0]));
+        bool result = true;
+        for(int i=0; i<Nwidgets; i++)
+        {
+            // I need to fake a mousewheel-zoom event in another widget, and
+            // I need to determine a fake center point. I select the same
+            // point, relatively, in the window
+            double viewport_width_new  = (double)g_gl_widgets[i]->pixel_w();
+            double viewport_height_new = (double)g_gl_widgets[i]->pixel_h();
+
+            result = result &&
+                g_gl_widgets[i]->
+                Fl_Gl_Image_Widget::
+                process_mousewheel_zoom(dy,
+                                        (x + 0.5)/viewport_width  * viewport_width_new  - 0.5,
+                                        (y + 0.5)/viewport_height * viewport_height_new - 0.5,
+                                        viewport_width_new,
+                                        viewport_height_new);
+        }
+
+        return result;
+    }
+
+    virtual
+    bool process_mousewheel_pan(double dx,
+                                double dy,
+                                double viewport_width,
+                                double viewport_height)
+    {
+        if(!(Fl::event_state() & FL_SHIFT))
+        {
+            // We do the normal thing because shift is not pressed: the user
+            // didn't ask us to do anything special with this pan/zoom call
+            return
+                Fl_Gl_Image_Widget::
+                process_mousewheel_pan(dx,dy,viewport_width,viewport_height);
+        }
+
+        // All the widgets should pan/zoom together
+        int Nwidgets = (int)(sizeof(g_gl_widgets)/sizeof(g_gl_widgets[0]));
+        bool result = true;
+        for(int i=0; i<Nwidgets; i++)
+        {
+            double viewport_width_new  = (double)g_gl_widgets[i]->pixel_w();
+            double viewport_height_new = (double)g_gl_widgets[i]->pixel_h();
+
+            result = result &&
+                g_gl_widgets[i]->
+                Fl_Gl_Image_Widget::
+                process_mousewheel_pan(dx, dy,
+                                       viewport_width_new,
+                                       viewport_height_new);
+        }
+
+        return result;
+    }
+
+    virtual
+    bool process_mousedrag_pan(double dx,
+                               double dy,
+                               double viewport_width,
+                               double viewport_height)
+    {
+        if(!(Fl::event_state() & FL_SHIFT))
+        {
+            // We do the normal thing because shift is not pressed: the user
+            // didn't ask us to do anything special with this pan/zoom call
+            return
+                Fl_Gl_Image_Widget::
+                process_mousedrag_pan(dx,dy,viewport_width,viewport_height);
+        }
+
+        // All the widgets should pan/zoom together
+        int Nwidgets = (int)(sizeof(g_gl_widgets)/sizeof(g_gl_widgets[0]));
+        bool result = true;
+        for(int i=0; i<Nwidgets; i++)
+        {
+            double viewport_width_new  = (double)g_gl_widgets[i]->pixel_w();
+            double viewport_height_new = (double)g_gl_widgets[i]->pixel_h();
+
+            result = result &&
+                g_gl_widgets[i]->
+                Fl_Gl_Image_Widget::
+                process_mousedrag_pan(dx, dy,
+                                      viewport_width_new,
+                                      viewport_height_new);
+        }
+
+        return result;
+    }
+
+    virtual
+    bool process_keyboard_panzoom_orig(void)
+    {
+        if(!(Fl::event_state() & FL_SHIFT))
+        {
+            // We do the normal thing because shift is not pressed: the user
+            // didn't ask us to do anything special with this pan/zoom call
+            return
+                Fl_Gl_Image_Widget::
+                process_keyboard_panzoom_orig();
+        }
+
+        // All the widgets should pan/zoom together
+        int Nwidgets = (int)(sizeof(g_gl_widgets)/sizeof(g_gl_widgets[0]));
+        bool result = true;
+        for(int i=0; i<Nwidgets; i++)
+        {
+            result = result &&
+                g_gl_widgets[i]->
+                Fl_Gl_Image_Widget::
+                process_keyboard_panzoom_orig();
+        }
+
+        return result;
+    }
+
+
     int handle(int event)
     {
         switch(event)
@@ -103,70 +240,6 @@ public:
         }
 
         return Fl_Gl_Image_Widget::handle(event);
-    }
-
-    /* This is an override of the function to do this: any request to pan/zoom
-       the widget will come here first. If SHIFT is depressed, I dispatch all
-       pan/zoom commands to all the widgets, so that they all work in unison.
-       visible_width_pixels < 0 means: this is the redirected call; just call
-       the base class */
-    bool set_panzoom(double x_centerpixel, double y_centerpixel,
-                     double visible_width_pixels)
-    {
-        int Nwidgets = (int)(sizeof(g_gl_widgets)/sizeof(g_gl_widgets[0]));
-
-        if(!(Fl::event_state() & FL_SHIFT))
-        {
-            // Shift is not pressed. Just do the normal thing
-            return
-                Fl_Gl_Image_Widget::
-                set_panzoom(x_centerpixel, y_centerpixel,
-                            visible_width_pixels);
-        }
-
-        // Mouse does relative panning. Shift-U does absolute panning
-        bool relative = true;
-        if(Fl::event_key() == 'u')
-            relative = false;
-
-
-        // Shift is pressed. Pass this event to ALL my widgets
-        if(visible_width_pixels < 0)
-        {
-            // This is a dispatched call. I don't need to re-dispatch it. The
-            // centerpixel values are RELATIVE, so I apply them to the panning
-            // of THIS widget. This allows the joined pan to work even if the
-            // cameras aren't all panned the same way
-            return
-                Fl_Gl_Image_Widget::
-                set_panzoom(x_centerpixel,
-                            y_centerpixel,
-                            -visible_width_pixels);
-        }
-
-        // All the widgets should pan/zoom together
-        bool result = true;
-        const double x_centerpixel_orig = m_ctx.x_centerpixel;
-        const double y_centerpixel_orig = m_ctx.y_centerpixel;
-        for(int i=0; i<Nwidgets; i++)
-        {
-            // The centerpixel values are RELATIVE, so I apply them to the
-            // panning of THIS widget. This allows the joined pan to work even
-            // if the cameras aren't all panned the same way
-            double dx = 0.0;
-            double dy = 0.0;
-            if(relative)
-            {
-                dx = x_centerpixel_orig - g_gl_widgets[i]->m_ctx.x_centerpixel;
-                dy = y_centerpixel_orig - g_gl_widgets[i]->m_ctx.y_centerpixel;
-            }
-
-            result = result &&
-                g_gl_widgets[i]->set_panzoom(x_centerpixel - dx,
-                                             y_centerpixel - dy,
-                                             -visible_width_pixels);
-        }
-        return result;
     }
 };
 
