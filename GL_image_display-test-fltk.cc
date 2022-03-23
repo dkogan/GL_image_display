@@ -56,7 +56,8 @@ public:
             // I want FL_MOVE events and I want to make sure the parent widget
             // does its procesing. This is required for the focus-follows-mouse
             // logic for the keyboard-based navigation to work
-            return Fl_Gl_Image_Widget::handle(event) || 1;
+            Fl_Gl_Image_Widget::handle(event);
+            return 1;
 
         case FL_MOVE:
             {
