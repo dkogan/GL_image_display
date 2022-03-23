@@ -30,9 +30,9 @@ extern "C"
 
 class Fl_Gl_Image_Widget_Derived;
 
-static Fl_Double_Window*   g_window;
+static Fl_Double_Window*           g_window;
 static Fl_Gl_Image_Widget_Derived* g_gl_widgets[4];
-static Fl_Output*          g_status_text;
+static Fl_Output*                  g_status_text;
 
 static const char*const* g_images;
 
