@@ -37,6 +37,10 @@ static Fl_Output*                  g_status_text;
 static const char*const* g_images;
 
 
+static
+void update_status(double image_pixel_x,
+                   double image_pixel_y);
+
 class Fl_Gl_Image_Widget_Derived : public Fl_Gl_Image_Widget
 {
 public:
@@ -62,12 +66,7 @@ public:
                                                                &image_pixel_y,
                                                                (double)Fl::event_x(),
                                                                (double)Fl::event_y());
-                char s[1024];
-                sprintf(s, "Image pixel coords (%.2f,%.2f)",
-                        image_pixel_x,
-                        image_pixel_y);
-                g_status_text->value(s);
-
+                update_status(image_pixel_x, image_pixel_y);
                 // Let the other handlers run
                 break;
             }
@@ -104,6 +103,70 @@ public:
 
         return Fl_Gl_Image_Widget::handle(event);
     }
+
+    /* This is an override of the function to do this: any request to pan/zoom
+       the widget will come here first. If SHIFT is depressed, I dispatch all
+       pan/zoom commands to all the widgets, so that they all work in unison.
+       visible_width_pixels < 0 means: this is the redirected call; just call
+       the base class */
+    bool set_panzoom(double x_centerpixel, double y_centerpixel,
+                     double visible_width_pixels)
+    {
+        int Nwidgets = (int)(sizeof(g_gl_widgets)/sizeof(g_gl_widgets[0]));
+
+        if(!(Fl::event_state() & FL_SHIFT))
+        {
+            // Shift is not pressed. Just do the normal thing
+            return
+                Fl_Gl_Image_Widget::
+                set_panzoom(x_centerpixel, y_centerpixel,
+                            visible_width_pixels);
+        }
+
+        // Mouse does relative panning. Shift-U does absolute panning
+        bool relative = true;
+        if(Fl::event_key() == 'u')
+            relative = false;
+
+
+        // Shift is pressed. Pass this event to ALL my widgets
+        if(visible_width_pixels < 0)
+        {
+            // This is a dispatched call. I don't need to re-dispatch it. The
+            // centerpixel values are RELATIVE, so I apply them to the panning
+            // of THIS widget. This allows the joined pan to work even if the
+            // cameras aren't all panned the same way
+            return
+                Fl_Gl_Image_Widget::
+                set_panzoom(x_centerpixel,
+                            y_centerpixel,
+                            -visible_width_pixels);
+        }
+
+        // All the widgets should pan/zoom together
+        bool result = true;
+        const double x_centerpixel_orig = m_ctx.x_centerpixel;
+        const double y_centerpixel_orig = m_ctx.y_centerpixel;
+        for(int i=0; i<Nwidgets; i++)
+        {
+            // The centerpixel values are RELATIVE, so I apply them to the
+            // panning of THIS widget. This allows the joined pan to work even
+            // if the cameras aren't all panned the same way
+            double dx = 0.0;
+            double dy = 0.0;
+            if(relative)
+            {
+                dx = x_centerpixel_orig - g_gl_widgets[i]->m_ctx.x_centerpixel;
+                dy = y_centerpixel_orig - g_gl_widgets[i]->m_ctx.y_centerpixel;
+            }
+
+            result = result &&
+                g_gl_widgets[i]->set_panzoom(x_centerpixel - dx,
+                                             y_centerpixel - dy,
+                                             -visible_width_pixels);
+        }
+        return result;
+    }
 };
 
 
@@ -128,6 +191,37 @@ void timer_callback(void* cookie __attribute__((unused)))
     Fl::repeat_timeout(1.0, timer_callback);
 
     c++;
+}
+
+static
+void update_status(double image_pixel_x,
+                   double image_pixel_y)
+{
+    char str[1024];
+    int str_written = 0;
+
+#define append(fmt, ...)                                                \
+    {                                                                   \
+        int Navailable = sizeof(str) - str_written;                     \
+        int Nwritten = snprintf(&str[str_written], Navailable,          \
+                               fmt, ##__VA_ARGS__);                     \
+        if(Navailable <= Nwritten)                                      \
+        {                                                               \
+            MSG("Static buffer overflow. Increase buffer size. update_status() setting empty string"); \
+            g_status_text->static_value("");                            \
+            return;                                                     \
+        }                                                               \
+        str_written += Nwritten;                                        \
+    }
+
+    if(image_pixel_x > 0)
+    {
+        append("Pixel (%.2f,%.2f) ",
+               image_pixel_x, image_pixel_y);
+    }
+
+    g_status_text->value(str);
+#undef append
 }
 
 int main(int argc, char** argv)
