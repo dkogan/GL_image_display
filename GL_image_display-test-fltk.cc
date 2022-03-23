@@ -1,21 +1,14 @@
 // This is the C++ Fl_Gl_Image_Widget FLTK widget sample program. The Python
 // test program is separate, and lives in GL_image_display-test-fltk.py
 
-#include <string.h>
-#include <stdio.h>
-#include <getopt.h>
-
 #include <FL/Fl.H>
 #include <FL/Fl_Double_Window.H>
 #include <FL/Fl_Output.H>
-#include <FL/Fl_Gl_Window.H>
-#include <GL/gl.h>
 #include <math.h>
 
 extern "C"
 {
 #include "util.h"
-#include "GL_image_display.h"
 }
 
 #include "Fl_Gl_Image_Widget.hh"
