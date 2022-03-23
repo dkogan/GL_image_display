@@ -125,6 +125,107 @@ void Fl_Gl_Image_Widget::draw(void)
     GL_image_display_redraw(&m_ctx);
 }
 
+
+bool Fl_Gl_Image_Widget::process_mousewheel_zoom(double dy,
+                                                 double x,
+                                                 double y,
+                                                 double viewport_width,
+                                                 double viewport_height)
+{
+    double z = 1. + 0.2*dy;
+    z = fmin(fmax(z, 0.4), 2.);
+
+    // logic follows vertex.glsl
+    //
+    // I affect the zoom by scaling visible_width_pixels. I need to
+    // compute the new center coords that keep the pixel under the
+    // mouse in the same spot. Let's say I'm at viewport pixel qv,
+    // and image pixel qi. I then have (as in
+    // GL_image_display_map_pixel_image_from_viewport)
+    //
+    // qix = ((((qvx+0.5)/viewport_width)*2-1)/(2*aspect_x)*visible_width01+center01_x)*image_width - 0.5
+    //
+    // I want qvx,qix to be invariant, so I choose center01_x to
+    // compensate for the changes in visible_width01:
+    //
+    // ((((qvx+0.5)/viewport_width)*2-1)/(2*aspect_x)* visible_width01   +center01_x    )*image_width - 0.5 =
+    // ((((qvx+0.5)/viewport_width)*2-1)/(2*aspect_x)*(visible_width01*z)+center01_x_new)*image_width - 0.5
+    //
+    // (((qvx+0.5)/viewport_width)*2-1)/(2*aspect_x)* visible_width01   +center01_x     =
+    // (((qvx+0.5)/viewport_width)*2-1)/(2*aspect_x)*(visible_width01*z)+center01_x_new
+    //
+    // center01_x_new = center01_x +
+    //   (((qvx+0.5)/viewport_width)*2-1)/(2*aspect_x)* visible_width01*(1-z)
+    // x_centerpixel is center01_x/image_width
+    double qvx = x;
+    double qvy = y;
+
+    return
+        set_panzoom( m_ctx.x_centerpixel +
+                     (((qvx+0.5)/viewport_width)*2.-1.)/(2.*m_ctx.aspect_x) *
+                     m_ctx.visible_width01*(1.-z) * (double)m_ctx.image_width,
+
+                     m_ctx.y_centerpixel -
+                     (((1. - (qvy+0.5)/viewport_height))*2.-1.)/(2.*m_ctx.aspect_y) *
+                     m_ctx.visible_width01*(1.-z) * (double)m_ctx.image_height,
+
+                     m_ctx.visible_width_pixels * z );
+}
+
+bool Fl_Gl_Image_Widget::process_mousewheel_pan(double dx,
+                                                double dy,
+                                                double viewport_width,
+                                                double viewport_height)
+{
+    return
+        set_panzoom(m_ctx.x_centerpixel + 50. * dx * m_ctx.visible_width_pixels / viewport_width,
+                    m_ctx.y_centerpixel + 50. * dy * m_ctx.visible_width_pixels / viewport_height,
+                    m_ctx.visible_width_pixels);
+}
+
+bool Fl_Gl_Image_Widget::process_mousedrag_pan(double dx,
+                                               double dy,
+                                               double viewport_width,
+                                               double viewport_height)
+{
+    // logic follows vertex.glsl
+    //
+    // I need to compute the new center coords that keep the pixel under
+    // the mouse in the same spot. Let's say I'm at viewport pixel qv,
+    // and image pixel qi. I then have (looking at scaling only,
+    // ignoring ALL translations)
+    //
+    //   qvx/viewport_width ~
+    //   qix/image_width / visible_width01*aspectx
+    //
+    // -> qix ~ qvx*visible_width01/aspectx/viewport_width*image_width
+    //
+    // I want to always point at the same pixel: qix is constant.
+    // Changes in qvx should be compensated by moving centerx. Since I'm
+    // looking at relative changes only, I don't care about the
+    // translations, and they could be ignored in the above expression
+    return
+        set_panzoom( m_ctx.x_centerpixel -
+                     dx * m_ctx.visible_width01 /
+                     (m_ctx.aspect_x * viewport_width) *
+                     (double)m_ctx.image_width,
+
+                     m_ctx.y_centerpixel -
+                     dy * m_ctx.visible_width01 /
+                     (m_ctx.aspect_y * viewport_height) *
+                     (double)m_ctx.image_height,
+
+                     m_ctx.visible_width_pixels);
+}
+
+bool Fl_Gl_Image_Widget::process_keyboard_panzoom_orig(void)
+{
+    return
+        set_panzoom( ((double)m_ctx.image_width  - 1.0f)/2.,
+                     ((double)m_ctx.image_height - 1.0f)/2.,
+                     m_ctx.image_width);
+}
+
 int Fl_Gl_Image_Widget::handle(int event)
 {
     switch(event)
@@ -149,51 +250,17 @@ int Fl_Gl_Image_Widget::handle(int event)
     case FL_MOUSEWHEEL:
         if(m_ctx.did_init && m_ctx.did_init_texture && m_ctx.did_set_panzoom)
         {
+            make_current();
+
             if( (Fl::event_state() & FL_CTRL) &&
                 Fl::event_dy() != 0)
             {
                 // control + wheelup/down: zoom
-                make_current();
-
-                double z = 1. + 0.2*(double)Fl::event_dy();
-                z = fmin(fmax(z, 0.4), 2.);
-
-                // logic follows vertex.glsl
-                //
-                // I affect the zoom by scaling visible_width_pixels. I need to
-                // compute the new center coords that keep the pixel under the
-                // mouse in the same spot. Let's say I'm at viewport pixel qv,
-                // and image pixel qi. I then have (as in
-                // GL_image_display_map_pixel_image_from_viewport)
-                //
-                // qix = ((((qvx+0.5)/viewport_width)*2-1)/(2*aspect_x)*visible_width01+center01_x)*image_width - 0.5
-                //
-                // I want qvx,qix to be invariant, so I choose center01_x to
-                // compensate for the changes in visible_width01:
-                //
-                // ((((qvx+0.5)/viewport_width)*2-1)/(2*aspect_x)* visible_width01   +center01_x    )*image_width - 0.5 =
-                // ((((qvx+0.5)/viewport_width)*2-1)/(2*aspect_x)*(visible_width01*z)+center01_x_new)*image_width - 0.5
-                //
-                // (((qvx+0.5)/viewport_width)*2-1)/(2*aspect_x)* visible_width01   +center01_x     =
-                // (((qvx+0.5)/viewport_width)*2-1)/(2*aspect_x)*(visible_width01*z)+center01_x_new
-                //
-                // center01_x_new = center01_x +
-                //   (((qvx+0.5)/viewport_width)*2-1)/(2*aspect_x)* visible_width01*(1-z)
-                // x_centerpixel is center01_x/image_width
-                double qvx = (double)Fl::event_x();
-                double qvy = (double)Fl::event_y();
-                double viewport_width  = (double)pixel_w();
-                double viewport_height = (double)pixel_h();
-
-                if(!set_panzoom( m_ctx.x_centerpixel +
-                                 (((qvx+0.5)/viewport_width)*2.-1.)/(2.*m_ctx.aspect_x) *
-                                 m_ctx.visible_width01*(1.-z) * (double)m_ctx.image_width,
-
-                                 m_ctx.y_centerpixel -
-                                 (((1. - (qvy+0.5)/viewport_height))*2.-1.)/(2.*m_ctx.aspect_y) *
-                                 m_ctx.visible_width01*(1.-z) * (double)m_ctx.image_height,
-
-                                 m_ctx.visible_width_pixels * z ))
+                if(!process_mousewheel_zoom((double)Fl::event_dy(),
+                                            (double)Fl::event_x(),
+                                            (double)Fl::event_y(),
+                                            (double)pixel_w(),
+                                            (double)pixel_h()))
                 {
                     MSG("set_panzoom() failed. Trying to continue...");
                     return 1;
@@ -204,7 +271,6 @@ int Fl_Gl_Image_Widget::handle(int event)
             else
             {
                 // no control: the wheel pans
-                make_current();
 
                 // I encourage straight motions
                 int dx = Fl::event_dx();
@@ -212,9 +278,10 @@ int Fl_Gl_Image_Widget::handle(int event)
                 if( abs(dy) > abs(dx)) dx = 0;
                 else                   dy = 0;
 
-                if(!set_panzoom(m_ctx.x_centerpixel + 50. * (double)dx * m_ctx.visible_width_pixels / (double)pixel_w(),
-                                m_ctx.y_centerpixel + 50. * (double)dy * m_ctx.visible_width_pixels / (double)pixel_w(),
-                                m_ctx.visible_width_pixels))
+                if(!process_mousewheel_pan((double)dx,
+                                           (double)dy,
+                                           (double)pixel_w(),
+                                           (double)pixel_h()))
                 {
                     MSG("set_panzoom() failed. Trying to continue...");
                     return 1;
@@ -243,39 +310,10 @@ int Fl_Gl_Image_Widget::handle(int event)
         {
             make_current();
 
-            // logic follows vertex.glsl
-            //
-            // I need to compute the new center coords that keep the pixel under
-            // the mouse in the same spot. Let's say I'm at viewport pixel qv,
-            // and image pixel qi. I then have (looking at scaling only,
-            // ignoring ALL translations)
-            //
-            //   qvx/viewport_width ~
-            //   qix/image_width / visible_width01*aspectx
-            //
-            // -> qix ~ qvx*visible_width01/aspectx/viewport_width*image_width
-            //
-            // I want to always point at the same pixel: qix is constant.
-            // Changes in qvx should be compensated by moving centerx. Since I'm
-            // looking at relative changes only, I don't care about the
-            // translations, and they could be ignored in the above expression
-            double dx = Fl::event_x() - m_last_drag_update_xy[0];
-            double dy = Fl::event_y() - m_last_drag_update_xy[1];
-
-            double viewport_width  = (double)pixel_w();
-            double viewport_height = (double)pixel_h();
-
-            if(!set_panzoom( m_ctx.x_centerpixel -
-                             dx * m_ctx.visible_width01 /
-                             (m_ctx.aspect_x * viewport_width) *
-                             (double)m_ctx.image_width,
-
-                             m_ctx.y_centerpixel -
-                             dy * m_ctx.visible_width01 /
-                             (m_ctx.aspect_y * viewport_height) *
-                             (double)m_ctx.image_height,
-
-                             m_ctx.visible_width_pixels))
+            if(!process_mousedrag_pan((double)Fl::event_x() - m_last_drag_update_xy[0],
+                                      (double)Fl::event_y() - m_last_drag_update_xy[1],
+                                      (double)pixel_w(),
+                                      (double)pixel_h()))
             {
                 MSG("set_panzoom() failed. Trying to continue...");
                 return 1;
@@ -283,6 +321,7 @@ int Fl_Gl_Image_Widget::handle(int event)
 
             m_last_drag_update_xy[0] = Fl::event_x();
             m_last_drag_update_xy[1] = Fl::event_y();
+
             return 1;
         }
         break;
@@ -298,12 +337,12 @@ int Fl_Gl_Image_Widget::handle(int event)
         if(m_ctx.did_init && m_ctx.did_init_texture &&
            Fl::event_key() == 'u')
         {
-            if(!set_panzoom( ((double)m_ctx.image_width  - 1.0f)/2.,
-                             ((double)m_ctx.image_height - 1.0f)/2.,
-                             m_ctx.image_width))
+            if(!process_keyboard_panzoom_orig())
             {
                 MSG("set_panzoom() failed. Trying to continue...");
+                return 1;
             }
+
             return 1;
         }
         break;
