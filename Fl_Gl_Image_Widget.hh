@@ -79,19 +79,23 @@ public:
 
     // internals of the interactive pan/zoom operations. Used primarily to
     // connect multiple Fl_Gl_Image_Widget together in interactive operations
+    virtual
     bool process_mousewheel_zoom(double dy,
                                  double x,
                                  double y,
                                  double viewport_width,
                                  double viewport_height);
+    virtual
     bool process_mousewheel_pan(double dx,
                                 double dy,
                                 double viewport_width,
                                 double viewport_height);
+    virtual
     bool process_mousedrag_pan(double dx,
                                double dy,
                                double viewport_width,
                                double viewport_height);
+    virtual
     bool process_keyboard_panzoom_orig(void);
 
 };
