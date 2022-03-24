@@ -70,7 +70,7 @@ the Python API largely mirrors the C++ API. Some Python-specific notes:
 - The pixel mapping functions =map_pixel_viewport_from_image()= and
   =map_pixel_image_from_viewport()= ingest a length-2 iterable (or a numpy
   array) and return a length-2 tuple.
-- =set_lines()= takes in an iterable of =dict= objects each with keys
+- =set_lines()= takes in =dict= objects each with keys
   - =points=: a numpy array of shape (=Nsegments=,2,2). These are the line
     segments, each represented as =(x0,y0)= - =(x1,y1)=
   - =color_rgb=: a numpy array of shape (3,) which contains the RGB color for

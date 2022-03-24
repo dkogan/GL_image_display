@@ -597,83 +597,6 @@ A length-2 tuple containing the mapped pixel coordinate
     Py_XDECREF(set$argnum);
 }
 
-%feature("docstring") Fl_Gl_Image_Widget::set_lines
-"""Compute image pixel coords from viewport pixel coords
-
-SYNOPSIS
-
-  from fltk import *
-  from Fl_Gl_Image_Widget import Fl_Gl_Image_Widget
-
-  class Fl_Gl_Image_Widget_Derived(Fl_Gl_Image_Widget):
-
-      def handle(self, event):
-          if event == FL_PUSH:
-              try:
-                  qv = (Fl.event_x(),Fl.event_y())
-                  qi = \
-                      np.array( \
-                        self.map_pixel_image_from_viewport(qv),
-                        dtype=float ).round()
-
-                  x,y = q
-                  self.set_lines( (dict(points =
-                                        np.array( (((x - 50, y),
-                                                    (x + 50, y)),
-                                                   ((x,      y - 50),
-                                                    (x,      y + 50))),
-                                                  dtype=np.float32),
-                                        color_rgb = np.array((1,0,0),
-                                                             dtype=np.float32) ),))
-              except:
-                  self.set_lines( (), )
-              return 1
-
-          return super().handle(event)
-
-  window = Fl_Window(800, 600, 'Image display with Fl_Gl_Image_Widget')
-  image  = Fl_Gl_Image_Widget_Derived(0,0, 800,600)
-  window.resizable(image)
-  window.end()
-  window.show()
-
-  image.update_image(image_filename = 'image.png')
-
-  Fl.run()
-
-Updates the set of lines we draw as an overlay on top of the image. The
-hierarchy:
-
-- Each SET of lines is drawn with the same color, and consists of separate line
-  SEGMENTS
-
-- Each line SEGMENT connects two independent points (x0,y0) and (x1,y1) in image
-  pixel coordinates.
-
-Each call looks like
-
-  set_lines( (SET, SET, SET, ...) )
-
-Where each SET is
-
-  dict(points    = POINTS,
-       color_rgb = COLOR)
-
-- POINTS is a numpy array of shape (Nsegments,2,2) where each innermost row is
-  (x,y). This array must have dtype=np.float32 and must be stored contiguously
-
-- COLOR is the (red,green,blue) tuple to use for the line. This is a numpy array
-  of shape (3,). This array must have dtype=np.float32 and must be stored
-  contiguously. The color is passed directly to OpenGL, and uses values in [0,1]
-
-RETURNED VALUE
-
-None on success. An exception is thrown in case of error (usually, if something
-hasn't been initialized yet or if the input is invalid).
-
-""";
-
-
 %feature("docstring") Fl_Gl_Image_Widget::set_panzoom
 """Updates the pan, zoom settings of an image view
 
@@ -748,4 +671,87 @@ hasn't been initialized yet or if the input is invalid).
 
 """;
 
+%rename(_set_lines) set_lines;
+
 %include "Fl_Gl_Image_Widget.hh"
+
+%pythoncode %{
+def set_lines(self, *args):
+    """Compute image pixel coords from viewport pixel coords
+
+SYNOPSIS
+
+  from fltk import *
+  from Fl_Gl_Image_Widget import Fl_Gl_Image_Widget
+
+  class Fl_Gl_Image_Widget_Derived(Fl_Gl_Image_Widget):
+
+      def handle(self, event):
+          if event == FL_PUSH:
+              try:
+                  qv = (Fl.event_x(),Fl.event_y())
+                  qi = \
+                      np.array( \
+                        self.map_pixel_image_from_viewport(qv),
+                        dtype=float ).round()
+
+                  x,y = q
+                  self.set_lines( dict(points =
+                                       np.array( (((x - 50, y),
+                                                   (x + 50, y)),
+                                                  ((x,      y - 50),
+                                                   (x,      y + 50))),
+                                                 dtype=np.float32),
+                                       color_rgb = np.array((1,0,0),
+                                                            dtype=np.float32) ))
+              except:
+                  self.set_lines()
+              return 1
+
+          return super().handle(event)
+
+  window = Fl_Window(800, 600, 'Image display with Fl_Gl_Image_Widget')
+  image  = Fl_Gl_Image_Widget_Derived(0,0, 800,600)
+  window.resizable(image)
+  window.end()
+  window.show()
+
+  image.update_image(image_filename = 'image.png')
+
+  Fl.run()
+
+Updates the set of lines we draw as an overlay on top of the image. The
+hierarchy:
+
+- Each SET of lines is drawn with the same color, and consists of separate line
+  SEGMENTS
+
+- Each line SEGMENT connects two independent points (x0,y0) and (x1,y1) in image
+  pixel coordinates.
+
+Each call looks like
+
+  set_lines( SET, SET, SET, ... )
+
+Where each SET is
+
+  dict(points    = POINTS,
+       color_rgb = COLOR)
+
+- POINTS is a numpy array of shape (Nsegments,2,2) where each innermost row is
+  (x,y). This array must have dtype=np.float32 and must be stored contiguously
+
+- COLOR is the (red,green,blue) tuple to use for the line. This is a numpy array
+  of shape (3,). This array must have dtype=np.float32 and must be stored
+  contiguously. The color is passed directly to OpenGL, and uses values in [0,1]
+
+RETURNED VALUE
+
+None on success. An exception is thrown in case of error (usually, if something
+hasn't been initialized yet or if the input is invalid).
+
+"""
+    return self._set_lines(args)
+
+Fl_Gl_Image_Widget.set_lines = set_lines
+%}

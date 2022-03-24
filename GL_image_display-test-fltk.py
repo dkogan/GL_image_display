@@ -34,13 +34,13 @@ class Fl_Gl_Image_Widget_Derived(Fl_Gl_Image_Widget):
             except:
                 return super().handle(event)
 
-            self.set_lines( (dict(points =
+            self.set_lines( dict(points =
                                  np.array( (((x - 50, y),
                                              (x + 50, y)),
                                             ((x,      y - 50),
                                              (x,      y + 50))),
                                            dtype=np.float32),
-                                  color_rgb = np.array((1,0,0), dtype=np.float32) ),))
+                                 color_rgb = np.array((1,0,0), dtype=np.float32) ))
             self.redraw()
 
         return super().handle(event)
