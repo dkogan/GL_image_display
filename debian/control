@@ -46,8 +46,7 @@ Depends: ${shlibs:Depends}, ${misc:Depends}, libgl-image-display0 (= ${binary:Ve
          ${python3:Depends},
          python3-fltk
 Provides: ${python3:Provides}
-Description: Calibration and SFM library
- A photogrammetry toolkit that provides improved methods for making and using
- camera models (calibration, tracking, mapping, etc). The focus is on
- calibration and uncertainty propagation to produce the most accurate models
- possible. This package provides the Python FLTK widget
+Description: OpenGL-based image visualizer
+ A library to render images with OpenGL. After the initial load, the panning and
+ zooming is done in hardware, with zero CPU cost. This package provides the
+ python implementation of the FLTK widget
