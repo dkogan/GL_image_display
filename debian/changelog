@@ -1,17 +1,5 @@
-gl-image-display (0.4-1) unstable; urgency=medium
-
-  * FLTK widget: 'u' zooms out
-
- -- Dima Kogan <dkogan@debian.org>  Mon, 03 Jan 2022 22:01:49 -0800
-
-gl-image-display (0.3-1) unstable; urgency=medium
-
-  * Updates
-
- -- Dima Kogan <dkogan@debian.org>  Sat, 27 Nov 2021 15:10:42 -0800
-
-gl-image-display (0.2-1) unstable; urgency=medium
+gl-image-display (0.6-1) unstable; urgency=medium
 
   * Initial release
 
- -- Dima Kogan <dima@secretsauce.net>  Tue, 23 Nov 2021 18:44:30 -0800
+ -- Dima Kogan <dkogan@debian.org>  Thu, 24 Mar 2022 00:23:23 -0700
