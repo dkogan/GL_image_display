@@ -585,7 +585,7 @@ A length-2 tuple containing the mapped pixel coordinate
         memcpy($1[i].segments.color_rgb,
                PyArray_DATA((PyArrayObject*)color_rgb),
                3*sizeof(float));
-        $1[i].qxy = (const float*)PyArray_DATA((PyArrayObject*)points);
+        $1[i].points = (const float*)PyArray_DATA((PyArrayObject*)points);
 
         Py_XDECREF(set);
         set = NULL;

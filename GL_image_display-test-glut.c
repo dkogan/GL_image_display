@@ -48,11 +48,11 @@ int main(int argc, char* argv[])
                                     ((const GL_image_display_line_segments_t[]) {
                                         { .segments = {.Nsegments = 1,
                                                        .color_rgb = {1.f,0.f,0.f}},
-                                          .qxy      = ((float[]){63, 113,
+                                          .points   = ((float[]){63, 113,
                                                                  937,557})},
                                         { .segments = {.Nsegments = 2,
                                                        .color_rgb = {0.f,1.f,0.f}},
-                                          .qxy      = ((float[]){1749,645,
+                                          .points   = ((float[]){1749,645,
                                                                  1597,100,
                                                                  1597,100,
                                                                  1247,224})}

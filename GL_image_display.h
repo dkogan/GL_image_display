@@ -44,7 +44,7 @@ typedef struct
 {
     GL_image_display_line_segments_nopoints_t segments;
     // Nsegments*2*2 values. Each segment has two points. Each point has (x,y)
-    const float* qxy;
+    const float* points;
 } GL_image_display_line_segments_t;
 
 // By default, everything in this structure is set to 0 at init time

@@ -219,7 +219,7 @@ public:
                 const GL_image_display_line_segments_t cross =
                     { .segments = {.Nsegments = 2,
                                    .color_rgb = {1.f,0.f,0.f}},
-                      .qxy      = pool };
+                      .points   = pool };
                 if( !set_lines(&cross, 1))
                 {
                     fprintf(stderr, "GL_image_display_set_lines() failed\n");

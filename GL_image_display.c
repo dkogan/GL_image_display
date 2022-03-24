@@ -802,7 +802,7 @@ bool GL_image_display_set_lines(GL_image_display_context_t* ctx,
             return false;
         }
         memcpy(buffer,
-               set->qxy,
+               set->points,
                4*Nsegments*sizeof(float));
 
         ctx->line_segment_sets[iset] = set->segments;
