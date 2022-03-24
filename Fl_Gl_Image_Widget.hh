@@ -52,7 +52,6 @@ public:
     /////// these directly wrap the GL_image_display.h C API. The arguments and
     /////// function names are the same, except for the leading context: we pass
     /////// &m_ctx
-    virtual
     bool update_image( int decimation_level         = 0,
                        // Either this should be given
                        const char* image_filename   = NULL,
