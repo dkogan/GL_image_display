@@ -80,8 +80,8 @@ public:
     // connect multiple Fl_Gl_Image_Widget together in interactive operations
     virtual
     bool process_mousewheel_zoom(double dy,
-                                 double x,
-                                 double y,
+                                 double event_x,
+                                 double event_y,
                                  double viewport_width,
                                  double viewport_height);
     virtual

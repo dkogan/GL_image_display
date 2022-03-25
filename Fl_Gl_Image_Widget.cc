@@ -127,8 +127,8 @@ void Fl_Gl_Image_Widget::draw(void)
 
 
 bool Fl_Gl_Image_Widget::process_mousewheel_zoom(double dy,
-                                                 double x,
-                                                 double y,
+                                                 double event_x,
+                                                 double event_y,
                                                  double viewport_width,
                                                  double viewport_height)
 {
@@ -157,8 +157,8 @@ bool Fl_Gl_Image_Widget::process_mousewheel_zoom(double dy,
     // center01_x_new = center01_x +
     //   (((qvx+0.5)/viewport_width)*2-1)/(2*aspect_x)* visible_width01*(1-z)
     // x_centerpixel is center01_x/image_width
-    double qvx = x;
-    double qvy = y;
+    double qvx = event_x;
+    double qvy = event_y;
 
     return
         set_panzoom( m_ctx.x_centerpixel +
