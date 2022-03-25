@@ -1,4 +1,4 @@
-include Makefile.common.header
+include mrbuild/Makefile.common.header
 
 PROJECT_NAME := GL_image_display
 ABI_VERSION  := 0
@@ -108,4 +108,4 @@ DIST_DOC := \
   GL_image_display-test-glut.c
 
 
-include Makefile.common.footer
+include mrbuild/Makefile.common.footer

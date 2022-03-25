@@ -1,10 +1,5 @@
 # -*- Makefile -*-
 
-
-######### Copied from the mrbuild project at git hash dec6d61bcacf03cb3a0148b6ca172aac9f18d788
-
-
-
 # This is a part of the mrbuild project: https://github.com/dkogan/mrbuild
 #
 # Released under an MIT-style license. Modify and distribute as you like:
