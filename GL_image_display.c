@@ -385,6 +385,37 @@ bool GL_image_display_update_image__validate_input
     return result;
 }
 
+
+#define CONFIRM_SET(what) if(!ctx->what) { return false; }
+
+static
+bool set_aspect(GL_image_display_context_t* ctx,
+                int viewport_width,
+                int viewport_height)
+{
+    CONFIRM_SET(did_init);
+
+    // I scale the dimensions to keep the displayed aspect ratio square and to
+    // not cut off any part of the image
+    if( viewport_width*ctx->image_height < ctx->image_width*viewport_height )
+    {
+        ctx->aspect_x = 1.0;
+        ctx->aspect_y = (double)(viewport_width*ctx->image_height) / (double)(viewport_height*ctx->image_width);
+    }
+    else
+    {
+        ctx->aspect_x = (double)(viewport_height*ctx->image_width) / (double)(viewport_width*ctx->image_height);
+        ctx->aspect_y = 1.0;
+    }
+
+    set_uniform_2f(ctx, aspect,
+                   (float)ctx->aspect_x, (float)ctx->aspect_y);
+
+    ctx->did_set_aspect = true;
+
+    return true;
+}
+
 bool GL_image_display_update_image( GL_image_display_context_t* ctx,
                                     int decimation_level,
 
@@ -556,7 +587,7 @@ bool GL_image_display_update_image( GL_image_display_context_t* ctx,
         // this
         GLint viewport_xywh[4];
         glGetIntegerv(GL_VIEWPORT, viewport_xywh);
-        if(!GL_image_display_resize_viewport(ctx, viewport_xywh[2], viewport_xywh[3]))
+        if(!set_aspect(ctx, viewport_xywh[2], viewport_xywh[3]))
             goto done;
     }
     else
@@ -671,14 +702,11 @@ void GL_image_display_deinit( GL_image_display_context_t* ctx )
     }
 }
 
-#define CONFIRM_SET(what) if(!ctx->what) { return false; }
-
 bool GL_image_display_resize_viewport(GL_image_display_context_t* ctx,
                                       int viewport_width,
                                       int viewport_height)
 {
     CONFIRM_SET(did_init);
-    CONFIRM_SET(did_init_texture);
 
     if(ctx->use_glut)
     {
@@ -692,23 +720,9 @@ bool GL_image_display_resize_viewport(GL_image_display_context_t* ctx,
 
     glViewport(0, 0,
                viewport_width, viewport_height);
+    if(ctx->did_init_texture)
+        return set_aspect(ctx, viewport_width, viewport_height);
 
-    // I scale the dimensions to keep the displayed aspect ratio square and to
-    // not cut off any part of the image
-    if( viewport_width*ctx->image_height < ctx->image_width*viewport_height )
-    {
-        ctx->aspect_x = 1.0;
-        ctx->aspect_y = (double)(viewport_width*ctx->image_height) / (double)(viewport_height*ctx->image_width);
-    }
-    else
-    {
-        ctx->aspect_x = (double)(viewport_height*ctx->image_width) / (double)(viewport_width*ctx->image_height);
-        ctx->aspect_y = 1.0;
-    }
-    set_uniform_2f(ctx, aspect,
-                   (float)ctx->aspect_x, (float)ctx->aspect_y);
-
-    ctx->did_set_aspect = true;
     return true;
 }
 
