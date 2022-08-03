@@ -301,14 +301,11 @@ image dimensions MUST match those given in the first call to this function.
 
 The data may be passed-in to this method in one of two ways:
 
-- decimation_level: optional integer, defaulting to 0. Specifies the resolution
-  of the displayed image.
+- image_filename: the image is read from a file on disk, with the given
+  filename. image_data must be None
 
-- image_filename is not None: the image is read from a file on disk, with the
-  given filename. image_data must be None
-
-- image_data is not None: the image data is read from the given numpy array.
-  image_filename must be None
+- image_data: the image data is read from the given numpy array. image_filename
+  must be None
 
 An exception is raised on error
 
@@ -317,8 +314,14 @@ ARGUMENTS
 - image_filename: optional string, specifying the filename containing the image
   to display. Exclusive with image_data
 
-- image_data: optional numpy array with the data being displayed. Exclusive with
-  image_filename
+- image_data: optional numpy array containing the data being displayed. Must
+  have dtype=np.uint8. Exclusive with image_filename. The array shape is either
+
+  - (height,width) to pass a grayscale image
+  - (height,width,3) to pass a BGR color image
+
+- decimation_level: optional integer, defaulting to 0. Specifies the resolution
+  of the displayed image.
  """;
 
 %typemap(in, numinputs=0) (double* xout, double* yout) (double xout_temp, double yout_temp) {
