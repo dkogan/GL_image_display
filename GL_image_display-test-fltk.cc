@@ -83,7 +83,6 @@ public:
         return result;
     }
 
-    virtual
     bool process_mousewheel_pan(double dx,
                                 double dy,
                                 double viewport_width,
@@ -117,7 +116,6 @@ public:
         return result;
     }
 
-    virtual
     bool process_mousedrag_pan(double dx,
                                double dy,
                                double viewport_width,
@@ -151,7 +149,6 @@ public:
         return result;
     }
 
-    virtual
     bool process_keyboard_panzoom_orig(void)
     {
         if(!(Fl::event_state() & FL_SHIFT))
