@@ -64,6 +64,8 @@ public:
         bool result = true;
         for(int i=0; i<Nwidgets; i++)
         {
+            g_gl_widgets[i]->make_current();
+
             // I need to fake a mousewheel-zoom event in another widget, and
             // I need to determine a fake center point. I select the same
             // point, relatively, in the window
@@ -79,6 +81,8 @@ public:
                                         viewport_width_new,
                                         viewport_height_new);
         }
+
+        make_current();
 
         return result;
     }
@@ -102,6 +106,8 @@ public:
         bool result = true;
         for(int i=0; i<Nwidgets; i++)
         {
+            g_gl_widgets[i]->make_current();
+
             double viewport_width_new  = (double)g_gl_widgets[i]->pixel_w();
             double viewport_height_new = (double)g_gl_widgets[i]->pixel_h();
 
@@ -112,6 +118,8 @@ public:
                                        viewport_width_new,
                                        viewport_height_new);
         }
+
+        make_current();
 
         return result;
     }
@@ -135,6 +143,8 @@ public:
         bool result = true;
         for(int i=0; i<Nwidgets; i++)
         {
+            g_gl_widgets[i]->make_current();
+
             double viewport_width_new  = (double)g_gl_widgets[i]->pixel_w();
             double viewport_height_new = (double)g_gl_widgets[i]->pixel_h();
 
@@ -145,6 +155,8 @@ public:
                                       viewport_width_new,
                                       viewport_height_new);
         }
+
+        make_current();
 
         return result;
     }
@@ -165,11 +177,15 @@ public:
         bool result = true;
         for(int i=0; i<Nwidgets; i++)
         {
+            g_gl_widgets[i]->make_current();
+
             result = result &&
                 g_gl_widgets[i]->
                 Fl_Gl_Image_Widget::
                 process_keyboard_panzoom_orig();
         }
+
+        make_current();
 
         return result;
     }
