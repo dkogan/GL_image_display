@@ -1,4 +1,5 @@
 /* -*- c -*- */
+#version 420
 
 layout(location = 0) out vec3 frag_color;
 in vec2 tex_xy_fragment;

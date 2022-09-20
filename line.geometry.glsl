@@ -1,4 +1,5 @@
 /* -*- c -*- */
+#version 420
 
 layout (lines) in;
 layout (line_strip, max_vertices=2) out;

@@ -18,7 +18,7 @@ LIB_SOURCES := GL_image_display.c
 GL_image_display.o: $(foreach w,image line,$(foreach t,vertex geometry fragment,$w.$t.glsl.h))
 
 %.glsl.h: %.glsl
-	( echo '#version 420'; cat $<; ) | sed 's/.*/"&\\n"/g' > $@.tmp && mv $@.tmp $@
+	< $< sed 's/.*/"&\\n"/g' > $@.tmp && mv $@.tmp $@
 
 EXTRA_CLEAN += *.glsl.h
 
