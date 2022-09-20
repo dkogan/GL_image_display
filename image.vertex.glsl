@@ -1,5 +1,5 @@
 /* -*- c -*- */
-#version 420
+#version 330
 
 // must match VBO_location_image in GL_image_display.c
 layout (location = 0) in vec2 vertex;
