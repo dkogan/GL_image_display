@@ -107,12 +107,17 @@ Fl_Gl_Image_Widget::Fl_Gl_Image_Widget(int x, int y, int w, int h) :
 Fl_Gl_Image_Widget::~Fl_Gl_Image_Widget()
 {
     if(m_ctx.did_init)
+    {
+        make_current();
         GL_image_display_deinit(&m_ctx);
+    }
 }
 
 
 void Fl_Gl_Image_Widget::draw(void)
 {
+    make_current();
+
     if(!m_ctx.did_init)
     {
         if(!GL_image_display_init( &m_ctx, false))
@@ -137,6 +142,8 @@ bool Fl_Gl_Image_Widget::process_mousewheel_zoom(double dy,
                                                  double viewport_width,
                                                  double viewport_height)
 {
+    make_current();
+
     double z = 1. + 0.2*dy;
     z = fmin(fmax(z, 0.4), 2.);
 
@@ -182,6 +189,8 @@ bool Fl_Gl_Image_Widget::process_mousewheel_pan(double dx,
                                                 double viewport_width,
                                                 double viewport_height)
 {
+    make_current();
+
     return
         set_panzoom(m_ctx.x_centerpixel + 50. * dx * m_ctx.visible_width_pixels / viewport_width,
                     m_ctx.y_centerpixel + 50. * dy * m_ctx.visible_width_pixels / viewport_height,
@@ -193,6 +202,8 @@ bool Fl_Gl_Image_Widget::process_mousedrag_pan(double dx,
                                                double viewport_width,
                                                double viewport_height)
 {
+    make_current();
+
     // logic follows vertex.glsl
     //
     // I need to compute the new center coords that keep the pixel under
@@ -225,6 +236,8 @@ bool Fl_Gl_Image_Widget::process_mousedrag_pan(double dx,
 
 bool Fl_Gl_Image_Widget::process_keyboard_panzoom_orig(void)
 {
+    make_current();
+
     return
         set_panzoom( ((double)m_ctx.image_width  - 1.0f)/2.,
                      ((double)m_ctx.image_height - 1.0f)/2.,
@@ -237,16 +250,7 @@ int Fl_Gl_Image_Widget::handle(int event)
     {
     case FL_SHOW:
         if(shown())
-        {
-            static bool done = false;
-            if(!done)
-            {
-                // Docs say to do this. Don't know why.
-                // https://www.fltk.org/doc-1.3/opengl.html
-                done = true;
-                make_current();
-            }
-        }
+            make_current();
         break;
 
     case FL_FOCUS:
@@ -255,8 +259,6 @@ int Fl_Gl_Image_Widget::handle(int event)
     case FL_MOUSEWHEEL:
         if(m_ctx.did_init && m_ctx.did_init_texture && m_ctx.did_set_panzoom)
         {
-            make_current();
-
             if( (Fl::event_state() & FL_CTRL) &&
                 Fl::event_dy() != 0)
             {
@@ -313,8 +315,6 @@ int Fl_Gl_Image_Widget::handle(int event)
         if(m_ctx.did_init && m_ctx.did_init_texture && m_ctx.did_set_panzoom &&
            (Fl::event_state() & FL_BUTTON1))
         {
-            make_current();
-
             if(!process_mousedrag_pan((double)Fl::event_x() - m_last_drag_update_xy[0],
                                       (double)Fl::event_y() - m_last_drag_update_xy[1],
                                       (double)pixel_w(),
@@ -368,6 +368,8 @@ bool Fl_Gl_Image_Widget::update_image2(int decimation_level,
                                        int         image_bpp,
                                        int         image_pitch)
 {
+    make_current();
+
     if(!m_ctx.did_init)
     {
         // If the GL context wasn't inited yet, I must init it first. BUT in
@@ -440,6 +442,8 @@ bool Fl_Gl_Image_Widget::update_image( int  decimation_level,
 bool Fl_Gl_Image_Widget::set_panzoom(double x_centerpixel, double y_centerpixel,
                                      double visible_width_pixels)
 {
+    make_current();
+
     bool result =
         GL_image_display_set_panzoom(&m_ctx,
                                      x_centerpixel, y_centerpixel,
@@ -469,6 +473,8 @@ bool Fl_Gl_Image_Widget::map_pixel_image_from_viewport(double* xout, double* you
 bool Fl_Gl_Image_Widget::set_lines(const GL_image_display_line_segments_t* line_segment_sets,
                                    int Nline_segment_sets)
 {
+    make_current();
+
     bool result =
         GL_image_display_set_lines(&m_ctx,
                                    line_segment_sets,
