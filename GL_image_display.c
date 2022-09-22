@@ -462,6 +462,8 @@ bool GL_image_display_update_image( GL_image_display_context_t* ctx,
         goto done;
     }
 
+    ctx->flip_y = flip_y;
+
     if( image_filename != NULL )
     {
         FREE_IMAGE_FORMAT format = FreeImage_GetFileType(image_filename,0);
@@ -522,13 +524,13 @@ bool GL_image_display_update_image( GL_image_display_context_t* ctx,
         image_pitch  = (int)FreeImage_GetPitch(fib);
         image_data   = (char*)FreeImage_GetBits(fib);
 
-        // FreeImage_Load() loads images upside down
-        ctx->flip_y = true;
+        // FreeImage_Load() loads images upside down, so I tell OpenGL to do the
+        // opposite thing, in terms of flipping stuff upside down. The REST of
+        // the logic regarding flip_y stays the same: I do NOT flip ctx->flip_y
+        set_uniform_1i(ctx, flip_y, !ctx->flip_y);
     }
     else
-        ctx->flip_y = false;
-
-    set_uniform_1i(ctx, flip_y, ctx->flip_y);
+        set_uniform_1i(ctx, flip_y, ctx->flip_y);
 
     if(!ctx->did_init_texture)
     {
@@ -915,12 +917,9 @@ bool GL_image_display_map_pixel_viewport_from_image(GL_image_display_context_t* 
     double vertex_x = (x+0.5) / ((double)(1 << ctx->decimation_level)*(double)ctx->image_width);
     double vertex_y = (y+0.5) / ((double)(1 << ctx->decimation_level)*(double)ctx->image_height);
 
-    // GL does things upside down. It looks like this should be unconditional,
-    // independent of ctx->flip_y. The shader has an if(). I'm not
-    // completely sure why this is so, but tests say that it is, and I'm
-    // confident that if I think hard enough I will convince myself that it is
-    // right
-    vertex_y = 1.0 - vertex_y;
+    // GL does things upside down so the logic on vertex_y has the opposite polarity
+    if(!ctx->flip_y)
+        vertex_y = 1.0 - vertex_y;
 
     // gl_Position. In [-1,1]
     double glpos_x =
@@ -967,12 +966,9 @@ bool GL_image_display_map_pixel_image_from_viewport(GL_image_display_context_t* 
     double vertex_y =
         glpos_y / (2. * ctx->aspect_y) * ctx->visible_width01 + ctx->center01_y;
 
-    // GL does things upside down. It looks like this should be unconditional,
-    // independent of ctx->flip_y. The shader has an if(). I'm not
-    // completely sure why this is so, but tests say that it is, and I'm
-    // confident that if I think hard enough I will convince myself that it is
-    // right
-    vertex_y = 1.0 - vertex_y;
+    // GL does things upside down so the logic on vertex_y has the opposite polarity
+    if(!ctx->flip_y)
+        vertex_y = 1.0 - vertex_y;
 
     *xout = vertex_x*(double)(1 << ctx->decimation_level)*(double)ctx->image_width  - 0.5;
     *yout = vertex_y*(double)(1 << ctx->decimation_level)*(double)ctx->image_height - 0.5;
