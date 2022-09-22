@@ -261,7 +261,7 @@ bool GL_image_display_init( // output
         make_uniform(aspect);
         make_uniform(center01);
         make_uniform(visible_width01);
-        make_uniform(upside_down);
+        make_uniform(flip_y);
         make_uniform(line_color_rgb);
 
 #undef make_uniform
@@ -523,12 +523,12 @@ bool GL_image_display_update_image( GL_image_display_context_t* ctx,
         image_data   = (char*)FreeImage_GetBits(fib);
 
         // FreeImage_Load() loads images upside down
-        ctx->upside_down = true;
+        ctx->flip_y = true;
     }
     else
-        ctx->upside_down = false;
+        ctx->flip_y = false;
 
-    set_uniform_1i(ctx, upside_down, ctx->upside_down);
+    set_uniform_1i(ctx, flip_y, ctx->flip_y);
 
     if(!ctx->did_init_texture)
     {
@@ -916,7 +916,7 @@ bool GL_image_display_map_pixel_viewport_from_image(GL_image_display_context_t* 
     double vertex_y = (y+0.5) / ((double)(1 << ctx->decimation_level)*(double)ctx->image_height);
 
     // GL does things upside down. It looks like this should be unconditional,
-    // independent of ctx->upside_down. The shader has an if(). I'm not
+    // independent of ctx->flip_y. The shader has an if(). I'm not
     // completely sure why this is so, but tests say that it is, and I'm
     // confident that if I think hard enough I will convince myself that it is
     // right
@@ -968,7 +968,7 @@ bool GL_image_display_map_pixel_image_from_viewport(GL_image_display_context_t* 
         glpos_y / (2. * ctx->aspect_y) * ctx->visible_width01 + ctx->center01_y;
 
     // GL does things upside down. It looks like this should be unconditional,
-    // independent of ctx->upside_down. The shader has an if(). I'm not
+    // independent of ctx->flip_y. The shader has an if(). I'm not
     // completely sure why this is so, but tests say that it is, and I'm
     // confident that if I think hard enough I will convince myself that it is
     // right

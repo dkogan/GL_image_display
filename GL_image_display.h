@@ -15,7 +15,7 @@ enum {
         GL_image_display_uniform_index_aspect,
         GL_image_display_uniform_index_center01,
         GL_image_display_uniform_index_visible_width01,
-        GL_image_display_uniform_index_upside_down,
+        GL_image_display_uniform_index_flip_y,
         GL_image_display_uniform_index_line_color_rgb,
         GL_image_display_num_uniforms
 };
@@ -77,7 +77,7 @@ typedef struct
     double center01_x, center01_y;
     double aspect_x, aspect_y;
 
-    bool upside_down      : 1;
+    bool flip_y           : 1;
     bool did_init         : 1;
     bool did_init_texture : 1;
     bool did_set_aspect   : 1;

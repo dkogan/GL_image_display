@@ -8,7 +8,7 @@ out vec2 tex_xy_geometry;
 uniform vec2 aspect;
 uniform vec2 center01;
 uniform float visible_width01;
-uniform int upside_down;
+uniform int flip_y;
 
 void main(void)
 {
@@ -21,7 +21,7 @@ void main(void)
     // buffer I assume it's already rightside-up. But when loading an image
     // using FreeImage_Load() I assume it's upside down, since that's what
     // libfreeimage does
-    if(upside_down != 0)
+    if(flip_y != 0)
         // input image has the upside-down orientation, but that's what opengl
         // wants, so I'm good
         tex_xy_geometry = vertex;
