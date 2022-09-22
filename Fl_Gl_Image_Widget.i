@@ -267,7 +267,7 @@ import_array();
         }
     }
 }
-%feature("docstring") Fl_Gl_Image_Widget::update_image
+%feature("docstring") Fl_Gl_Image_Widget::update_image2
 """Update the image being displayed in the widget
 
 SYNOPSIS
@@ -322,6 +322,11 @@ ARGUMENTS
 
 - decimation_level: optional integer, defaulting to 0. Specifies the resolution
   of the displayed image.
+
+- flip_x: optional boolean, defaulting to False. Display a left/right mirror of the image
+
+- flip_y: optional boolean, defaulting to False. Display an up/down  mirror of the image
+
  """;
 
 %typemap(in, numinputs=0) (double* xout, double* yout) (double xout_temp, double yout_temp) {
@@ -676,6 +681,10 @@ hasn't been initialized yet or if the input is invalid).
 
 %rename(_set_lines) set_lines;
 
+// In C++ update_image() is the legacy function and update_image2() is the "real" function.
+// Here I use the "update_image2" wrapping for both names
+%ignore Fl_Gl_Image_Widget::update_image;
+
 %include "Fl_Gl_Image_Widget.hh"
 
 %pythoncode %{
@@ -757,4 +766,9 @@ hasn't been initialized yet or if the input is invalid).
     return self._set_lines(args)
 
 Fl_Gl_Image_Widget.set_lines = set_lines
+
+
+# In C++ update_image() is the legacy function and update_image2() is the "real" function.
+# Here I use the "update_image2" wrapping for both names
+Fl_Gl_Image_Widget.update_image = Fl_Gl_Image_Widget.update_image2
 %}

@@ -27,6 +27,8 @@ void Fl_Gl_Image_Widget::UpdateImageCache::dealloc(void)
 }
 
 bool Fl_Gl_Image_Widget::UpdateImageCache::save( int         _decimation_level,
+                                                 bool        _flip_x,
+                                                 bool        _flip_y,
                                                  const char* _image_filename,
                                                  const char* _image_data,
                                                  int         _image_width,
@@ -70,6 +72,8 @@ bool Fl_Gl_Image_Widget::UpdateImageCache::save( int         _decimation_level,
     }
 
     decimation_level = _decimation_level;
+    flip_x           = _flip_x;
+    flip_y           = _flip_y;
     image_width      = _image_width;
     image_height     = _image_height;
     image_bpp        = _image_bpp;
@@ -81,11 +85,12 @@ bool Fl_Gl_Image_Widget::UpdateImageCache::apply(Fl_Gl_Image_Widget* w)
 {
     if(image_filename == NULL && image_data == NULL)
         return true;
-    bool result = w->update_image(decimation_level,
-                                  image_filename,
-                                  image_data,
-                                  image_width, image_height,
-                                  image_bpp,   image_pitch);
+    bool result = w->update_image2(decimation_level,
+                                   flip_x, flip_y,
+                                   image_filename,
+                                   image_data,
+                                   image_width, image_height,
+                                   image_bpp,   image_pitch);
     dealloc();
     return result;
 }
@@ -351,7 +356,9 @@ int Fl_Gl_Image_Widget::handle(int event)
     return Fl_Gl_Window::handle(event);
 }
 
-bool Fl_Gl_Image_Widget::update_image( int decimation_level,
+bool Fl_Gl_Image_Widget::update_image2(int decimation_level,
+                                       bool flip_x,
+                                       bool flip_y,
                                        // Either this should be given
                                        const char* image_filename,
                                        // Or these should be given
@@ -383,6 +390,7 @@ bool Fl_Gl_Image_Widget::update_image( int decimation_level,
             return false;
         }
         if(!m_update_image_cache.save(decimation_level,
+                                      flip_x, flip_y,
                                       image_filename,
                                       image_data,
                                       image_width, image_height,
@@ -394,10 +402,11 @@ bool Fl_Gl_Image_Widget::update_image( int decimation_level,
         return true;
     }
     // have new image to ingest
-    if( !GL_image_display_update_image(&m_ctx,
-                                       decimation_level,
-                                       image_filename,
-                                       image_data,image_width,image_height,image_bpp,image_pitch) )
+    if( !GL_image_display_update_image2(&m_ctx,
+                                        decimation_level,
+                                        flip_x, flip_y,
+                                        image_filename,
+                                        image_data,image_width,image_height,image_bpp,image_pitch) )
     {
         MSG("GL_image_display_update_image() failed");
         return false;
@@ -406,6 +415,27 @@ bool Fl_Gl_Image_Widget::update_image( int decimation_level,
     redraw();
     return true;
 }
+
+// For legacy compatibility. Calls update_image2() with flip_x, flip_y = false
+bool Fl_Gl_Image_Widget::update_image( int  decimation_level,
+                                       // Either this should be given
+                                       const char* image_filename,
+                                       // Or these should be given
+                                       const char* image_data,
+                                       int         image_width,
+                                       int         image_height,
+                                       int         image_bpp,
+                                       int         image_pitch)
+{
+    return update_image2(decimation_level, false, false,
+                         image_filename,
+                         image_data,
+                         image_width,
+                         image_height,
+                         image_bpp,
+                         image_pitch);
+}
+
 
 bool Fl_Gl_Image_Widget::set_panzoom(double x_centerpixel, double y_centerpixel,
                                      double visible_width_pixels)

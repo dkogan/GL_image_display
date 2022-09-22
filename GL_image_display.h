@@ -15,6 +15,7 @@ enum {
         GL_image_display_uniform_index_aspect,
         GL_image_display_uniform_index_center01,
         GL_image_display_uniform_index_visible_width01,
+        GL_image_display_uniform_index_flip_x,
         GL_image_display_uniform_index_flip_y,
         GL_image_display_uniform_index_line_color_rgb,
         GL_image_display_num_uniforms
@@ -77,6 +78,7 @@ typedef struct
     double center01_x, center01_y;
     double aspect_x, aspect_y;
 
+    bool flip_x           : 1;
     bool flip_y           : 1;
     bool did_init         : 1;
     bool did_init_texture : 1;
@@ -105,7 +107,7 @@ bool GL_image_display_init( // output stored here
                             bool use_glut);
 
 // Update the image data being displayed
-bool GL_image_display_update_image( GL_image_display_context_t* ctx,
+bool GL_image_display_update_image2(GL_image_display_context_t* ctx,
 
                                     // 0 == display full-resolution, original image
                                     //
@@ -119,6 +121,9 @@ bool GL_image_display_update_image( GL_image_display_context_t* ctx,
                                     //
                                     // and so on
                                     int decimation_level,
+
+                                    bool flip_x,
+                                    bool flip_y,
 
                                     // Either this should be given
                                     const char* image_filename,
@@ -137,6 +142,18 @@ bool GL_image_display_update_image( GL_image_display_context_t* ctx,
                                     // non-contiguous data. As a shorthand,
                                     // image_pitch <= 0 can be passed-in to
                                     // indicate contiguous data
+                                    int image_pitch);
+
+// Legacy compatibility function. Simple wrapper around
+// GL_image_display_update_image2(). Arguments are the same, except flip_x and
+// flip_y don't exits, and default to false
+bool GL_image_display_update_image( GL_image_display_context_t* ctx,
+                                    int decimation_level,
+                                    const char* image_filename,
+                                    const char* image_data,
+                                    int image_width,
+                                    int image_height,
+                                    int image_bpp,
                                     int image_pitch);
 
 // This exists because the FLTK widget often defers the first update_image()

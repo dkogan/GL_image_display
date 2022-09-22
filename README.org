@@ -49,7 +49,7 @@ The widget automatically handles resizing operations.
 The normal usage sequence is very simple:
 
 - Construct the =Fl_Gl_Image_Widget=
-- Call the =update_image()= method to give it data
+- Call the =update_image2()= method to give it data
 
 Note that the =set_panzoom()= method is =virtual=, so a derived class can
 override it to get a "notification" of any pan/zoom operation. One application
@@ -65,7 +65,7 @@ the Python API largely mirrors the C++ API. Some Python-specific notes:
   =Exception=
 - SWIG directors are used, so the widget can be subclassed in Python, and works
   as one would expect
-- =update_image()= can take an image filename (as in C++) /or/ a numpy array of
+- =update_image2()= can take an image filename (as in C++) /or/ a numpy array of
   data. The dimensions, depth and pitch are all read from this array
 - The pixel mapping functions =map_pixel_viewport_from_image()= and
   =map_pixel_image_from_viewport()= ingest a length-2 iterable (or a numpy

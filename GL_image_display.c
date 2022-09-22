@@ -261,6 +261,7 @@ bool GL_image_display_init( // output
         make_uniform(aspect);
         make_uniform(center01);
         make_uniform(visible_width01);
+        make_uniform(flip_x);
         make_uniform(flip_y);
         make_uniform(line_color_rgb);
 
@@ -416,21 +417,23 @@ bool set_aspect(GL_image_display_context_t* ctx,
     return true;
 }
 
-bool GL_image_display_update_image( GL_image_display_context_t* ctx,
-                                    int decimation_level,
+bool GL_image_display_update_image2( GL_image_display_context_t* ctx,
+                                     int decimation_level,
+                                     bool flip_x,
+                                     bool flip_y,
 
-                                    // Either this should be given
-                                    const char* image_filename,
+                                     // Either this should be given
+                                     const char* image_filename,
 
-                                    // Or these should be given
-                                    const char* image_data,
-                                    int image_width,
-                                    int image_height,
-                                    // Supported:
-                                    // - 8  for "grayscale"
-                                    // - 24 for "bgr"
-                                    int image_bpp,
-                                    int image_pitch)
+                                     // Or these should be given
+                                     const char* image_data,
+                                     int image_width,
+                                     int image_height,
+                                     // Supported:
+                                     // - 8  for "grayscale"
+                                     // - 24 for "bgr"
+                                     int image_bpp,
+                                     int image_pitch)
 {
     if(!GL_image_display_update_image__validate_input
        ( image_filename,
@@ -462,6 +465,7 @@ bool GL_image_display_update_image( GL_image_display_context_t* ctx,
         goto done;
     }
 
+    ctx->flip_x = flip_x;
     ctx->flip_y = flip_y;
 
     if( image_filename != NULL )
@@ -531,6 +535,7 @@ bool GL_image_display_update_image( GL_image_display_context_t* ctx,
     }
     else
         set_uniform_1i(ctx, flip_y, ctx->flip_y);
+    set_uniform_1i(ctx, flip_x, ctx->flip_x);
 
     if(!ctx->did_init_texture)
     {
@@ -694,6 +699,25 @@ bool GL_image_display_update_image( GL_image_display_context_t* ctx,
     return result;
 }
 
+bool GL_image_display_update_image( GL_image_display_context_t* ctx,
+                                    int decimation_level,
+                                    const char* image_filename,
+                                    const char* image_data,
+                                    int image_width,
+                                    int image_height,
+                                    int image_bpp,
+                                    int image_pitch)
+{
+    return GL_image_display_update_image2( ctx,
+                                           decimation_level,
+                                           false,false,
+                                           image_filename,
+                                           image_data,
+                                           image_width,
+                                           image_height,
+                                           image_bpp,
+                                           image_pitch);
+}
 
 void GL_image_display_deinit( GL_image_display_context_t* ctx )
 {
@@ -918,6 +942,8 @@ bool GL_image_display_map_pixel_viewport_from_image(GL_image_display_context_t* 
     double vertex_y = (y+0.5) / ((double)(1 << ctx->decimation_level)*(double)ctx->image_height);
 
     // GL does things upside down so the logic on vertex_y has the opposite polarity
+    if(ctx->flip_x)
+        vertex_x = 1.0 - vertex_x;
     if(!ctx->flip_y)
         vertex_y = 1.0 - vertex_y;
 
@@ -967,6 +993,8 @@ bool GL_image_display_map_pixel_image_from_viewport(GL_image_display_context_t* 
         glpos_y / (2. * ctx->aspect_y) * ctx->visible_width01 + ctx->center01_y;
 
     // GL does things upside down so the logic on vertex_y has the opposite polarity
+    if(ctx->flip_x)
+        vertex_x = 1.0 - vertex_x;
     if(!ctx->flip_y)
         vertex_y = 1.0 - vertex_y;
 

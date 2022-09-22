@@ -8,30 +8,36 @@ out vec2 tex_xy_geometry;
 uniform vec2 aspect;
 uniform vec2 center01;
 uniform float visible_width01;
-uniform int flip_y;
+uniform int flip_x, flip_y;
 
 void main(void)
 {
-    // vertex is in [0,1]: the image we're displaying, possibly upside-down
+    // vertex is in [0,1]: the image we're displaying, possibly flipped
+    //
     // tex_xy_geometry is in [0,1]: the image we're displaying
     // gl_Position is in [-1,1]: this is the viewport
 
-    // I conditionally flip the image upside down since OpenGL stores it that
-    // way. The caller says whether to do that or not. Generally if given a raw
-    // buffer I assume it's already rightside-up. But when loading an image
-    // using FreeImage_Load() I assume it's upside down, since that's what
+    // The logic of flip_x is as expected. The logic of flip_y is inverted
+    // because OpenGL stores images that way.
+
+    // The caller says when to flip stuff. Generally if given a raw buffer I
+    // assume it's already rightside-up. But when loading an image using
+    // FreeImage_Load() I assume it's upside down, since that's what
     // libfreeimage does
+    if(flip_x == 0)
+        tex_xy_geometry.x = vertex.x;
+    else
+        tex_xy_geometry.x = 1.0 - vertex.x;
+
     if(flip_y != 0)
         // input image has the upside-down orientation, but that's what opengl
         // wants, so I'm good
-        tex_xy_geometry = vertex;
+        tex_xy_geometry.y = vertex.y;
     else
-    {
         // input image it rightside-up, but opengl wants it to be upside-down,
         // so I flip it
-        tex_xy_geometry.x = vertex.x;
         tex_xy_geometry.y = 1.0 - vertex.y;
-    }
+
 
     gl_Position = vec4( (vertex - center01) / visible_width01 * 2.,
                         0, 1 );

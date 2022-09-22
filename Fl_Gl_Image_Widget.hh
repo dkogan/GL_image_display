@@ -20,6 +20,8 @@ protected:
         void dealloc(void);
 
         bool save( int         _decimation_level,
+                   bool        _flip_x,
+                   bool        _flip_y,
                    const char* _image_filename,
                    const char* _image_data,
                    int         _image_width,
@@ -29,6 +31,8 @@ protected:
         bool apply(Fl_Gl_Image_Widget* w);
 
         int   decimation_level;
+        bool  flip_x;
+        bool  flip_y;
         char* image_filename;
         char* image_data;
         int   image_width;
@@ -52,7 +56,19 @@ public:
     /////// these directly wrap the GL_image_display.h C API. The arguments and
     /////// function names are the same, except for the leading context: we pass
     /////// &m_ctx
-    bool update_image( int decimation_level         = 0,
+    bool update_image2(int  decimation_level        = 0,
+                       bool flip_x                  = false,
+                       bool flip_y                  = false,
+                       // Either this should be given
+                       const char* image_filename   = NULL,
+                       // Or these should be given
+                       const char* image_data       = NULL,
+                       int         image_width      = 0,
+                       int         image_height     = 0,
+                       int         image_bpp        = 0,
+                       int         image_pitch      = 0);
+    // For legacy compatibility. Calls update_image2() with flip_x, flip_y = false
+    bool update_image( int  decimation_level        = 0,
                        // Either this should be given
                        const char* image_filename   = NULL,
                        // Or these should be given
