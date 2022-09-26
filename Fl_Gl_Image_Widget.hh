@@ -110,7 +110,12 @@ public:
                                double dy,
                                double viewport_width,
                                double viewport_height);
+
+    // Old name for process_keyboard_panzoom(). For backwards compatibility only
     virtual
     bool process_keyboard_panzoom_orig(void);
+
+    virtual
+    bool process_keyboard_panzoom(void);
 
 };

@@ -236,6 +236,11 @@ bool Fl_Gl_Image_Widget::process_mousedrag_pan(double dx,
 
 bool Fl_Gl_Image_Widget::process_keyboard_panzoom_orig(void)
 {
+    return process_keyboard_panzoom();
+}
+
+bool Fl_Gl_Image_Widget::process_keyboard_panzoom(void)
+{
     make_current();
 
     return
@@ -342,7 +347,7 @@ int Fl_Gl_Image_Widget::handle(int event)
         if(m_ctx.did_init && m_ctx.did_init_texture &&
            Fl::event_key() == 'u')
         {
-            if(!process_keyboard_panzoom_orig())
+            if(!process_keyboard_panzoom())
             {
                 MSG("process_keyboard_panzoom() failed. Trying to continue...");
                 return 1;

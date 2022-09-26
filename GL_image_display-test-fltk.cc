@@ -161,7 +161,7 @@ public:
         return result;
     }
 
-    bool process_keyboard_panzoom_orig(void)
+    bool process_keyboard_panzoom(void)
     {
         if(!(Fl::event_state() & FL_SHIFT))
         {
@@ -169,7 +169,7 @@ public:
             // didn't ask us to do anything special with this pan/zoom call
             return
                 Fl_Gl_Image_Widget::
-                process_keyboard_panzoom_orig();
+                process_keyboard_panzoom();
         }
 
         // All the widgets should pan/zoom together
@@ -182,7 +182,7 @@ public:
             result = result &&
                 g_gl_widgets[i]->
                 Fl_Gl_Image_Widget::
-                process_keyboard_panzoom_orig();
+                process_keyboard_panzoom();
         }
 
         make_current();
