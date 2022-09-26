@@ -269,7 +269,7 @@ int Fl_Gl_Image_Widget::handle(int event)
                                             (double)pixel_w(),
                                             (double)pixel_h()))
                 {
-                    MSG("set_panzoom() failed. Trying to continue...");
+                    MSG("process_mousewheel_zoom() failed. Trying to continue...");
                     return 1;
                 }
 
@@ -290,7 +290,7 @@ int Fl_Gl_Image_Widget::handle(int event)
                                            (double)pixel_w(),
                                            (double)pixel_h()))
                 {
-                    MSG("set_panzoom() failed. Trying to continue...");
+                    MSG("process_mousewheel_pan() failed. Trying to continue...");
                     return 1;
                 }
 
@@ -320,7 +320,7 @@ int Fl_Gl_Image_Widget::handle(int event)
                                       (double)pixel_w(),
                                       (double)pixel_h()))
             {
-                MSG("set_panzoom() failed. Trying to continue...");
+                MSG("process_mousedrag_pan() failed. Trying to continue...");
                 return 1;
             }
 
@@ -344,7 +344,7 @@ int Fl_Gl_Image_Widget::handle(int event)
         {
             if(!process_keyboard_panzoom_orig())
             {
-                MSG("set_panzoom() failed. Trying to continue...");
+                MSG("process_keyboard_panzoom() failed. Trying to continue...");
                 return 1;
             }
 
