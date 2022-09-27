@@ -67,7 +67,7 @@ GL_image_display-test-fltk: LDLIBS += -lfltk_gl -lfltk -lX11
 
 ############### FLTK widget Python wrapper ############
 install all: Fl_Gl_Image_Widget.py _Fl_Gl_Image_Widget$(PY_EXT_SUFFIX)
-%.py %_pywrap.cc: %.i
+%.py %_pywrap.h %_pywrap.cc: %.i
 	swig \
 	  -w302 -w312 -w325 -w362 -w389 -w401 -w473 -w509 \
 	  -I/usr/include/ \
@@ -84,7 +84,7 @@ install all: Fl_Gl_Image_Widget.py _Fl_Gl_Image_Widget$(PY_EXT_SUFFIX)
 	  -o $*_pywrap.cc \
 	  $<
 
-EXTRA_CLEAN += *_pywrap.cc
+EXTRA_CLEAN += Fl_Gl_Image_Widget.py *_pywrap.h *_pywrap.cc
 Fl_Gl_Image_Widget.py Fl_Gl_Image_Widget_pywrap.cc: Fl_Gl_Image_Widget.hh
 
 Fl_Gl_Image_Widget_pywrap.o: CXXFLAGS += $(PY_MRBUILD_CFLAGS)
