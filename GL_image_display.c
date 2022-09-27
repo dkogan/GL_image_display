@@ -18,6 +18,12 @@
 #include "GL_image_display.h"
 #include "util.h"
 
+static_assert(GL_image_display_num_uniforms <= GL_image_display_max_num_uniforms,
+              "must have GL_image_display_num_uniforms <= GL_image_display_max_num_uniforms");
+static_assert(GL_image_display_num_programs <=  GL_image_display_max_num_programs,
+              "must have GL_image_display_num_programs <=  GL_image_display_max_num_programs");
+
+
 #define MAX_NUMBER_LINE_VERTICES 1024
 
 #define assert_opengl()                                 \

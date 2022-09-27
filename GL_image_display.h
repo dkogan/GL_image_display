@@ -6,7 +6,10 @@
 enum {
         GL_image_display_program_index_image,
         GL_image_display_program_index_line,
-        GL_image_display_num_programs
+        GL_image_display_num_programs,
+        GL_image_display_max_num_programs = 4
+        // I static_assert(GL_image_display_num_programs <=
+        // GL_image_display_max_num_programs) in GL_image_display.c
 };
 
 enum {
@@ -18,18 +21,23 @@ enum {
         GL_image_display_uniform_index_flip_x,
         GL_image_display_uniform_index_flip_y,
         GL_image_display_uniform_index_line_color_rgb,
-        GL_image_display_num_uniforms
+        GL_image_display_num_uniforms,
+        GL_image_display_max_num_uniforms = 32
+        // I static_assert(GL_image_display_num_uniforms <=
+        // GL_image_display_max_num_uniforms) in GL_image_display.c
 };
 
 typedef struct
 {
+    uint32_t VBO_array, VBO_buffer;
+    uint32_t program;
+
     // These should be GLint, but I don't want to #include <GL.h>.
     // I will static_assert() this in the .c to make sure they are compatible
-    int32_t uniforms[GL_image_display_num_uniforms];
-
-    uint32_t VBO_array, VBO_buffer;
-
-    uint32_t program;
+    //
+    // I place GL_image_display_max_num_uniforms here so that adding new
+    // uniforms doesn't break the abi
+    int32_t uniforms[GL_image_display_max_num_uniforms];
 }  GL_image_display_opengl_program_t;
 
 // The rendered line segments are defined as a number of segment sets. Each
@@ -56,8 +64,6 @@ typedef struct
     // meaningful only if use_glut. 0 means "invalid" or "closed"
     int glut_window;
 
-    GL_image_display_opengl_program_t programs[GL_image_display_num_programs];
-
     uint32_t texture_ID;
     uint32_t texture_PBO_ID;
 
@@ -78,12 +84,22 @@ typedef struct
     double center01_x, center01_y;
     double aspect_x, aspect_y;
 
-    bool flip_x           : 1;
-    bool flip_y           : 1;
-    bool did_init         : 1;
-    bool did_init_texture : 1;
-    bool did_set_aspect   : 1;
-    bool did_set_panzoom  : 1;
+    union
+    {
+        struct
+        {
+            bool flip_x           : 1;
+            bool flip_y           : 1;
+            bool did_init         : 1;
+            bool did_init_texture : 1;
+            bool did_set_aspect   : 1;
+            bool did_set_panzoom  : 1;
+        };
+        uint32_t flags;
+    };
+
+    GL_image_display_opengl_program_t programs[GL_image_display_num_programs];
+
 } GL_image_display_context_t;
 
 // All API functions return true on sucesss, false on error
