@@ -765,7 +765,7 @@ bool GL_image_display_set_panzoom(GL_image_display_context_t* ctx,
     CONFIRM_SET(did_init_texture);
 
 #define TRY_EXISTING_OR_SET(what)                                                \
-    /* check for isfinite() AND big values because -ffast-mathj breaks isfinite()*/ \
+    /* check for isfinite() AND big values because -ffast-math breaks isfinite()*/ \
     if( !isfinite(what) || what >= 1e20 || what <= -1e20 )                       \
     {                                                                            \
         /* Invalid input. I keep existing value IF there is an existing value */ \

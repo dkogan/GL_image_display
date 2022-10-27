@@ -113,7 +113,7 @@ typedef struct
 // The usual call looks like this:
 //
 //   GL_image_display_context_t ctx = {};
-//   if( GL_image_display_init(&ctx, false) )
+//   if( !GL_image_display_init(&ctx, false) )
 //   {
 //     ERROR;
 //   }
