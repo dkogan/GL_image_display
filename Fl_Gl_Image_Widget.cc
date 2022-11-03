@@ -100,7 +100,15 @@ Fl_Gl_Image_Widget::Fl_Gl_Image_Widget(int x, int y, int w, int h) :
     Fl_Gl_Window(x, y, w, h),
     m_update_image_cache()
 {
-    mode(FL_DOUBLE | FL_OPENGL3);
+    // Earlier I was asking for double-buffered graphics with FL_DOUBLE. But I
+    // would sometimes see the display not update at all as a result. Calling
+    // swap_buffers() explicitly wouldn't help. I don't know why. So now I'm
+    // just doing single-buffered rendering, and it looks OK. I don't see
+    // transient artifacts or anything; yet.
+    int m = FL_OPENGL3 | FL_RGB;
+    mode(m);
+    Fl::gl_visual(m);
+
     memset(&m_ctx, 0, sizeof(m_ctx));
 }
 
