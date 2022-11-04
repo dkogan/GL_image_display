@@ -71,10 +71,9 @@ install all: Fl_Gl_Image_Widget.py _Fl_Gl_Image_Widget$(PY_EXT_SUFFIX)
 	swig \
 	  -w302 -w312 -w325 -w362 -w389 -w401 -w473 -w509 \
 	  -I/usr/include/ \
-	  -DFL_EXPORT \
+	  -DFL_EXPORT="" \
 	  -DPYTHON \
 	  -DPYTHON3 \
-	  -py3 \
 	  -python \
 	  -c++ \
 	  -keyword \
