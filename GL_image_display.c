@@ -393,7 +393,7 @@ bool GL_image_display_update_image__validate_input
 }
 
 
-#define CONFIRM_SET(what) if(!ctx->what) { return false; }
+#define CONFIRM_SET(what) if(!ctx->what) { MSG("CONFIRM_SET("#what ") failed!"); return false; }
 
 static
 bool set_aspect(GL_image_display_context_t* ctx,
