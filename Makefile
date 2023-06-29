@@ -1,4 +1,5 @@
-include mrbuild/Makefile.common.header
+include choose_mrbuild.mk
+include $(MRBUILD_MK)/Makefile.common.header
 
 PROJECT_NAME := GL_image_display
 ABI_VERSION  := 0
@@ -107,4 +108,4 @@ DIST_DOC := \
   GL_image_display-test-glut.c
 
 
-include mrbuild/Makefile.common.footer
+include $(MRBUILD_MK)/Makefile.common.footer
