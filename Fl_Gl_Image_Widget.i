@@ -123,7 +123,13 @@ ARGUMENTS:
 - w: required integer that specifies the width of the widget
 
 - h: required integer that specifies the height of the widget
- """;
+
+- double_buffered: optional boolean, defaulting to True. On some hardware (i915
+  for instance) double-buffering causes redrawing bugs (the window sometimes is
+  never updated), so disabling double-buffering is a good workaround. In
+  general, single-buffering causes redraw flicker, so double-buffering is
+  recommended where possible
+""";
 
 %feature("docstring") Fl_Gl_Image_Widget::draw
 """Fl_Gl_Image_Widget draw() routine

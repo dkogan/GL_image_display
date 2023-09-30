@@ -43,7 +43,14 @@ protected:
 
 
 public:
-    Fl_Gl_Image_Widget(int x, int y, int w, int h);
+    Fl_Gl_Image_Widget(int x, int y, int w, int h,
+                       // On some hardware (i915 for instance) double-buffering
+                       // causes redrawing bugs (the window sometimes is never
+                       // updated), so disabling double-buffering is a good
+                       // workaround. In general, single-buffering causes redraw
+                       // flicker, so double-buffering is recommended where
+                       // possible
+                       bool double_buffered = true);
 
     virtual ~Fl_Gl_Image_Widget();
 

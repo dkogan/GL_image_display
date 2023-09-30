@@ -96,16 +96,24 @@ bool Fl_Gl_Image_Widget::UpdateImageCache::apply(Fl_Gl_Image_Widget* w)
 }
 
 
-Fl_Gl_Image_Widget::Fl_Gl_Image_Widget(int x, int y, int w, int h) :
+Fl_Gl_Image_Widget::Fl_Gl_Image_Widget(int x, int y, int w, int h,
+                                       // On some hardware (i915 for instance)
+                                       // double-buffering causes redrawing bugs
+                                       // (the window sometimes is never
+                                       // updated), so disabling
+                                       // double-buffering is a good workaround.
+                                       // In general, single-buffering causes
+                                       // redraw flicker, so double-buffering is
+                                       // recommended where possible
+                                       bool double_buffered) :
     Fl_Gl_Window(x, y, w, h),
     m_update_image_cache()
 {
-    // Earlier I was asking for double-buffered graphics with FL_DOUBLE. But I
-    // would sometimes see the display not update at all as a result. Calling
-    // swap_buffers() explicitly wouldn't help. I don't know why. So now I'm
-    // just doing single-buffered rendering, and it looks OK. I don't see
-    // transient artifacts or anything; yet.
-    int m = FL_OPENGL3 | FL_RGB;
+    const int m =
+        FL_OPENGL3 |
+        FL_RGB |
+        (double_buffered ? FL_DOUBLE : 0);
+
     mode(m);
     Fl::gl_visual(m);
 
