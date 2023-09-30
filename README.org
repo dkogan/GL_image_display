@@ -16,6 +16,10 @@ Three separate interfaces are available:
 - Python library wrapping the FLTK widget to make it usable in Python. Defined
   in the SWIG interface in [[https://github.com/dkogan/GL_image_display/blob/master/Fl_Gl_Image_Widget.i][=Fl_Gl_Image_Widget.i=]]
 
+* Build
+Run =make=. A few dependencies are required to build. See the =Build-Depends=
+section in the [[https://salsa.debian.org/debian/gl-image-display/-/blob/master/debian/control][=debian/control= file]].
+
 * C library
 The core functionality in this library is made available in the C library. This
 can be used directly to build a GLUT application (sample in
