@@ -393,7 +393,8 @@ bool GL_image_display_update_image__validate_input
 }
 
 
-#define CONFIRM_SET(what) if(!ctx->what) { MSG("CONFIRM_SET("#what ") failed!"); return false; }
+#define CONFIRM_SET(      what) if(!ctx->what) { MSG("CONFIRM_SET("#what ") failed!"); return false; }
+#define CONFIRM_SET_QUIET(what) if(!ctx->what) {                                       return false; }
 
 static
 bool set_aspect(GL_image_display_context_t* ctx,
@@ -866,10 +867,12 @@ bool GL_image_display_set_lines(GL_image_display_context_t* ctx,
 
 bool GL_image_display_redraw(GL_image_display_context_t* ctx)
 {
-    CONFIRM_SET(did_init);
-    CONFIRM_SET(did_init_texture);
-    CONFIRM_SET(did_set_aspect);
-    CONFIRM_SET(did_set_panzoom);
+    CONFIRM_SET(      did_init);
+    // Some of these can trigger during normal operation. I don't spam the
+    // console in that case
+    CONFIRM_SET_QUIET(did_init_texture);
+    CONFIRM_SET_QUIET(did_set_aspect);
+    CONFIRM_SET_QUIET(did_set_panzoom);
 
     if(ctx->use_glut)
     {
@@ -980,9 +983,11 @@ bool GL_image_display_map_pixel_image_from_viewport(GL_image_display_context_t* 
     // This is analogous to what the vertex shader (vertex.glsl) does, in
     // reverse
 
-    CONFIRM_SET(did_set_panzoom);
-    CONFIRM_SET(did_init_texture);
-    CONFIRM_SET(did_set_aspect);
+    // Some of these can trigger during normal operation. I don't spam the
+    // console in that case
+    CONFIRM_SET_QUIET(did_set_panzoom);
+    CONFIRM_SET_QUIET(did_init_texture);
+    CONFIRM_SET_QUIET(did_set_aspect);
 
     // gl_Position in [0,1]
     double glpos01_x = ((x+0.5) / (double)ctx->viewport_width);
