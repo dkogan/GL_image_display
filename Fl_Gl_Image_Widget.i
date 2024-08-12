@@ -676,7 +676,7 @@ ARGUMENTS
   the center of the viewport. This is the 'pan' setting
 
 - visible_width_pixels: how many horizontal image pixels should span the
-  viewport. THis is the 'zoom' setting
+  viewport. This is the 'zoom' setting
 
 RETURNED VALUE
 
