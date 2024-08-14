@@ -18,6 +18,7 @@ protected:
         DeferredInitCache();
         ~DeferredInitCache();
         void dealloc_update_image(void);
+        void dealloc_set_lines   (void);
 
         bool save_update_image( int         _decimation_level,
                                 bool        _flip_x,
@@ -28,8 +29,11 @@ protected:
                                 int         _image_height,
                                 int         _image_bpp,
                                 int         _image_pitch);
+        bool save_set_lines(const GL_image_display_line_segments_t* _line_segment_sets,
+                            int _Nline_segment_sets);
         bool apply(Fl_Gl_Image_Widget* w);
 
+        // update_image
         int   decimation_level;
         bool  flip_x;
         bool  flip_y;
@@ -39,6 +43,10 @@ protected:
         int   image_height;
         int   image_bpp;
         int   image_pitch;
+
+        // set_lines
+        GL_image_display_line_segments_t* line_segment_sets;
+        int Nline_segment_sets;
     } m_deferred_init_cache;
 
 

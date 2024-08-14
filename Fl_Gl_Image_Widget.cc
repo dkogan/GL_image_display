@@ -8,13 +8,16 @@
 
 Fl_Gl_Image_Widget::DeferredInitCache::DeferredInitCache()
     : image_filename(NULL),
-      image_data(NULL)
+      image_data(NULL),
+      line_segment_sets(NULL),
+      Nline_segment_sets(0)
 {
 }
 
 Fl_Gl_Image_Widget::DeferredInitCache::~DeferredInitCache()
 {
     dealloc_update_image();
+    dealloc_set_lines();
 }
 
 void Fl_Gl_Image_Widget::DeferredInitCache::dealloc_update_image(void)
@@ -24,6 +27,18 @@ void Fl_Gl_Image_Widget::DeferredInitCache::dealloc_update_image(void)
 
     free((void*)image_data);
     image_data = NULL;
+}
+
+void Fl_Gl_Image_Widget::DeferredInitCache::dealloc_set_lines(void)
+{
+    for(int i=0; i<Nline_segment_sets; i++)
+    {
+        GL_image_display_line_segments_t* set = &line_segment_sets[i];
+        free((void*)set->points);
+    }
+    free(line_segment_sets);
+    line_segment_sets = NULL;
+    Nline_segment_sets = 0;
 }
 
 bool Fl_Gl_Image_Widget::DeferredInitCache::save_update_image
@@ -82,18 +97,62 @@ bool Fl_Gl_Image_Widget::DeferredInitCache::save_update_image
     return true;
 }
 
+bool Fl_Gl_Image_Widget::DeferredInitCache::save_set_lines
+(    const GL_image_display_line_segments_t* _line_segment_sets,
+     int _Nline_segment_sets)
+{
+    dealloc_set_lines();
+
+    line_segment_sets =
+        (GL_image_display_line_segments_t*)
+        malloc(Nline_segment_sets * sizeof(line_segment_sets[0]));
+    if(line_segment_sets == NULL)
+    {
+        MSG("malloc() failed");
+        dealloc_set_lines();
+        return false;
+    }
+    memset((void*)line_segment_sets,0,Nline_segment_sets * sizeof(line_segment_sets[0]));
+    Nline_segment_sets = _Nline_segment_sets;
+
+    for(int i=0; i<Nline_segment_sets; i++)
+    {
+        GL_image_display_line_segments_t*       set  = & line_segment_sets[i];
+        const GL_image_display_line_segments_t* _set = &_line_segment_sets[i];
+
+        const int Npoints = _set->segments.Nsegments*2*2;
+        set->points = (float*)malloc(Npoints*sizeof(set->points[0]));
+        if(set->points == NULL)
+        {
+            MSG("malloc() failed");
+            dealloc_set_lines();
+            return false;
+        }
+        memcpy((void*)set->points,
+               (const void*)_set->points,
+               Npoints*sizeof(set->points[0]));
+        set->segments = _set->segments;
+    }
+    return true;
+}
+
+
 bool Fl_Gl_Image_Widget::DeferredInitCache::apply(Fl_Gl_Image_Widget* w)
 {
     if(image_filename == NULL && image_data == NULL)
         return true;
-    bool result = w->update_image2(decimation_level,
-                                   flip_x, flip_y,
-                                   image_filename,
-                                   image_data,
-                                   image_width, image_height,
-                                   image_bpp,   image_pitch);
+    bool result1 = w->update_image2(decimation_level,
+                                    flip_x, flip_y,
+                                    image_filename,
+                                    image_data,
+                                    image_width, image_height,
+                                    image_bpp,   image_pitch);
     dealloc_update_image();
-    return result;
+
+    bool result2 = w->set_lines(line_segment_sets, Nline_segment_sets);
+    dealloc_set_lines();
+
+    return result1 && result2;
 }
 
 
@@ -496,6 +555,19 @@ bool Fl_Gl_Image_Widget::set_lines(const GL_image_display_line_segments_t* line_
                                    int Nline_segment_sets)
 {
     make_current();
+
+    if(!m_ctx.did_init)
+    {
+        // Need to save the inputs, and do this later. See docs for
+        // Fl_Gl_Image_Widget::update_image2()
+        if(!m_deferred_init_cache.save_set_lines(line_segment_sets,
+                                                 Nline_segment_sets))
+        {
+            MSG("m_deferred_init_cache.save_set_lines() failed");
+            return false;
+        }
+        return true;
+    }
 
     bool result =
         GL_image_display_set_lines(&m_ctx,
