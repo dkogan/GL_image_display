@@ -6,18 +6,18 @@
 #include <string.h>
 #include <math.h>
 
-Fl_Gl_Image_Widget::UpdateImageCache::UpdateImageCache()
+Fl_Gl_Image_Widget::DeferredInitCache::DeferredInitCache()
     : image_filename(NULL),
       image_data(NULL)
 {
 }
 
-Fl_Gl_Image_Widget::UpdateImageCache::~UpdateImageCache()
+Fl_Gl_Image_Widget::DeferredInitCache::~DeferredInitCache()
 {
-    dealloc();
+    dealloc_update_image();
 }
 
-void Fl_Gl_Image_Widget::UpdateImageCache::dealloc(void)
+void Fl_Gl_Image_Widget::DeferredInitCache::dealloc_update_image(void)
 {
     free((void*)image_filename);
     image_filename = NULL;
@@ -26,17 +26,18 @@ void Fl_Gl_Image_Widget::UpdateImageCache::dealloc(void)
     image_data = NULL;
 }
 
-bool Fl_Gl_Image_Widget::UpdateImageCache::save( int         _decimation_level,
-                                                 bool        _flip_x,
-                                                 bool        _flip_y,
-                                                 const char* _image_filename,
-                                                 const char* _image_data,
-                                                 int         _image_width,
-                                                 int         _image_height,
-                                                 int         _image_bpp,
-                                                 int         _image_pitch)
+bool Fl_Gl_Image_Widget::DeferredInitCache::save_update_image
+(   int         _decimation_level,
+    bool        _flip_x,
+    bool        _flip_y,
+    const char* _image_filename,
+    const char* _image_data,
+    int         _image_width,
+    int         _image_height,
+    int         _image_bpp,
+    int         _image_pitch)
 {
-    dealloc();
+    dealloc_update_image();
 
     if(_image_filename != NULL)
     {
@@ -44,7 +45,7 @@ bool Fl_Gl_Image_Widget::UpdateImageCache::save( int         _decimation_level,
         if(image_filename == NULL)
         {
             MSG("strdup(_image_filename) failed! Giving up");
-            dealloc();
+            dealloc_update_image();
             return false;
         }
     }
@@ -65,7 +66,7 @@ bool Fl_Gl_Image_Widget::UpdateImageCache::save( int         _decimation_level,
         if(image_data == NULL)
         {
             MSG("malloc(image_size) failed! Giving up");
-            dealloc();
+            dealloc_update_image();
             return false;
         }
         memcpy(image_data, _image_data, size);
@@ -81,7 +82,7 @@ bool Fl_Gl_Image_Widget::UpdateImageCache::save( int         _decimation_level,
     return true;
 }
 
-bool Fl_Gl_Image_Widget::UpdateImageCache::apply(Fl_Gl_Image_Widget* w)
+bool Fl_Gl_Image_Widget::DeferredInitCache::apply(Fl_Gl_Image_Widget* w)
 {
     if(image_filename == NULL && image_data == NULL)
         return true;
@@ -91,7 +92,7 @@ bool Fl_Gl_Image_Widget::UpdateImageCache::apply(Fl_Gl_Image_Widget* w)
                                    image_data,
                                    image_width, image_height,
                                    image_bpp,   image_pitch);
-    dealloc();
+    dealloc_update_image();
     return result;
 }
 
@@ -107,7 +108,7 @@ Fl_Gl_Image_Widget::Fl_Gl_Image_Widget(int x, int y, int w, int h,
                                        // recommended where possible
                                        bool double_buffered) :
     Fl_Gl_Window(x, y, w, h),
-    m_update_image_cache()
+    m_deferred_init_cache()
 {
     const int m =
         FL_OPENGL3 |
@@ -142,7 +143,7 @@ void Fl_Gl_Image_Widget::draw(void)
             return;
         }
 
-        if(!m_update_image_cache.apply(this))
+        if(!m_deferred_init_cache.apply(this))
             return;
     }
 
@@ -412,14 +413,14 @@ bool Fl_Gl_Image_Widget::update_image2(int decimation_level,
             MSG("Deferred update_image call failed validation");
             return false;
         }
-        if(!m_update_image_cache.save(decimation_level,
-                                      flip_x, flip_y,
-                                      image_filename,
-                                      image_data,
-                                      image_width, image_height,
-                                      image_bpp, image_pitch))
+        if(!m_deferred_init_cache.save_update_image(decimation_level,
+                                                    flip_x, flip_y,
+                                                    image_filename,
+                                                    image_data,
+                                                    image_width, image_height,
+                                                    image_bpp, image_pitch))
         {
-            MSG("m_update_image_cache.save() failed");
+            MSG("m_deferred_init_cache.save_update_image() failed");
             return false;
         }
         return true;

@@ -13,21 +13,21 @@ protected:
     GL_image_display_context_t m_ctx;
     int                        m_last_drag_update_xy[2];
 
-    struct UpdateImageCache
+    struct DeferredInitCache
     {
-        UpdateImageCache();
-        ~UpdateImageCache();
-        void dealloc(void);
+        DeferredInitCache();
+        ~DeferredInitCache();
+        void dealloc_update_image(void);
 
-        bool save( int         _decimation_level,
-                   bool        _flip_x,
-                   bool        _flip_y,
-                   const char* _image_filename,
-                   const char* _image_data,
-                   int         _image_width,
-                   int         _image_height,
-                   int         _image_bpp,
-                   int         _image_pitch);
+        bool save_update_image( int         _decimation_level,
+                                bool        _flip_x,
+                                bool        _flip_y,
+                                const char* _image_filename,
+                                const char* _image_data,
+                                int         _image_width,
+                                int         _image_height,
+                                int         _image_bpp,
+                                int         _image_pitch);
         bool apply(Fl_Gl_Image_Widget* w);
 
         int   decimation_level;
@@ -39,7 +39,7 @@ protected:
         int   image_height;
         int   image_bpp;
         int   image_pitch;
-    } m_update_image_cache;
+    } m_deferred_init_cache;
 
 
 public:
