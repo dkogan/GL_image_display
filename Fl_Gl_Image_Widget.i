@@ -623,25 +623,26 @@ SYNOPSIS
 
       def set_panzoom(self,
                       x_centerpixel, y_centerpixel,
-                      visible_width_pixels):
+                      visible_width_pixels,
+                      panzoom_siblings = True):
           r'''Pan/zoom the image
 
           This is an override of the function to do this: any request to
-          pan/zoom the widget will come here first. I dispatch any
-          pan/zoom commands to all the widgets, so that they all work in
-          unison. visible_width_pixels < 0 means: this is the redirected
-          call. Just call the base class
+          pan/zoom the widget will come here first. panzoom_siblings
+          dispatches any pan/zoom commands to all the widgets, so that they
+          all work in unison.
 
           '''
-          if visible_width_pixels < 0:
+          if not panzoom_siblings:
               return super().set_panzoom(x_centerpixel, y_centerpixel,
-                                         -visible_width_pixels)
+                                         visible_width_pixels)
 
           # All the widgets should pan/zoom together
           return \
               all( w.set_panzoom(x_centerpixel, y_centerpixel,
-                                 -visible_width_pixels) \
-                   for w in (image0, image1) )
+                                 visible_width_pixels,
+                                 panzoom_siblings = False)              \
+                   for w in (widget_image0, widget_image1) )
 
   window = Fl_Window(800, 600, 'Image display with Fl_Gl_Image_Widget')
   image0 = Fl_Gl_Image_Widget_Derived(0,  0, 400,600)
