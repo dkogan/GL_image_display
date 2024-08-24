@@ -178,6 +178,10 @@ Fl_Gl_Image_Widget::Fl_Gl_Image_Widget(int x, int y, int w, int h,
     Fl::gl_visual(m);
 
     memset(&m_ctx, 0, sizeof(m_ctx));
+
+    // This widget can't appear focused, and shouldn't be a part of navigation
+    // commands. See: https://github.com/fltk/fltk/discussions/1048
+    visible_focus(0);
 }
 
 Fl_Gl_Image_Widget::~Fl_Gl_Image_Widget()
