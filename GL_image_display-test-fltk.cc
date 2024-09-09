@@ -37,8 +37,8 @@ void update_status(double image_pixel_x,
 class Fl_Gl_Image_Widget_Derived : public Fl_Gl_Image_Widget
 {
 public:
-    Fl_Gl_Image_Widget_Derived(int x, int y, int w, int h) :
-        Fl_Gl_Image_Widget(x,y,w,h)
+    Fl_Gl_Image_Widget_Derived(int x, int y, int w, int h, bool double_buffered) :
+        Fl_Gl_Image_Widget(x,y,w,h, double_buffered)
     {}
 
 
@@ -324,16 +324,22 @@ int main(int argc, char** argv)
         int w = WINDOW_W/2;
         int h = (WINDOW_H - STATUS_H)/2;
         int y = 0;
+
+        bool double_buffered = true;
         g_gl_widgets[0] = new Fl_Gl_Image_Widget_Derived(0, y,
-                                                         w, h);
+                                                         w, h,
+                                                         double_buffered);
         g_gl_widgets[1] = new Fl_Gl_Image_Widget_Derived(w, y,
-                                                         WINDOW_W-w, h);
+                                                         WINDOW_W-w, h,
+                                                         double_buffered);
         y = h;
         h = WINDOW_H - STATUS_H - y;
         g_gl_widgets[2] = new Fl_Gl_Image_Widget_Derived(0, y,
-                                                         w, h);
+                                                         w, h,
+                                                         double_buffered);
         g_gl_widgets[3] = new Fl_Gl_Image_Widget_Derived(w, y,
-                                                         WINDOW_W-w, h);
+                                                         WINDOW_W-w, h,
+                                                         double_buffered);
 
     }
     images->end();
