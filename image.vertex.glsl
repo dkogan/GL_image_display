@@ -8,7 +8,7 @@ out vec2 tex_xy_geometry;
 uniform vec2 aspect;
 uniform vec2 center01;
 uniform float visible_width01;
-uniform int flip_x, flip_y;
+uniform int flip_x, flip_y, flip_y_data_is_upside_down;
 
 void main(void)
 {
@@ -29,7 +29,9 @@ void main(void)
     else
         tex_xy_geometry.x = 1.0 - vertex.x;
 
-    if(flip_y != 0)
+    // flip_y xor !flip_y_data_is_upside_down
+    if((flip_y!=0 && flip_y_data_is_upside_down==0) ||
+       (flip_y==0 && flip_y_data_is_upside_down!=0))
         // input image has the upside-down orientation, but that's what opengl
         // wants, so I'm good
         tex_xy_geometry.y = vertex.y;

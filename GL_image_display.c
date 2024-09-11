@@ -269,6 +269,7 @@ bool GL_image_display_init( // output
         make_uniform(visible_width01);
         make_uniform(flip_x);
         make_uniform(flip_y);
+        make_uniform(flip_y_data_is_upside_down);
         make_uniform(line_color_rgb);
 
 #undef make_uniform
@@ -535,14 +536,14 @@ bool GL_image_display_update_image2( GL_image_display_context_t* ctx,
         image_pitch  = (int)FreeImage_GetPitch(fib);
         image_data   = (char*)FreeImage_GetBits(fib);
 
-        // FreeImage_Load() loads images upside down, so I tell OpenGL to do the
-        // opposite thing, in terms of flipping stuff upside down. The REST of
-        // the logic regarding flip_y stays the same: I do NOT flip ctx->flip_y
-        set_uniform_1i(ctx, flip_y, !ctx->flip_y);
+        // FreeImage_Load() loads images upside down
+        set_uniform_1i(ctx, flip_y_data_is_upside_down, 1);
     }
     else
-        set_uniform_1i(ctx, flip_y, ctx->flip_y);
+        set_uniform_1i(ctx, flip_y_data_is_upside_down, 0);
+
     set_uniform_1i(ctx, flip_x, ctx->flip_x);
+    set_uniform_1i(ctx, flip_y, ctx->flip_y);
 
     if(!ctx->did_init_texture)
     {

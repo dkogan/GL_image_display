@@ -20,6 +20,7 @@ enum {
         GL_image_display_uniform_index_visible_width01,
         GL_image_display_uniform_index_flip_x,
         GL_image_display_uniform_index_flip_y,
+        GL_image_display_uniform_index_flip_y_data_is_upside_down,
         GL_image_display_uniform_index_line_color_rgb,
         GL_image_display_num_uniforms,
         GL_image_display_max_num_uniforms = 32
