@@ -169,9 +169,29 @@ Fl_Gl_Image_Widget::Fl_Gl_Image_Widget(int x, int y, int w, int h,
     Fl_Gl_Window(x, y, w, h),
     m_deferred_init_cache()
 {
+    /*
+      Here I don't ask for FL_OPENGL3. This is due a a bug in my graphics
+      driver or fltk or something like that.
+
+      If I have Intel integrated graphics (i915 or uhd620), then the
+      (FL_OPENGL3 | FL_DOUBLE) combination doesn't work right: lots of
+      redraws are missed for whatever reason, and the user gets either
+      nothing or an out-of-date frame. Turning FL_DOUBLE off fixes THAT, but
+      then the horizonator point picking doesn't work: glReadPixels(...,
+      GL_DEPTH_COMPONENT, ...) returns an error. For some reason, omitting
+      FL_OPENGL3 fixes the issues. That is despite the horizonator using a
+      geometry shader, which requires at LEAST opengl 3.2. There's a
+      related-looking bug report:
+
+      https://github.com/fltk/fltk/issues/1005
+
+      but the conclusion isn't clear to me. For the time being I simply
+      disable FL_OPENGL3, and move on. More investigation and maybe a good
+      bug report would be a good thing to do later
+    */
     const int m =
-        FL_OPENGL3 |
-        FL_RGB |
+        // FL_OPENGL3 |
+        FL_RGB    |
         (double_buffered ? FL_DOUBLE : 0);
 
     mode(m);
