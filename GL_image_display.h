@@ -22,6 +22,7 @@ enum {
         GL_image_display_uniform_index_flip_y,
         GL_image_display_uniform_index_flip_y_data_is_upside_down,
         GL_image_display_uniform_index_line_color_rgb,
+        GL_image_display_uniform_index_black_image,
         GL_image_display_num_uniforms,
         GL_image_display_max_num_uniforms = 32
         // I static_assert(GL_image_display_num_uniforms <=
@@ -123,7 +124,8 @@ bool GL_image_display_init( // output stored here
                             // input
                             bool use_glut);
 
-// Update the image data being displayed
+// Update the image data being displayed. If image_filename==NULL &&
+// image_data==NULL, we reset to an all-black image
 bool GL_image_display_update_image2(GL_image_display_context_t* ctx,
 
                                     // 0 == display full-resolution, original image
@@ -142,10 +144,12 @@ bool GL_image_display_update_image2(GL_image_display_context_t* ctx,
                                     bool flip_x,
                                     bool flip_y,
 
-                                    // Either this should be given
+                                    // At most this ...
                                     const char* image_filename,
 
-                                    // Or these should be given
+                                    // ... or these should be non-NULL. If
+                                    // neither is, we reset to an all-black
+                                    // image
                                     const char* image_data,
                                     int image_width,
                                     int image_height,

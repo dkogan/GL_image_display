@@ -305,13 +305,15 @@ and so on.
 This method may be called as many times as necessary. The decimation level and
 image dimensions MUST match those given in the first call to this function.
 
-The data may be passed-in to this method in one of two ways:
+The data may be passed-in to this method in one of three ways:
 
 - image_filename: the image is read from a file on disk, with the given
   filename. image_data must be None
 
 - image_data: the image data is read from the given numpy array. image_filename
   must be None
+
+- both image_filename and image_data are None: we draw a black image
 
 An exception is raised on error
 

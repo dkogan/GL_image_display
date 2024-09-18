@@ -271,6 +271,7 @@ bool GL_image_display_init( // output
         make_uniform(flip_y);
         make_uniform(flip_y_data_is_upside_down);
         make_uniform(line_color_rgb);
+        make_uniform(black_image);
 
 #undef make_uniform
     }
@@ -306,9 +307,10 @@ bool GL_image_display_update_image__validate_input
 
 
     if(image_filename == NULL &&
-       !(image_data != NULL && image_width > 0 && image_height > 0))
+       image_data != NULL &&
+       !(image_width > 0 && image_height > 0))
     {
-        MSG("image_filename is NULL, so all of (image_data, image_width, image_height) must have valid values");
+        MSG("image_filename is NULL && image_data != NULL, so all of (image_width, image_height) must have valid values");
         goto done;
     }
     if(image_filename != NULL &&
@@ -318,7 +320,7 @@ bool GL_image_display_update_image__validate_input
         goto done;
     }
 
-    if(image_width > 0)
+    if(image_data != NULL && image_width > 0)
     {
         if(!(image_bpp == 8 || image_bpp == 24))
         {
@@ -430,10 +432,12 @@ bool GL_image_display_update_image2( GL_image_display_context_t* ctx,
                                      bool flip_x,
                                      bool flip_y,
 
-                                     // Either this should be given
+                                     // At most this ...
                                      const char* image_filename,
 
-                                     // Or these should be given
+                                     // ... or these should be non-NULL. If
+                                     // neither is, we reset to an all-black
+                                     // image
                                      const char* image_data,
                                      int image_width,
                                      int image_height,
@@ -544,6 +548,18 @@ bool GL_image_display_update_image2( GL_image_display_context_t* ctx,
 
     set_uniform_1i(ctx, flip_x, ctx->flip_x);
     set_uniform_1i(ctx, flip_y, ctx->flip_y);
+
+    if(image_filename == NULL &&
+       image_data     == NULL)
+    {
+        set_uniform_1i(ctx, black_image, 1);
+        result = true;
+        goto done;
+    }
+
+    set_uniform_1i(ctx, black_image, 0);
+
+
 
     if(!ctx->did_init_texture)
     {
