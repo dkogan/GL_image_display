@@ -73,6 +73,7 @@ install all: Fl_Gl_Image_Widget.py _Fl_Gl_Image_Widget$(PY_EXT_SUFFIX)
 	  -w302 -w312 -w325 -w362 -w389 -w401 -w473 -w509 \
 	  -I/usr/include/ \
 	  -DFL_EXPORT="" \
+	  -DFL_OVERRIDE="" \
 	  -DPYTHON \
 	  -DPYTHON3 \
 	  -python \
