@@ -139,8 +139,8 @@ bool Fl_Gl_Image_Widget::DeferredInitCache::save_set_lines
 
 bool Fl_Gl_Image_Widget::DeferredInitCache::apply(Fl_Gl_Image_Widget* w)
 {
-    if(image_filename == NULL && image_data == NULL)
-        return true;
+    // image_filename and image_data may be NULL. In that case update_image2()
+    // will paint the viewport black
     bool result1 = w->update_image2(decimation_level,
                                     flip_x, flip_y,
                                     image_filename,

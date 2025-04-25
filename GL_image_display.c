@@ -553,6 +553,15 @@ bool GL_image_display_update_image2( GL_image_display_context_t* ctx,
        image_data     == NULL)
     {
         set_uniform_1i(ctx, black_image, 1);
+
+        if(!ctx->did_init_texture)
+        {
+            // we haven't initialized the texture, so the fragment shader won't
+            // work to paint everything black. I do that manually here.
+            glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+            glClear(GL_COLOR_BUFFER_BIT);
+        }
+
         result = true;
         goto done;
     }
