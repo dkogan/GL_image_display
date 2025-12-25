@@ -4,7 +4,6 @@
 #include <stdbool.h>
 #include <getopt.h>
 #include <string.h>
-#include <FreeImage.h>
 #include <math.h>
 #include <epoxy/gl.h>
 #include <GL/freeglut.h>
