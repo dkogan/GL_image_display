@@ -13,7 +13,8 @@
 #include <epoxy/glx.h>
 #include <GL/freeglut.h>
 
-#include <FreeImage.h>
+#define STBI_NO_HDR 1
+#include <stb/stb_image.h>
 
 #include "GL_image_display.h"
 #include "util.h"
@@ -269,7 +270,6 @@ bool GL_image_display_init( // output
         make_uniform(visible_width01);
         make_uniform(flip_x);
         make_uniform(flip_y);
-        make_uniform(flip_y_data_is_upside_down);
         make_uniform(line_color_rgb);
         make_uniform(black_image);
 
@@ -301,10 +301,7 @@ bool GL_image_display_update_image__validate_input
   int image_bpp,
   bool check_image_file)
 {
-    FIBITMAP* fib = NULL;
     bool result = false;
-
-
 
     if(image_filename == NULL &&
        image_data != NULL &&
@@ -339,59 +336,26 @@ bool GL_image_display_update_image__validate_input
 
     if( image_filename != NULL )
     {
-        FREE_IMAGE_FORMAT format = FreeImage_GetFileType(image_filename,0);
-        if(format == FIF_UNKNOWN)
+        // autodetect the image parameters
+        int channels_detected = -1;
+        int width = -1, height = -1;
+        if(!stbi_info(image_filename, &width, &height, &channels_detected))
         {
             MSG("Couldn't load '%s'", image_filename);
             goto done;
         }
-
-        fib = FreeImage_Load(format, image_filename, 0);
-        if(fib == NULL)
+        if(width <= 0 || height <= 0)
         {
-            MSG("Couldn't load '%s'", image_filename);
+            MSG("Couldn't load '%s': width <= 0 || height <= 0", image_filename);
             goto done;
         }
 
-        // grayscale
-        if(FreeImage_GetColorType(fib) == FIC_MINISBLACK &&
-           FreeImage_GetBPP(fib)       == 8)
-        {
-            result = true;
-            goto done;
-        }
-        else
-        {
-            // normalize images
-            if( // palettized
-                FreeImage_GetColorType(fib)  == FIC_PALETTE ||
-
-                // 32-bit RGBA
-                (FreeImage_GetColorType(fib) == FIC_RGBALPHA &&
-                 FreeImage_GetBPP(fib)       == 32) )
-
-            {
-                result = true;
-                goto done;
-            }
-
-            if(FreeImage_GetColorType(fib) == FIC_RGB &&
-               FreeImage_GetBPP(fib) == 24)
-            {
-                result = true;
-                goto done;
-            }
-
-            MSG("Only 8-bit grayscale and 24-bit RGB images and 32-bit RGBA images are supported. Conversion to 24-bit didn't work. Giving up.");
-            goto done;
-        }
+        result = true;
     }
     else
         result = true;
 
  done:
-    if(fib != NULL)
-        FreeImage_Unload(fib);
     return result;
 }
 
@@ -425,6 +389,27 @@ bool set_aspect(GL_image_display_context_t* ctx,
     ctx->did_set_aspect = true;
 
     return true;
+}
+
+static
+void bgr_tofrom_rgb(// in,out
+                    uint8_t* data,
+                    // in
+                    const int width,
+                    const int height,
+                    const int stride)
+{
+    for(int i=0; i<height; i++)
+    {
+        uint8_t* row = &data[i*stride];
+        for(int j=0; j<width; j++)
+        {
+            uint8_t* p = &row[j*3];
+            uint8_t t = p[0];
+            p[0] = p[2];
+            p[2] = t;
+        }
+    }
 }
 
 bool GL_image_display_update_image2( GL_image_display_context_t* ctx,
@@ -467,9 +452,9 @@ bool GL_image_display_update_image2( GL_image_display_context_t* ctx,
         }
     }
 
-    bool      result = false;
-    FIBITMAP* fib    = NULL;
-    char*     buf    = NULL;
+    bool  result               = false;
+    char* buf                  = NULL;
+    bool  image_data_allocated = false;
 
     if(!ctx->did_init)
     {
@@ -482,69 +467,50 @@ bool GL_image_display_update_image2( GL_image_display_context_t* ctx,
 
     if( image_filename != NULL )
     {
-        FREE_IMAGE_FORMAT format = FreeImage_GetFileType(image_filename,0);
-        if(format == FIF_UNKNOWN)
+        int channels_detected = -1;
+        int channels = -1;
+        if(!stbi_info(image_filename, &image_width, &image_height, &channels_detected))
         {
             MSG("Couldn't load '%s'", image_filename);
             goto done;
         }
 
-        fib = FreeImage_Load(format, image_filename, 0);
-        if(fib == NULL)
-        {
-            MSG("Couldn't load '%s'", image_filename);
-            goto done;
-        }
-
-        // grayscale
-        if(FreeImage_GetColorType(fib) == FIC_MINISBLACK &&
-           FreeImage_GetBPP(fib)       == 8)
+        if(channels_detected == 1)
         {
             image_bpp = 8;
+            image_data = (char*)stbi_load(image_filename, &image_width, &image_height, &channels, 1);
+            if(image_data == NULL)
+            {
+                MSG("Couldn't load '%s'", image_filename);
+                goto done;
+            }
+            image_data_allocated = true;
+            image_pitch = image_width;
+        }
+        else if(channels_detected == 3 || channels_detected == 4)
+        {
+            image_bpp = 24;
+            image_data = (char*)stbi_load(image_filename, &image_width, &image_height, &channels, 3);
+            if(image_data == NULL)
+            {
+                MSG("Couldn't load '%s'", image_filename);
+                goto done;
+            }
+            image_data_allocated = true;
+            image_pitch = image_width*3;
+
+            bgr_tofrom_rgb((uint8_t*)image_data,
+                           image_width,
+                           image_height,
+                           image_pitch);
         }
         else
         {
-            // normalize images
-            if( // palettized
-                FreeImage_GetColorType(fib)  == FIC_PALETTE ||
-
-                // 32-bit RGBA
-                (FreeImage_GetColorType(fib) == FIC_RGBALPHA &&
-                 FreeImage_GetBPP(fib)       == 32) )
-
-            {
-                // I explicitly un-palettize images, if that's what I was given
-                FIBITMAP* fib24 = FreeImage_ConvertTo24Bits(fib);
-                FreeImage_Unload(fib);
-                fib = fib24;
-
-                if(fib == NULL)
-                {
-                    MSG("Couldn't unpalettize '%s'", image_filename);
-                    goto done;
-                }
-            }
-
-            if(!(FreeImage_GetColorType(fib) == FIC_RGB &&
-                 FreeImage_GetBPP(fib) == 24))
-            {
-                MSG("Only 8-bit grayscale and 24-bit RGB images and 32-bit RGBA images are supported. Conversion to 24-bit didn't work. Giving up.");
-                goto done;
-            }
-
-            image_bpp = 24;
+            MSG("Only 8-bit grayscale and RGB images are supported. Giving up.");
+            goto done;
         }
 
-        image_width  = (int)FreeImage_GetWidth(fib);
-        image_height = (int)FreeImage_GetHeight(fib);
-        image_pitch  = (int)FreeImage_GetPitch(fib);
-        image_data   = (char*)FreeImage_GetBits(fib);
-
-        // FreeImage_Load() loads images upside down
-        set_uniform_1i(ctx, flip_y_data_is_upside_down, 1);
     }
-    else
-        set_uniform_1i(ctx, flip_y_data_is_upside_down, 0);
 
     set_uniform_1i(ctx, flip_x, ctx->flip_x);
     set_uniform_1i(ctx, flip_y, ctx->flip_y);
@@ -725,8 +691,8 @@ bool GL_image_display_update_image2( GL_image_display_context_t* ctx,
     result = true;
 
  done:
-    if(fib != NULL)
-        FreeImage_Unload(fib);
+    if(image_data_allocated)
+        free((char*)image_data);
     if(buf != NULL)
         glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
     return result;

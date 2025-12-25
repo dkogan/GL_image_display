@@ -7,7 +7,7 @@ TAIL_VERSION := 1
 
 LDLIBS += \
   -lGLU -lGL -lepoxy -lglut \
-  -lfreeimage \
+  -lstb \
   -lm \
   -pthread
 
