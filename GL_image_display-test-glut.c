@@ -11,8 +11,58 @@
 #include "GL_image_display.h"
 #include "util.h"
 
-GL_image_display_context_t ctx;
+static GL_image_display_context_t ctx;
+static char**                     images;
+static int                        i_image;
 
+
+static
+void timerfunc(int cookie __attribute__((unused)))
+{
+    i_image = 1 - i_image;
+
+    if( !GL_image_display_update_image(&ctx,0,
+                                       images[i_image],
+                                       NULL,0,0,0,0) )
+    {
+        fprintf(stderr, "GL_image_display_update_image() failed\n");
+        return;
+    }
+
+    glutPostRedisplay();
+    glutTimerFunc(1000, timerfunc, 0);
+}
+
+static
+void window_display(void)
+{
+    GL_image_display_redraw(&ctx);
+    glutSwapBuffers();
+}
+
+static
+void window_keyPressed(unsigned char key,
+                       int x __attribute__((unused)) ,
+                       int y __attribute__((unused)) )
+{
+    switch (key)
+    {
+    case 'q':
+    case 27:
+        // Need both to avoid a segfault. This works differently with
+        // different opengl drivers
+        glutExit();
+        exit(0);
+    }
+
+    glutPostRedisplay();
+}
+
+static
+void _GL_image_display_resized(int width, int height)
+{
+    GL_image_display_resize_viewport(&ctx, width, height);
+}
 
 int main(int argc, char* argv[])
 {
@@ -26,8 +76,8 @@ int main(int argc, char* argv[])
     if( !GL_image_display_init( &ctx, true) )
         return 1;
 
-    char** images = &argv[1];
-    int i_image = 0;
+    images = &argv[1];
+    i_image = 0;
 
     if( !GL_image_display_update_image(&ctx,0,
                                           images[i_image],
@@ -62,51 +112,6 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-
-
-    void timerfunc(int cookie __attribute__((unused)))
-    {
-        i_image = 1 - i_image;
-
-        if( !GL_image_display_update_image(&ctx,0,
-                                              images[i_image],
-                                              NULL,0,0,0,0) )
-        {
-            fprintf(stderr, "GL_image_display_update_image() failed\n");
-            return;
-        }
-
-        glutPostRedisplay();
-        glutTimerFunc(1000, timerfunc, 0);
-    }
-
-    void window_display(void)
-    {
-        GL_image_display_redraw(&ctx);
-        glutSwapBuffers();
-    }
-
-    void window_keyPressed(unsigned char key,
-                           int x __attribute__((unused)) ,
-                           int y __attribute__((unused)) )
-    {
-        switch (key)
-        {
-        case 'q':
-        case 27:
-            // Need both to avoid a segfault. This works differently with
-            // different opengl drivers
-            glutExit();
-            exit(0);
-        }
-
-        glutPostRedisplay();
-    }
-
-    void _GL_image_display_resized(int width, int height)
-    {
-        GL_image_display_resize_viewport(&ctx, width, height);
-    }
 
     glutDisplayFunc (window_display);
     glutKeyboardFunc(window_keyPressed);
