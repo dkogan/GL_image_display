@@ -48,10 +48,10 @@ all: $(LIB_TARGET_SO_ALL_FLTK)
 install: install_lib_fltk
 .PHONY: install_lib_fltk
 install_lib_fltk: $(LIB_TARGET_SO_ALL_FLTK)
-	mkdir -p $(DESTDIR)/$(USRLIB)
-	cp -P $(LIB_TARGET_SO_FULL_FLTK)  $(DESTDIR)/$(USRLIB)
-	ln -fs $(notdir $(LIB_TARGET_SO_FULL_FLTK)) $(DESTDIR)/$(USRLIB)/$(notdir $(LIB_TARGET_SO_ABI_FLTK))
-	ln -fs $(notdir $(LIB_TARGET_SO_FULL_FLTK)) $(DESTDIR)/$(USRLIB)/$(notdir $(LIB_TARGET_SO_BARE_FLTK))
+	mkdir -p $(DESTDIR)$(INSTALL_ROOT_LIB)
+	cp -P $(LIB_TARGET_SO_FULL_FLTK)  $(DESTDIR)$(INSTALL_ROOT_LIB)
+	ln -fs $(notdir $(LIB_TARGET_SO_FULL_FLTK)) $(DESTDIR)$(INSTALL_ROOT_LIB)/$(notdir $(LIB_TARGET_SO_ABI_FLTK))
+	ln -fs $(notdir $(LIB_TARGET_SO_FULL_FLTK)) $(DESTDIR)$(INSTALL_ROOT_LIB)/$(notdir $(LIB_TARGET_SO_BARE_FLTK))
 
 $(LIB_TARGET_SO_FULL_FLTK): lib$(PROJECT_NAME).$(SO)
 $(LIB_TARGET_SO_FULL_FLTK): LDLIBS += -lfltk_gl -lfltk -lX11
