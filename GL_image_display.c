@@ -10,7 +10,6 @@
 #include <math.h>
 
 #include <epoxy/gl.h>
-#include <epoxy/glx.h>
 #include <GL/freeglut.h>
 
 #define STBI_NO_HDR 1
