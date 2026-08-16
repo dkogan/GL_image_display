@@ -856,6 +856,17 @@ bool GL_image_display_set_lines(GL_image_display_context_t* ctx,
     return true;
 }
 
+static
+void bind_program(GL_image_display_context_t* ctx, int program_index)
+{
+    glUseProgram(ctx->programs[program_index].program);
+    assert_opengl();
+
+    glBindVertexArray(ctx->programs[program_index].VBO_array);
+    glBindBuffer(GL_ARRAY_BUFFER,
+                 ctx->programs[program_index].VBO_buffer);
+}
+
 bool GL_image_display_redraw(GL_image_display_context_t* ctx)
 {
     CONFIRM_SET(      did_init);
@@ -877,19 +888,9 @@ bool GL_image_display_redraw(GL_image_display_context_t* ctx)
     // // Wireframe rendering. For testing
     // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE );
 
-    void bind_program(int program_index)
-    {
-        glUseProgram(ctx->programs[program_index].program);
-        assert_opengl();
-
-        glBindVertexArray(ctx->programs[program_index].VBO_array);
-        glBindBuffer(GL_ARRAY_BUFFER,
-                     ctx->programs[program_index].VBO_buffer);
-    }
-
     ///////////// Render the image
     {
-        bind_program(GL_image_display_program_index_image);
+        bind_program(ctx, GL_image_display_program_index_image);
         assert_opengl();
         glBindTexture( GL_TEXTURE_2D, ctx->texture_ID);
         assert_opengl();
@@ -901,7 +902,7 @@ bool GL_image_display_redraw(GL_image_display_context_t* ctx)
 
     ///////////// Render the overlaid lines
     {
-        bind_program(GL_image_display_program_index_line);
+        bind_program(ctx, GL_image_display_program_index_line);
         assert_opengl();
 
         int ipoint0 = 0;
