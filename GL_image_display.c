@@ -18,10 +18,10 @@
 #include "GL_image_display.h"
 #include "util.h"
 
-static_assert(GL_image_display_num_uniforms <= GL_image_display_max_num_uniforms,
-              "must have GL_image_display_num_uniforms <= GL_image_display_max_num_uniforms");
-static_assert(GL_image_display_num_programs <=  GL_image_display_max_num_programs,
-              "must have GL_image_display_num_programs <=  GL_image_display_max_num_programs");
+_Static_assert(GL_image_display_num_uniforms <= GL_image_display_max_num_uniforms,
+               "must have GL_image_display_num_uniforms <= GL_image_display_max_num_uniforms");
+_Static_assert(GL_image_display_num_programs <=  GL_image_display_max_num_programs,
+               "must have GL_image_display_num_programs <=  GL_image_display_max_num_programs");
 
 
 #define MAX_NUMBER_LINE_VERTICES 1024
@@ -124,8 +124,8 @@ bool GL_image_display_init( // output
         }
     }
 
-    static_assert(sizeof(GLint) == sizeof(ctx->programs[0].uniforms[0]),
-                  "GL_image_display_context_t.program.uniform_... must be a GLint");
+    _Static_assert(sizeof(GLint) == sizeof(ctx->programs[0].uniforms[0]),
+                   "GL_image_display_context_t.program.uniform_... must be a GLint");
 
     glClearColor(0, 0, 0, 0);
 
