@@ -39,7 +39,7 @@ LIB_TARGET_SO_ABI_FLTK  = $(LIB_TARGET_SO_BARE_FLTK).$(ABI_VERSION)
 LIB_TARGET_SO_FULL_FLTK = $(LIB_TARGET_SO_ABI_FLTK).$(TAIL_VERSION)
 LIB_TARGET_SO_ALL_FLTK  = $(LIB_TARGET_SO_BARE_FLTK) $(LIB_TARGET_SO_ABI_FLTK) $(LIB_TARGET_SO_FULL_FLTK)
 $(LIB_OBJECTS_FLTK): CCXXFLAGS += -fPIC
-$(LIB_TARGET_SO_FULL_FLTK): LDFLAGS += -shared $(LD_DEFAULT_SYMVER) -fPIC -Wl,-soname,$(notdir $(LIB_TARGET_SO_BARE_FLTK)).$(ABI_VERSION)  -Wl,-rpath='$$ORIGIN'$(call get_parentdir_relative_to_childdir,$(abspath .),$(dir $(abspath $@)))
+$(LIB_TARGET_SO_FULL_FLTK): LDFLAGS += $(if $(COND_DARWIN),-dynamiclib,-Wl,--default-symver) -shared -fPIC -Wl,$(if $(COND_DARWIN),-install_name$(COMMA)@rpath/,-soname$(COMMA))$(notdir $(LIB_TARGET_SO_BARE_FLTK)).$(ABI_VERSION)
 $(LIB_TARGET_SO_BARE_FLTK) $(LIB_TARGET_SO_ABI_FLTK): $(LIB_TARGET_SO_FULL_FLTK)
 	ln -fs $(notdir $(LIB_TARGET_SO_FULL_FLTK)) $@
 $(LIB_TARGET_SO_FULL_FLTK): $(LIB_OBJECTS_FLTK)
@@ -50,7 +50,6 @@ install: install_lib_fltk
 install_lib_fltk: $(LIB_TARGET_SO_ALL_FLTK)
 	mkdir -p $(DESTDIR)/$(USRLIB)
 	cp -P $(LIB_TARGET_SO_FULL_FLTK)  $(DESTDIR)/$(USRLIB)
-	chrpath -d $(DESTDIR)/$(USRLIB)/$(LIB_TARGET_SO_FULL_FLTK)
 	ln -fs $(notdir $(LIB_TARGET_SO_FULL_FLTK)) $(DESTDIR)/$(USRLIB)/$(notdir $(LIB_TARGET_SO_ABI_FLTK))
 	ln -fs $(notdir $(LIB_TARGET_SO_FULL_FLTK)) $(DESTDIR)/$(USRLIB)/$(notdir $(LIB_TARGET_SO_BARE_FLTK))
 
@@ -91,7 +90,7 @@ Fl_Gl_Image_Widget.py Fl_Gl_Image_Widget_pywrap.cc: Fl_Gl_Image_Widget.hh
 
 Fl_Gl_Image_Widget_pywrap.o: CXXFLAGS += $(PY_MRBUILD_CFLAGS)
 _Fl_Gl_Image_Widget$(PY_EXT_SUFFIX): Fl_Gl_Image_Widget_pywrap.o $(LIB_TARGET_SO_FULL_FLTK)
-	$(PY_MRBUILD_LINKER) $(LDFLAGS) $(PY_MRBUILD_LDFLAGS) -Wl,-rpath=$$ORIGIN/ $^ -o $@
+	$(PY_MRBUILD_LINKER) $(LDFLAGS) $(PY_MRBUILD_LDFLAGS) $^ -o $@
 
 # The python libraries (compiled ones and ones written in python) all live in
 # mrcal/
