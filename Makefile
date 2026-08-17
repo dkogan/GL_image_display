@@ -6,7 +6,7 @@ ABI_VERSION  := 0
 TAIL_VERSION := 1
 
 LDLIBS += \
-  -lGLU -lGL -lepoxy -lglut \
+  $(if $(COND_DARWIN),-framework OpenGL -lepoxy -framework GLUT,-lGLU -lGL -lepoxy -lglut) \
   -lstb \
   -lm \
   -pthread

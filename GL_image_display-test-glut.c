@@ -51,7 +51,9 @@ void window_keyPressed(unsigned char key,
     case 27:
         // Need both to avoid a segfault. This works differently with
         // different opengl drivers
+#ifndef __APPLE__
         glutExit();
+#endif
         exit(0);
     }
 

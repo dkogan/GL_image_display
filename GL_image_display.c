@@ -85,9 +85,11 @@ bool GL_image_display_init( // output
         static bool global_inited = false;
         if(!global_inited)
         {
+#ifndef __APPLE__
             glutInitContextFlags(GLUT_FORWARD_COMPATIBLE);
             glutInitContextVersion(4,2);
             glutInitContextProfile(GLUT_CORE_PROFILE);
+#endif
             glutInit(&(int){1}, &(char*){"exec"});
             global_inited = true;
         }
