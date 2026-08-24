@@ -28,30 +28,10 @@ BIN_SOURCES += \
 
 
 ################ FLTK widget library #############
-# This is mostly a copy of the library logic in mrbuild. mrbuild currently
-# doesn't support more than one DSO per project, so I duplicate that logic here
-# for the second library
-LIB_SOURCES_FLTK := Fl_Gl_Image_Widget.cc
-LIB_OBJECTS_FLTK := $(addsuffix .o,$(basename $(LIB_SOURCES_FLTK)))
-LIB_NAME_FLTK           = libGL_image_display_fltk
-LIB_TARGET_SO_BARE_FLTK = $(LIB_NAME_FLTK).$(SO)
-LIB_TARGET_SO_ABI_FLTK  = $(LIB_TARGET_SO_BARE_FLTK).$(ABI_VERSION)
-LIB_TARGET_SO_FULL_FLTK = $(LIB_TARGET_SO_ABI_FLTK).$(TAIL_VERSION)
-LIB_TARGET_SO_ALL_FLTK  = $(LIB_TARGET_SO_BARE_FLTK) $(LIB_TARGET_SO_ABI_FLTK) $(LIB_TARGET_SO_FULL_FLTK)
-$(LIB_OBJECTS_FLTK): CCXXFLAGS += -fPIC
-$(LIB_TARGET_SO_FULL_FLTK): LDFLAGS += $(if $(COND_DARWIN),-dynamiclib,-Wl,--default-symver) -shared -fPIC -Wl,$(if $(COND_DARWIN),-install_name$(COMMA)@rpath/,-soname$(COMMA))$(notdir $(LIB_TARGET_SO_BARE_FLTK)).$(ABI_VERSION)
-$(LIB_TARGET_SO_BARE_FLTK) $(LIB_TARGET_SO_ABI_FLTK): $(LIB_TARGET_SO_FULL_FLTK)
-	ln -fs $(notdir $(LIB_TARGET_SO_FULL_FLTK)) $@
-$(LIB_TARGET_SO_FULL_FLTK): $(LIB_OBJECTS_FLTK)
-	$(CC_LINKER) $(LDFLAGS) $(filter %.o, $^) $(filter-out %.o, $^) $(LDLIBS) -o $@
-all: $(LIB_TARGET_SO_ALL_FLTK)
-install: install_lib_fltk
-.PHONY: install_lib_fltk
-install_lib_fltk: $(LIB_TARGET_SO_ALL_FLTK)
-	mkdir -p $(DESTDIR)$(INSTALL_ROOT_LIB)
-	cp -P $(LIB_TARGET_SO_FULL_FLTK)  $(DESTDIR)$(INSTALL_ROOT_LIB)
-	ln -fs $(notdir $(LIB_TARGET_SO_FULL_FLTK)) $(DESTDIR)$(INSTALL_ROOT_LIB)/$(notdir $(LIB_TARGET_SO_ABI_FLTK))
-	ln -fs $(notdir $(LIB_TARGET_SO_FULL_FLTK)) $(DESTDIR)$(INSTALL_ROOT_LIB)/$(notdir $(LIB_TARGET_SO_BARE_FLTK))
+# This needs mrbuild >= 1.20
+$(eval $(call MRBUILD_ADD_LIBRARY, libGL_image_display_fltk,Fl_Gl_Image_Widget.cc))
+
+LIB_TARGET_SO_FULL_FLTK := libGL_image_display_fltk.so.$(ABI_VERSION).$(TAIL_VERSION)
 
 $(LIB_TARGET_SO_FULL_FLTK): lib$(PROJECT_NAME).$(SO)
 $(LIB_TARGET_SO_FULL_FLTK): LDLIBS += -lfltk_gl -lfltk -lX11
