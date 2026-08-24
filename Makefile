@@ -31,7 +31,7 @@ BIN_SOURCES += \
 # This needs mrbuild >= 1.20
 $(eval $(call MRBUILD_ADD_LIBRARY, libGL_image_display_fltk,Fl_Gl_Image_Widget.cc))
 
-LIB_TARGET_SO_FULL_FLTK := libGL_image_display_fltk.so.$(ABI_VERSION).$(TAIL_VERSION)
+LIB_TARGET_SO_FULL_FLTK := libGL_image_display_fltk.$(SO).$(ABI_VERSION).$(TAIL_VERSION)
 
 $(LIB_TARGET_SO_FULL_FLTK): lib$(PROJECT_NAME).$(SO)
 $(LIB_TARGET_SO_FULL_FLTK): LDLIBS += -lfltk_gl -lfltk -lX11
